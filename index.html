@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>임경빈 포트폴리오 · AI · 풀스택 개발</title>
+  <meta name="description" content="OCR 솔루션 웹 풀스택 실무 경험과 RAG·LLM Agent 프로젝트를 모은 임경빈의 개발 포트폴리오입니다. 대표 프로젝트: 의정이슈레이더, Pet Log.">
+  <meta name="theme-color" content="#0b1020" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f7f8fb" media="(prefers-color-scheme: light)">
+
+  <!-- 링크 공유 미리보기 (카카오톡·슬랙 등) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="임경빈 포트폴리오 · AI · 풀스택 개발">
+  <meta property="og:description" content="대표 프로젝트 의정이슈레이더(RAG·이슈 확산 예측)와 Pet Log(AI Agent 케어 플랫폼), 그리고 금융권에 납품한 OCR 웹 실무 프로젝트.">
+  <meta property="og:image" content="assets/thumbs/council-radar.webp">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f5bea'/%3E%3Ctext x='32' y='42' font-family='sans-serif' font-size='28' font-weight='800' fill='white' text-anchor='middle'%3E임%3C/text%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
+  <!-- 저장된 테마를 첫 페인트 전에 적용 (깜빡임 방지) -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('portfolio_theme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+
+  <style>
+    /* ---------- 디자인 토큰 ---------- */
+    :root {
+      --bg: #f7f8fb;
+      --bg-soft: #eef1f6;
+      --surface: #ffffff;
+      --surface-2: #f3f5f9;
+      --border: #e2e6ee;
+      --border-strong: #cfd5e1;
+      --text: #111827;
+      --text-2: #3f4858;
+      --text-3: #6b7486;
+      --accent: #2f5bea;
+      --accent-soft: #e8eeff;
+      --accent-text: #1f45c4;
+      --work: #0f8a6a;
+      --work-soft: #e3f5ef;
+      --work-text: #0b6f55;
+      --gold: #b7791f;
+      --gold-soft: #fbf1df;
+      --shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 8px 24px -12px rgba(16, 24, 40, .12);
+      --shadow-hover: 0 2px 4px rgba(16, 24, 40, .05), 0 18px 40px -16px rgba(16, 24, 40, .22);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --maxw: 1160px;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0b1020;
+        --bg-soft: #0f1528;
+        --surface: #121a2e;
+        --surface-2: #172036;
+        --border: #222c44;
+        --border-strong: #2e3a57;
+        --text: #eef1f7;
+        --text-2: #c3cad8;
+        --text-3: #8b95aa;
+        --accent: #6f8dff;
+        --accent-soft: #1b2650;
+        --accent-text: #a9bbff;
+        --work: #34c79b;
+        --work-soft: #10302a;
+        --work-text: #7fe0c0;
+        --gold: #e7b75f;
+        --gold-soft: #33280f;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
+        --shadow-hover: 0 2px 4px rgba(0, 0, 0, .3), 0 18px 40px -16px rgba(0, 0, 0, .7);
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #0b1020;
+      --bg-soft: #0f1528;
+      --surface: #121a2e;
+      --surface-2: #172036;
+      --border: #222c44;
+      --border-strong: #2e3a57;
+      --text: #eef1f7;
+      --text-2: #c3cad8;
+      --text-3: #8b95aa;
+      --accent: #6f8dff;
+      --accent-soft: #1b2650;
+      --accent-text: #a9bbff;
+      --work: #34c79b;
+      --work-soft: #10302a;
+      --work-text: #7fe0c0;
+      --gold: #e7b75f;
+      --gold-soft: #33280f;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .5);
+      --shadow-hover: 0 2px 4px rgba(0, 0, 0, .3), 0 18px 40px -16px rgba(0, 0, 0, .7);
+      color-scheme: dark;
+    }
+
+    /* ---------- 기본 ---------- */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+      -webkit-font-smoothing: antialiased;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+    .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+    .skip { position: absolute; left: -999px; top: 8px; background: var(--accent); color: #fff; padding: 8px 14px; border-radius: 8px; z-index: 100; }
+    .skip:focus { left: 12px; }
+
+    /* ---------- 헤더 ---------- */
+    .site-header {
+      position: sticky; top: 0; z-index: 40;
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
+      backdrop-filter: saturate(160%) blur(12px);
+      -webkit-backdrop-filter: saturate(160%) blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .site-header .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -.01em; }
+    .brand-mark { width: 32px; height: 32px; border-radius: 9px; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 15px; }
+    .brand small { display: block; font-weight: 500; font-size: 12px; color: var(--text-3); letter-spacing: 0; margin-top: -2px; }
+    .nav { display: flex; align-items: center; gap: 2px; }
+    .nav a { padding: 7px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-2); }
+    .nav a:hover { background: var(--surface-2); color: var(--text); }
+    .icon-btn {
+      width: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text-2); display: grid; place-items: center; cursor: pointer; margin-left: 6px;
+    }
+    .icon-btn:hover { color: var(--text); border-color: var(--border-strong); }
+    .icon-btn svg { width: 18px; height: 18px; }
+    .icon-sun { display: none; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .icon-sun { display: block; } :root:not([data-theme="light"]) .icon-moon { display: none; } }
+    :root[data-theme="dark"] .icon-sun { display: block; }
+    :root[data-theme="dark"] .icon-moon { display: none; }
+    @media (max-width: 760px) { .nav a { display: none; } }
+
+    /* ---------- 히어로 ---------- */
+    .hero { padding: 72px 0 40px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--accent-text); background: var(--accent-soft); padding: 6px 12px; border-radius: 999px; }
+    .hero h1 { font-size: clamp(30px, 5vw, 50px); line-height: 1.22; letter-spacing: -.035em; margin: 18px 0 16px; font-weight: 800; max-width: 860px; }
+    .hero h1 em { font-style: normal; color: var(--accent); }
+    .hero p.lead { font-size: clamp(16px, 2vw, 18px); color: var(--text-2); max-width: 760px; margin: 0; }
+    .hero-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 36px; max-width: 860px; }
+    .fact { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; }
+    .fact b { display: block; font-size: 20px; letter-spacing: -.02em; }
+    .fact span { font-size: 13.5px; color: var(--text-3); }
+    .fact.work b { color: var(--work); }
+    .hero-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 11px;
+      font-size: 15px; font-weight: 700; border: 1px solid var(--border); background: var(--surface); color: var(--text);
+      transition: border-color .15s, transform .15s, background .15s;
+    }
+    .btn:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn.primary:hover { filter: brightness(1.06); }
+    .btn svg { width: 16px; height: 16px; }
+    @media (max-width: 640px) {
+      .hero { padding: 44px 0 24px; }
+      .hero-facts { grid-template-columns: 1fr; }
+    }
+
+    /* ---------- 섹션 공통 ---------- */
+    section.block { padding: 56px 0 8px; scroll-margin-top: 64px; }
+    .sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .sec-head h2 { font-size: clamp(24px, 3.2vw, 30px); letter-spacing: -.03em; margin: 6px 0 4px; font-weight: 800; }
+    .sec-head p { margin: 0; color: var(--text-3); font-size: 15px; max-width: 680px; }
+    .sec-kicker { font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+    .sec-kicker.gold { color: var(--gold); }
+    .sec-kicker.work { color: var(--work); }
+
+    /* ---------- 칩 · 배지 ---------- */
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0; list-style: none; }
+    .chips li { font-size: 12.5px; font-weight: 600; padding: 4px 9px; border-radius: 7px; background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+    .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 800; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+    .badge.gold { background: var(--gold-soft); color: var(--gold); }
+    .badge.work { background: var(--work-soft); color: var(--work-text); }
+    .badge.plain { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); white-space: normal; }
+    .meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; color: var(--text-3); margin: 0; padding: 0; list-style: none; }
+    .meta li { display: inline-flex; align-items: center; gap: 6px; }
+    .meta li + li::before { content: ""; width: 3px; height: 3px; border-radius: 50%; background: var(--border-strong); margin-right: 8px; }
+    .meta strong { color: var(--text-2); font-weight: 700; }
+
+    /* ---------- 대표 프로젝트 (가로형 큰 카드) ---------- */
+    .feature {
+      display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s;
+    }
+    .feature + .feature { margin-top: 24px; }
+    .feature:hover { box-shadow: var(--shadow-hover); }
+    .feature.rev .feature-media { order: 2; border-right: 0; border-left: 1px solid var(--border); }
+    .feature-media { position: relative; background: var(--surface-2); border-right: 1px solid var(--border); min-height: 300px; }
+    .feature-media img { width: 100%; height: 100%; object-fit: cover; object-position: top left; position: absolute; inset: 0; }
+    .feature-body { padding: 30px 32px 28px; display: flex; flex-direction: column; gap: 16px; }
+    .feature-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .rank { font-size: 13px; font-weight: 900; color: var(--gold); letter-spacing: .04em; }
+    .feature h3 { font-size: clamp(24px, 3vw, 30px); letter-spacing: -.03em; margin: 0; line-height: 1.25; }
+    .feature h3 small { font-size: 15px; font-weight: 600; color: var(--text-3); letter-spacing: 0; margin-left: 6px; }
+    .feature .summary { margin: 0; color: var(--text-2); font-size: 15.5px; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .metric { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+    .metric b { display: block; font-size: 19px; letter-spacing: -.02em; color: var(--accent-text); font-variant-numeric: tabular-nums; }
+    .metric span { display: block; font-size: 12px; color: var(--text-3); line-height: 1.4; margin-top: 2px; }
+    .points { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+    .points li { position: relative; padding-left: 18px; font-size: 14.5px; color: var(--text-2); }
+    .points li::before { content: ""; position: absolute; left: 2px; top: .68em; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); }
+    .points li strong { color: var(--text); font-weight: 700; }
+    .card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; }
+    .card-actions .btn { height: 40px; font-size: 14px; padding: 0 16px; }
+    .feature-pet .metric b { color: var(--accent-text); }
+    @media (max-width: 920px) {
+      .feature, .feature.rev { grid-template-columns: 1fr; }
+      .feature.rev .feature-media { order: 0; border-left: 0; }
+      .feature-media { min-height: 0; aspect-ratio: 16 / 10; border-right: 0; border-bottom: 1px solid var(--border); }
+      .feature-body { padding: 22px 20px 22px; }
+    }
+    @media (max-width: 520px) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+    /* ---------- 실무 프로젝트 ---------- */
+    .work-intro {
+      display: flex; gap: 14px; align-items: flex-start; background: var(--work-soft); border: 1px solid color-mix(in srgb, var(--work) 30%, transparent);
+      color: var(--work-text); padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; font-size: 14.5px;
+    }
+    .work-intro svg { width: 20px; height: 20px; flex: none; margin-top: 2px; }
+    .work-intro strong { font-weight: 800; }
+    .work-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    .wcard {
+      background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--work); border-radius: var(--radius);
+      overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow); transition: box-shadow .2s;
+    }
+    .wcard:hover { box-shadow: var(--shadow-hover); }
+    .wcard-media { aspect-ratio: 16 / 9; background: var(--surface-2); border-bottom: 1px solid var(--border); overflow: hidden; }
+    .wcard-media img { width: 100%; height: 100%; object-fit: cover; object-position: top left; }
+    .wcard-body { padding: 22px 24px 24px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+    .wcard h3 { font-size: 21px; letter-spacing: -.025em; margin: 0; line-height: 1.35; }
+    .wcard .summary { margin: 0; color: var(--text-2); font-size: 14.5px; }
+    .wcard .points li::before { background: var(--work); }
+    .facts-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .facts-row div { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 11px; }
+    .facts-row dt { font-size: 11.5px; color: var(--text-3); font-weight: 600; }
+    .facts-row dd { margin: 0; font-size: 13.5px; font-weight: 700; color: var(--text); line-height: 1.4; }
+    .btn.work { background: var(--work); border-color: var(--work); color: #fff; }
+    @media (max-width: 920px) { .work-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 460px) { .facts-row { grid-template-columns: 1fr; } }
+
+    /* ---------- 기타 프로젝트 ---------- */
+    .more-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .mcard {
+      display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 0;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color .15s, box-shadow .2s;
+    }
+    .mcard:hover { border-color: var(--border-strong); box-shadow: var(--shadow); }
+    .mcard-media { background: var(--surface-2); border-right: 1px solid var(--border); position: relative; min-height: 100%; }
+    .mcard-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .mcard-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+    .mcard h3 { font-size: 17px; margin: 0; letter-spacing: -.02em; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .mcard .meta { font-size: 12.5px; }
+    .mcard p { margin: 0; font-size: 14px; color: var(--text-2); }
+    .mcard .chips li { font-size: 11.5px; padding: 3px 7px; }
+    .mcard .go { margin-top: auto; font-size: 13.5px; font-weight: 700; color: var(--accent-text); display: inline-flex; align-items: center; gap: 4px; }
+    .mcard .go svg { width: 14px; height: 14px; transition: transform .15s; }
+    .mcard:hover .go svg { transform: translateX(3px); }
+    @media (max-width: 920px) { .more-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 520px) {
+      .mcard { grid-template-columns: 1fr; }
+      .mcard-media { aspect-ratio: 16 / 9; border-right: 0; border-bottom: 1px solid var(--border); }
+    }
+
+    /* ---------- 기술 스택 ---------- */
+    .stack { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .stack-col { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+    .stack-col h3 { font-size: 15px; margin: 0 0 12px; letter-spacing: -.01em; }
+    .stack-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+    .stack-col li { font-size: 14px; color: var(--text-2); line-height: 1.45; }
+    .stack-col li b { color: var(--text); font-weight: 700; display: block; }
+    .stack-col li span { font-size: 12.5px; color: var(--text-3); }
+    .tag-work { display: inline-block; font-size: 10.5px; font-weight: 800; color: var(--work-text); background: var(--work-soft); border-radius: 5px; padding: 1px 6px; margin-left: 6px; vertical-align: 2px; }
+    .stack-note { font-size: 13px; color: var(--text-3); margin-top: 12px; }
+    @media (max-width: 980px) { .stack { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 520px) { .stack { grid-template-columns: 1fr; } }
+
+    /* ---------- 푸터 ---------- */
+    footer { margin-top: 72px; border-top: 1px solid var(--border); padding: 28px 0 40px; color: var(--text-3); font-size: 13.5px; }
+    footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+    footer a:hover { color: var(--text); }
+    footer nav { display: flex; gap: 16px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">본문으로 건너뛰기</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="#top" aria-label="맨 위로">
+        <span class="brand-mark" aria-hidden="true">임</span>
+        <span>임경빈<small>AI · 풀스택 개발 포트폴리오</small></span>
+      </a>
+      <nav class="nav" aria-label="섹션 이동">
+        <a href="#featured">대표 프로젝트</a>
+        <a href="#work">실무 프로젝트</a>
+        <a href="#more">기타 프로젝트</a>
+        <a href="#stack">기술 스택</a>
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="라이트/다크 테마 전환" title="테마 전환">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ================= 히어로 ================= -->
+    <section class="hero" id="top">
+      <div class="wrap">
+        <span class="eyebrow">AI Agent · RAG · 풀스택 웹</span>
+        <h1>실무에서 웹 서비스를 만들어 납품했고,<br>지금은 <em>근거를 남기는 AI 시스템</em>을 만듭니다.</h1>
+        <p class="lead">
+          OCR 솔루션 회사에서 관리자 웹과 문서 뷰어를 풀스택으로 개발해 금융권 고객사에 납품했습니다.
+          이후 RAG·LLM Agent 프로젝트에서는 <strong>“숫자는 코드와 통계 모델이 계산하고, LLM은 근거를 설명한다”</strong>는
+          원칙으로 결과를 검증할 수 있는 AI 서비스를 만들고 있습니다.
+        </p>
+
+        <div class="hero-facts">
+          <div class="fact"><b>205만 발언 · 90만 청크</b><span>대표작 의정이슈레이더 · 17개 광역의회 회의록 RAG</span></div>
+          <div class="fact"><b>LangGraph Agent</b><span>Pet Log · 백엔드 · AI Agent · 외부 API 담당</span></div>
+          <div class="fact work"><b>2021.06 – 2022.05 실무</b><span>OCR 웹 UI 풀스택 · 2022년 금융권 고객사 납품</span></div>
+        </div>
+
+        <div class="hero-cta">
+          <a class="btn primary" href="의정이슈레이더_포트폴리오/포트폴리오.html">
+            대표작 의정이슈레이더 보기
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn" href="#work">실무 프로젝트 보기</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 대표 프로젝트 ================= -->
+    <section class="block" id="featured">
+      <div class="wrap">
+        <div class="sec-head">
+          <div>
+            <div class="sec-kicker gold">Featured</div>
+            <h2>대표 프로젝트</h2>
+            <p>가장 깊게 설계하고 검증한 두 프로젝트입니다.</p>
+          </div>
+        </div>
+
+        <!-- 01. 의정이슈레이더 -->
+        <article class="feature">
+          <a class="feature-media" href="의정이슈레이더_포트폴리오/포트폴리오.html" aria-label="의정이슈레이더 포트폴리오 열기">
+            <img src="assets/thumbs/council-radar.webp" width="960" height="600" alt="의정이슈레이더 대시보드: 전세사기 이슈의 의회별 최초 관측 순서를 전국 지도에 표시한 화면">
+          </a>
+          <div class="feature-body">
+            <div class="feature-top">
+              <span class="rank">01</span>
+              <span class="badge gold">대표 프로젝트</span>
+              <span class="badge plain">국회도서관 주관 2026 DATA·AI 분석 경진대회 출품작</span>
+            </div>
+            <h3>의정이슈레이더<small>Council Issue Radar</small></h3>
+            <p class="summary">
+              2024–2025년 전국 17개 광역의회 회의록을 분석해, 정책 이슈가 어느 의회에서 처음 나왔고
+              다른 의회로 어떻게 이어졌는지 시간순으로 보여주고 다음 달 논의량을 예측하는 시스템입니다.
+              회의록은 외부 AI API로 보내지 않고 모든 모델을 로컬에서 실행합니다.
+            </p>
+            <div class="metrics" role="list">
+              <div class="metric" role="listitem"><b>3.97ms</b><span>조건 벡터 검색 중앙값 (ChromaDB 대비 약 148배)</span></div>
+              <div class="metric" role="listitem"><b>F1 0.881</b><span>다음 달 논의 지속 예측</span></div>
+              <div class="metric" role="listitem"><b>MAE 7.12건</b><span>포아송 회귀 언급량 예측</span></div>
+              <div class="metric" role="listitem"><b>0건</b><span>외부 AI API 호출</span></div>
+            </div>
+            <ul class="points">
+              <li><strong>205만 발언 → 90만 검색 청크:</strong> 의회마다 다른 HTML을 로컬 LLM으로 규칙화하고, 검색용 자식(약 750자)·답변용 부모(약 2,400자) 청크로 분리해 PostgreSQL 17 + pgvector에 적재</li>
+              <li><strong>하이브리드 검색:</strong> 의미 검색과 BM25를 RRF로 합친 뒤 BGE 재순위 모델로 정렬, 유사 발언을 Union-Find로 묶어 이슈 타임라인 생성</li>
+              <li><strong>직접 비교해서 결정:</strong> 벡터 DB, 메타데이터 결합 여부, 한국어 로컬 LLM 6종을 같은 조건에서 측정하고 근거 인용률·미끼 질문 대응으로 A.X-4.0-Light 선택</li>
+            </ul>
+            <ul class="chips" aria-label="사용 기술">
+              <li>PostgreSQL + pgvector</li><li>BM25 · RRF</li><li>BGE Reranker</li><li>Snowflake Arctic</li><li>Poisson Regression</li><li>Ollama</li><li>FastAPI</li>
+            </ul>
+            <div class="card-actions">
+              <a class="btn primary" href="의정이슈레이더_포트폴리오/포트폴리오.html">포트폴리오 자세히 보기</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 02. Pet Log -->
+        <article class="feature rev feature-pet">
+          <a class="feature-media" href="Pet_Log_포트폴리오/포트폴리오.html" aria-label="Pet Log 포트폴리오 열기">
+            <img src="assets/thumbs/petlog.webp" width="960" height="600" alt="Pet Log 전체 화면 구성: 홈, 기록 입력, 타임라인, 분석 리포트, 제안, 일정 화면" loading="lazy">
+          </a>
+          <div class="feature-body">
+            <div class="feature-top">
+              <span class="rank">02</span>
+              <span class="badge gold">대표 프로젝트</span>
+              <span class="badge plain">4인 팀 · 2026.04 – 05</span>
+            </div>
+            <h3>Pet Log<small>펫로그 · AI Agent 반려동물 케어</small></h3>
+            <p class="summary">
+              말하듯 남긴 기록을 AI가 항목별로 정리하고, 쌓인 기록의 흐름을 읽어 주의 안내·일정 알림·맞춤 상품 추천·동물병원 찾기까지
+              보호자의 다음 행동으로 이어주는 서비스입니다. 진단하지 않도록 위험 판단과 행동 제안을 서로 다른 Agent로 나눴습니다.
+            </p>
+            <ul class="meta">
+              <li><strong>내 역할</strong> 백엔드 · AI Agent · 외부 API 연동</li>
+            </ul>
+            <ul class="points">
+              <li><strong>쇼핑 추천 Agent:</strong> 카테고리 준비 → 상품 검색 → 후보 선택 → 결과 생성의 LangGraph 4단계로 재구성해 단계별 테스트 가능하게 개선</li>
+              <li><strong>외부 API 안정화:</strong> Naver Shopping·Google Places 연동에 대체 결과·캐시·호출 횟수 제한을 붙여 API가 실패해도 화면이 멈추지 않게 구현</li>
+              <li><strong>데이터 계층:</strong> SQLite 저장소(Repository)와 커뮤니티 API를 만들고, DB·추천 기능에 단위·HTTP·스모크 테스트 작성</li>
+              <li><strong>모델 예비 경로:</strong> GPT-5-mini → 예비 GPT → Gemini → 로컬 Gemma(Ollama) 순으로 자동 전환되는 구조</li>
+            </ul>
+            <ul class="chips" aria-label="사용 기술">
+              <li>Next.js 16</li><li>FastAPI</li><li>LangGraph</li><li>SQLite</li><li>ChromaDB</li><li>GPT-5-mini</li><li>Gemma 4 (Ollama)</li><li>Google Places</li>
+            </ul>
+            <div class="card-actions">
+              <a class="btn primary" href="Pet_Log_포트폴리오/포트폴리오.html">포트폴리오 자세히 보기</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ================= 실무 프로젝트 ================= -->
+    <section class="block" id="work">
+      <div class="wrap">
+        <div class="sec-head">
+          <div>
+            <div class="sec-kicker work">Work Experience</div>
+            <h2>실무 프로젝트</h2>
+            <p>OCR 솔루션 회사에서 실제 제품으로 개발하고 운영 환경에 배포한 프로젝트입니다.</p>
+          </div>
+        </div>
+
+        <div class="work-intro">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <div><strong>2021.06 – 2022.05 · OCR 솔루션 웹 개발</strong> — 관리자 웹(백엔드·프론트)과 문서 뷰어(프론트·중계 서버)를 맡았고, 관리자 웹은 2022년 금융권 고객사에 납품했습니다. 화면 속 IP 등 고객 정보는 가림 처리했습니다.</div>
+        </div>
+
+        <div class="work-grid">
+          <!-- OCR Agent 관리자 웹 UI -->
+          <article class="wcard">
+            <a class="wcard-media" href="OCR_Agent_웹_UI_포트폴리오/포트폴리오.html" aria-label="OCR Agent 관리자 웹 UI 포트폴리오 열기">
+              <img src="assets/thumbs/ocr-agent.webp" width="960" height="600" alt="OCR Agent 관리자 웹의 서버 모니터링 화면: 서버별 CPU·RAM 차트" loading="lazy">
+            </a>
+            <div class="wcard-body">
+              <div class="feature-top"><span class="badge work">실무 · 금융권 납품</span><span class="badge plain">풀스택</span></div>
+              <h3>OCR Agent 관리자 웹 UI 개선</h3>
+              <p class="summary">조회만 되던 OCR 중개 서버의 관리자 화면을 서버 모니터링·설정 공유·통계·계정 보안·SSO·장애 알림까지 갖춘 다중 서버 관리 도구로 확장했습니다.</p>
+              <dl class="facts-row">
+                <div><dt>기간</dt><dd>약 10개월</dd></div>
+                <div><dt>인원</dt><dd>6명 (외부 업체 4)</dd></div>
+                <div><dt>결과</dt><dd>2022 금융권 납품</dd></div>
+              </dl>
+              <ul class="points">
+                <li><strong>서버 모니터링:</strong> CPU·RAM·디스크·GPU 상태 API와 5분 주기 수집 스케줄러, 서버별 차트 화면</li>
+                <li><strong>ActiveX SSO:</strong> 고객사 암호화 티켓을 Java 라이브러리로 복호화하는 연동 구현, 이후 별도 프로세스 실행 구조로 개선해 서버 다운 문제 해결</li>
+                <li><strong>운영·보안:</strong> 로그 파일 DB 적재와 통계 차트, SMS·이메일 장애 알림, AES-256 키 암호화, 권한 분리와 비밀번호 정책</li>
+                <li><strong>협업:</strong> 외부 업체 4명을 위한 요구사항·스토리보드 작성, Git으로 작업 통합</li>
+              </ul>
+              <ul class="chips" aria-label="사용 기술">
+                <li>Node.js · Express</li><li>Nuxt.js (Vue 2)</li><li>MariaDB · Knex</li><li>ApexCharts</li><li>node-schedule</li><li>PM2</li>
+              </ul>
+              <div class="card-actions">
+                <a class="btn work" href="OCR_Agent_웹_UI_포트폴리오/포트폴리오.html">포트폴리오 자세히 보기</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- OCR 뷰어 웹 전환 -->
+          <article class="wcard">
+            <a class="wcard-media" href="OCR_뷰어_웹_UI_포트폴리오/포트폴리오.html" aria-label="OCR 뷰어 웹 전환 포트폴리오 열기">
+              <img src="assets/thumbs/ocr-viewer.webp" width="540" height="337" alt="OCR 뷰어 웹 작업 화면: 파일 목록, 문서 뷰어, 인식 결과 편집의 3단 구성" loading="lazy">
+            </a>
+            <div class="wcard-body">
+              <div class="feature-top"><span class="badge work">실무 · WAS 배포</span><span class="badge plain">웹 파트 단독</span></div>
+              <h3>OCR 뷰어 웹 전환 · 결과 검수 화면</h3>
+              <p class="summary">C# 데스크톱 프로그램으로만 쓰던 OCR 뷰어를 Vue.js 웹으로 옮기고, 인식 결과를 이미지와 대조하며 바로 고칠 수 있는 3단 검수 화면을 만들었습니다.</p>
+              <dl class="facts-row">
+                <div><dt>기간</dt><dd>약 4개월</dd></div>
+                <div><dt>인원</dt><dd>2명 (웹 전체 담당)</dd></div>
+                <div><dt>배포</dt><dd>WAR · WAS</dd></div>
+              </dl>
+              <ul class="points">
+                <li><strong>좌표 계산:</strong> 90° 회전 시 인식 영역 좌표 재계산, Ray casting으로 클릭 지점의 영역을 찾아 이미지 ↔ 결과값 양방향 이동</li>
+                <li><strong>다중 페이지 문서:</strong> PDF.js·tiff.js로 페이지 렌더링, DPI가 다른 TIFF 비율 보정, axios 인터셉터로 동시 요청 수 제한</li>
+                <li><strong>IE11 대응:</strong> core-js 3·폴리필·PDF.js ES5 빌드로 운영 환경에서도 같은 기능 동작</li>
+                <li><strong>중계 서버:</strong> Spring Boot + WebClient로 CORS 문제를 해결하고 프론트 빌드를 포함한 WAR로 배포</li>
+              </ul>
+              <ul class="chips" aria-label="사용 기술">
+                <li>Vue.js 2</li><li>Canvas · Path2D</li><li>PDF.js · tiff.js</li><li>Spring Boot</li><li>WebClient</li><li>IE11</li>
+              </ul>
+              <div class="card-actions">
+                <a class="btn work" href="OCR_뷰어_웹_UI_포트폴리오/포트폴리오.html">포트폴리오 자세히 보기</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 기타 프로젝트 ================= -->
+    <section class="block" id="more">
+      <div class="wrap">
+        <div class="sec-head">
+          <div>
+            <div class="sec-kicker">More Projects</div>
+            <h2>기타 프로젝트</h2>
+            <p>AI Agent, 컴퓨터 비전, 데이터 분석 프로젝트입니다. 카드마다 제가 맡은 범위를 적었습니다.</p>
+          </div>
+        </div>
+
+        <div class="more-grid">
+          <a class="mcard" href="QuestForge_Agent_포트폴리오/포트폴리오.html">
+            <div class="mcard-media"><img src="assets/thumbs/questforge.webp" width="960" height="600" alt="QuestForge Quest Lab 화면" loading="lazy"></div>
+            <div class="mcard-body">
+              <h3>QuestForge Agent <span class="badge plain">개인</span></h3>
+              <p>게임 상태를 보고 퀘스트를 만드는 AI Agent. 수량·보상은 서버 규칙이 계산하고 LLM은 문장만 쓰도록 나눴고, 3단계 모델 예비 경로와 처리 경로 추적 화면을 만들었습니다.</p>
+              <ul class="chips"><li>LangGraph</li><li>FastAPI WebSocket</li><li>React 19</li><li>pytest 244 · Vitest 36</li></ul>
+              <span class="go">자세히 보기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </div>
+          </a>
+
+          <a class="mcard" href="Style_AI_포트폴리오/포트폴리오.html">
+            <div class="mcard-media"><img src="assets/thumbs/style-ai.webp" width="960" height="600" alt="Style.ai 시연 화면: 퍼스널 컬러 결과, 체형 스켈레톤, 코디 추천" loading="lazy"></div>
+            <div class="mcard-body">
+              <h3>Style.ai <span class="badge plain">3인 · 17일</span></h3>
+              <p>사진으로 퍼스널 컬러(12톤)·체형을 분석하고 날씨·상황·예산을 반영해 무신사 상품 6,096건 중에서 코디 3세트와 가상 피팅을 보여주는 서비스. A4 화이트밸런스 보정과 퍼스널 컬러 분석을 직접 구현했고, 팀원 모듈을 FastAPI 서버 하나로 통합해 스마트폰 시연 환경까지 만들었습니다.</p>
+              <ul class="chips"><li>MediaPipe Face Mesh</li><li>K-Means · LAB</li><li>FastAPI</li><li>SigLIP · FAISS</li><li>GPT-4o</li></ul>
+              <span class="go">자세히 보기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </div>
+          </a>
+
+          <a class="mcard" href="지능형_민원처리_시스템_포트폴리오/포트폴리오.html">
+            <div class="mcard-media"><img src="assets/thumbs/civil-complaint.webp" width="700" height="437" alt="전입신고서 Grad-CAM 히트맵" loading="lazy"></div>
+            <div class="mcard-body">
+              <h3>지능형 민원처리 시스템 <span class="badge plain">4인</span></h3>
+              <p>민원 문장으로 담당 기관·부서·필요 서류(192개 라벨)를 추천하고 서류 누락을 확인하는 서비스. 전입신고서 14칸 기입 여부 판별 모델 학습과 Grad-CAM++ 분석을 맡았습니다.</p>
+              <ul class="chips"><li>PyTorch</li><li>ConvNeXt-Small</li><li>KLUE RoBERTa</li><li>Optuna</li><li>Grad-CAM++</li></ul>
+              <span class="go">자세히 보기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </div>
+          </a>
+
+          <a class="mcard" href="디지털_샤머니즘_데이터_분석_포트폴리오/포트폴리오.html">
+            <div class="mcard-media"><img src="assets/thumbs/shamanism.webp" width="640" height="400" alt="운세 앱 리뷰 단어 연관 네트워크" loading="lazy"></div>
+            <div class="mcard-body">
+              <h3>디지털 샤머니즘 데이터 분석 <span class="badge plain">4인</span></h3>
+              <p>검색 트렌드 60개월, 운세 앱 리뷰 6,925건, 커뮤니티 글을 분석해 가설별로 확인된 것과 확인하지 못한 것을 구분했습니다. 데이터 수집·정제와 EDA를 맡았습니다.</p>
+              <ul class="chips"><li>Selenium</li><li>KoNLPy</li><li>Apriori</li><li>NetworkX</li></ul>
+              <span class="go">자세히 보기 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 기술 스택 ================= -->
+    <section class="block" id="stack">
+      <div class="wrap">
+        <div class="sec-head">
+          <div>
+            <div class="sec-kicker">Skills</div>
+            <h2>기술 스택</h2>
+            <p>프로젝트에서 직접 사용한 기술만 적었습니다.</p>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="stack-col">
+            <h3>AI · LLM · 검색</h3>
+            <ul>
+              <li><b>LangGraph · LangChain</b><span>Agent 파이프라인, 예비 경로</span></li>
+              <li><b>RAG 검색</b><span>pgvector, BM25, RRF, BGE Reranker</span></li>
+              <li><b>로컬 · 클라우드 LLM</b><span>Ollama(A.X-4.0, Gemma), OpenAI, Gemini</span></li>
+              <li><b>PyTorch</b><span>ConvNeXt, KLUE RoBERTa, Grad-CAM++</span></li>
+              <li><b>컴퓨터 비전</b><span>OpenCV, MediaPipe Face Mesh, LAB 색공간 분석</span></li>
+            </ul>
+          </div>
+          <div class="stack-col">
+            <h3>백엔드</h3>
+            <ul>
+              <li><b>Python · FastAPI</b><span>REST, WebSocket, Pydantic</span></li>
+              <li><b>Node.js · Express</b><span class="tag-work">실무</span><span style="display:block">API, 스케줄러, SSO 연동</span></li>
+              <li><b>Spring Boot</b><span class="tag-work">실무</span><span style="display:block">WebClient 중계 서버, WAR 배포</span></li>
+              <li><b>DB</b><span>PostgreSQL, MariaDB(실무), SQLite, ChromaDB</span></li>
+            </ul>
+          </div>
+          <div class="stack-col">
+            <h3>프론트엔드</h3>
+            <ul>
+              <li><b>Vue.js 2 · Nuxt.js</b><span class="tag-work">실무</span><span style="display:block">관리자 웹, 문서 뷰어</span></li>
+              <li><b>Canvas · PDF.js</b><span class="tag-work">실무</span><span style="display:block">좌표 변환, 다중 페이지 렌더링</span></li>
+              <li><b>React 19 · Next.js 16</b><span>TypeScript, App Router</span></li>
+              <li><b>차트 · 스타일</b><span>ApexCharts(실무), Tailwind CSS</span></li>
+            </ul>
+          </div>
+          <div class="stack-col">
+            <h3>데이터 · 운영</h3>
+            <ul>
+              <li><b>데이터 분석</b><span>pandas, KoNLPy, Apriori, NetworkX</span></li>
+              <li><b>수집</b><span>Selenium, 공공데이터 API</span></li>
+              <li><b>운영 · 배포</b><span>PM2, WAS(WAR), Azure 배포 스크립트</span></li>
+              <li><b>테스트 · 협업</b><span>pytest, Vitest, Playwright, Git</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 임경빈 · 포트폴리오</span>
+      <nav aria-label="바닥글">
+        <a href="#featured">대표 프로젝트</a>
+        <a href="#work">실무 프로젝트</a>
+        <a href="#more">기타 프로젝트</a>
+        <a href="#top">맨 위로</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var btn = document.getElementById('themeBtn');
+      var root = document.documentElement;
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
+      function current() {
+        var t = root.getAttribute('data-theme');
+        return t || (mq.matches ? 'dark' : 'light');
+      }
+      btn.addEventListener('click', function () {
+        var next = current() === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('portfolio_theme', next); } catch (e) {}
+      });
+    })();
+  </script>
+</body>
+</html>

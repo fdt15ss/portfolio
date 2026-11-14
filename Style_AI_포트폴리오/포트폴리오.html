@@ -1,0 +1,2259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Style.ai 포트폴리오 | AI Personal Style Director</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Pretendard는 Google Fonts에 없어 별도 CDN에서 불러옴 (Google Fonts 요청에 섞으면 전체 폰트 로딩이 실패함) -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #14b8a6;
+      --primary-dark: #0f766e;
+      --primary-light: #ccfbf1;
+      --accent: #84CFC9;
+      --accent-soft: rgba(132, 207, 201, 0.15);
+      --bg-dark: #090d16;
+      --bg-card: #0f172a;
+      --bg-card-hover: #1e293b;
+      --border: #1e293b;
+      --border-light: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-sub: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --code-bg: #030712;
+      --font-sans: 'Pretendard', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'DM Serif Display', serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 76px; /* 상단 고정 메뉴(약 62px)에 섹션 제목이 가려지지 않도록 */
+      font-size: 16px;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* 네비게이션 바 */
+    nav.navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+      text-decoration: none;
+    }
+
+    .nav-brand .brand-badge {
+      background: linear-gradient(135deg, #14b8a6, #06b6d4);
+      color: #030712;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--primary);
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn-sm {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #042f2e;
+      border: 1px solid var(--primary);
+    }
+    .btn-primary:hover {
+      background: #2dd4bf;
+      box-shadow: 0 0 16px rgba(20, 184, 166, 0.4);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border-light);
+    }
+    .btn-outline:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* 메인 컨테이너 */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 6rem;
+    }
+
+    /* 히어로 섹션 */
+    .hero {
+      padding: 4rem 0 3rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(600px, 100%);
+      height: 350px;
+      background: radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, rgba(9, 13, 22, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 9999px;
+      background: rgba(20, 184, 166, 0.1);
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2.8rem, 6vw, 4.2rem);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position: relative;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+      color: var(--text-muted);
+      max-width: 820px;
+      margin: 0 auto 2.5rem;
+      font-weight: 400;
+      line-height: 1.6;
+      word-break: keep-all;
+      position: relative;
+    }
+
+    .hero-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      max-width: 950px;
+      margin: 0 auto 3rem;
+      position: relative;
+    }
+
+    .meta-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.2rem;
+      text-align: left;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .meta-box:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-light);
+    }
+
+    .meta-label {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+
+    .meta-val {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+      max-width: 880px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .tag {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .tag.primary {
+      background: rgba(20, 184, 166, 0.12);
+      border-color: rgba(20, 184, 166, 0.4);
+      color: var(--primary);
+    }
+
+    /* 공통 섹션 스타일 */
+    .section {
+      margin-top: 5rem;
+      position: relative;
+    }
+
+    .section-header {
+      margin-bottom: 2.5rem;
+    }
+
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: block;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 780px;
+      word-break: keep-all;
+    }
+
+    /* 카드 그리드 */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 2rem;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      border-color: rgba(20, 184, 166, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(20, 184, 166, 0.12);
+      border: 1px solid rgba(20, 184, 166, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+      color: var(--primary);
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-body {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.65;
+    }
+
+    .card-list {
+      list-style: none;
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .card-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+    }
+
+    .card-list li::before {
+      content: "▹";
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    /* 아키텍처 다이어그램 박스 */
+    .arch-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .arch-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .flow-row {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 1.5rem;
+      align-items: center;
+      padding: 1.25rem;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid rgba(51, 65, 85, 0.4);
+      border-radius: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .flow-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+    }
+
+    .flow-stage {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .stage-title {
+      font-weight: 800;
+      color: var(--text-main);
+      font-size: 1rem;
+    }
+
+    .stage-sub {
+      font-size: 0.75rem;
+      color: var(--primary);
+      font-family: var(--font-mono);
+    }
+
+    .flow-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .flow-pill {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(51, 65, 85, 0.7);
+      padding: 0.5rem 0.9rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .flow-pill strong {
+      color: #ffffff;
+    }
+
+    .flow-pill .chip {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      background: rgba(20, 184, 166, 0.2);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    /* 딥다이브 상세 컴포넌트 */
+    .deepdive-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .deepdive-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .deepdive-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .deepdive-badge {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      background: rgba(20, 184, 166, 0.15);
+      border: 1px solid rgba(20, 184, 166, 0.35);
+      color: var(--primary);
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    .deepdive-content {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 2rem;
+    }
+
+    /* 코드 블록이 길어도 텍스트 열이 좁아지지 않도록 (코드는 가로 스크롤) */
+    .deepdive-content > * {
+      min-width: 0;
+    }
+
+    @media (max-width: 900px) {
+      .deepdive-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .text-block p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+      line-height: 1.7;
+    }
+
+    .subheading {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 1.25rem 0 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* 코드 블록 */
+    .code-container {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      margin: 1rem 0;
+    }
+
+    .code-header {
+      background: #0b1120;
+      border-bottom: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-sub);
+      font-size: 0.75rem;
+    }
+
+    .code-body {
+      padding: 1.2rem;
+      overflow-x: auto;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    .keyword { color: #f43f5e; font-weight: 600; }
+    .fn { color: #38bdf8; font-weight: 600; }
+    .str { color: #34d399; }
+    .comment { color: #64748b; font-style: italic; }
+    .num { color: #fbbf24; }
+
+    /* 비교 테이블 */
+    .custom-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 0.9rem;
+    }
+
+    .custom-table th {
+      background: #0f172a;
+      color: #94a3b8;
+      font-weight: 700;
+      text-align: left;
+      padding: 0.9rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .custom-table td {
+      padding: 0.9rem 1.2rem;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+      color: #cbd5e1;
+    }
+
+    .custom-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .custom-table tr:hover td {
+      background: rgba(30, 41, 59, 0.3);
+    }
+
+    .highlight-cell {
+      color: var(--primary) !important;
+      font-weight: 700;
+    }
+
+    /* 문제 해결 & 트러블슈팅 카드 */
+    .trouble-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--warning);
+      border-radius: 14px;
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .trouble-card.danger {
+      border-left-color: var(--danger);
+    }
+
+    .trouble-card.success {
+      border-left-color: var(--success);
+    }
+
+    .trouble-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .trouble-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .trouble-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .trouble-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .trouble-box {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(51, 65, 85, 0.4);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+
+    .trouble-box-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.04em;
+    }
+
+    .trouble-box-title.problem { color: #f87171; }
+    .trouble-box-title.solution { color: #4ade80; }
+
+    .trouble-box p {
+      font-size: 0.88rem;
+      color: #94a3b8;
+      line-height: 1.55;
+    }
+
+    /* 콜아웃 박스 */
+    .callout {
+      background: rgba(20, 184, 166, 0.08);
+      border: 1px solid rgba(20, 184, 166, 0.25);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin: 1.5rem 0;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .callout-icon {
+      font-size: 1.5rem;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .callout-text {
+      font-size: 0.92rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    .callout-text strong {
+      color: #ffffff;
+    }
+
+    /* 시행착오 전용 스타일 */
+    .trial-container {
+      margin-top: 3rem;
+      border-top: 1px dashed var(--border-light);
+      padding-top: 2.5rem;
+    }
+
+    .trial-title-wrap {
+      margin-bottom: 1.75rem;
+    }
+
+    .trial-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-weight: 700;
+      display: inline-block;
+      margin-bottom: 0.5rem;
+    }
+
+    .trial-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .trial-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #f59e0b 0%, #10b981 100%);
+    }
+
+    .trial-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .trial-headline {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .trial-flow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1.25rem;
+    }
+
+    @media (max-width: 820px) {
+      .trial-flow {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .trial-step {
+      background: rgba(9, 13, 22, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .trial-step-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      width: fit-content;
+    }
+
+    .trial-step-badge.fail {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .trial-step-badge.pivot {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .trial-step h5 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin: 0.25rem 0;
+    }
+
+    .trial-step p {
+      font-size: 0.88rem;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    .trial-takeaway {
+      background: rgba(20, 184, 166, 0.08);
+      border: 1px solid rgba(20, 184, 166, 0.2);
+      border-radius: 10px;
+      padding: 0.85rem 1.2rem;
+      margin-top: 1.25rem;
+      font-size: 0.86rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .trial-takeaway strong {
+      color: var(--primary);
+    }
+
+    /* 역할 표시 배지 (직접 구현 / 팀 공동 등) */
+    .role-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      margin-left: 0.25rem;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .role-badge.mine {
+      background: rgba(20, 184, 166, 0.15);
+      border: 1px solid rgba(20, 184, 166, 0.4);
+      color: var(--primary);
+    }
+    .role-badge.team {
+      background: rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      color: #cbd5e1;
+    }
+
+    /* 한계·참고 메모 */
+    .note {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      background: rgba(245, 158, 11, 0.07);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      margin-top: 1rem;
+      line-height: 1.6;
+    }
+    .note strong { color: #fbbf24; }
+
+    .trouble-desc {
+      color: #cbd5e1;
+      font-size: 0.93rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .trial-intro {
+      color: #cbd5e1;
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    .trial-title-wrap h3 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .trial-title-wrap p {
+      color: var(--text-muted);
+      font-size: 0.93rem;
+      margin-top: 0.35rem;
+    }
+
+    .footer-title {
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 0.5rem;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: rgba(30, 41, 59, 0.7);
+      padding: 0.05rem 0.35rem;
+      border-radius: 4px;
+    }
+    .code-body { white-space: pre; }
+
+    /* 좁은 화면에서 네비게이션 정리 */
+    @media (max-width: 1100px) {
+      .nav-menu { gap: 1rem; }
+      .nav-link { font-size: 0.82rem; }
+    }
+    @media (max-width: 1060px) {
+      .nav-menu { display: none; }
+      nav.navbar { padding: 0.75rem 1rem; }
+    }
+    @media (max-width: 480px) {
+      .nav-brand .brand-badge { display: none; }
+      .container { padding: 2rem 1rem 4rem; }
+      .card, .deepdive-block, .arch-container, .trial-card { padding: 1.25rem; }
+      .card-grid { grid-template-columns: 1fr; }
+      .section-title { font-size: 1.6rem; }
+      .custom-table { display: block; overflow-x: auto; }
+    }
+
+    /* 시연 화면 스트립 (스마트폰 화면 6장) */
+    .demo-strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1rem;
+      margin-top: 2rem;
+      list-style: none;
+    }
+    @media (max-width: 1100px) {
+      .demo-strip { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .demo-strip { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    }
+    .demo-strip figure { margin: 0; }
+    .shot {
+      display: block;
+      aspect-ratio: 3 / 5;
+      background: #f7f8fa;
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .shot:hover {
+      transform: translateY(-3px);
+      border-color: var(--primary);
+    }
+    .shot img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: top;
+      display: block;
+    }
+    .demo-strip figcaption {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.6rem;
+      line-height: 1.5;
+      word-break: keep-all;
+    }
+    .demo-strip figcaption strong {
+      display: block;
+      color: var(--text-main);
+      font-size: 0.85rem;
+    }
+    .step-no {
+      font-family: var(--font-mono);
+      color: var(--primary);
+      font-weight: 700;
+      margin-right: 0.25rem;
+    }
+
+    /* 섹션 안의 실제 화면 캡처 */
+    .figure-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-top: 2rem;
+      padding-top: 1.75rem;
+      border-top: 1px dashed var(--border-light);
+    }
+    .figure-row.narrow {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 260px));
+      justify-content: center;
+    }
+    .figure-row-title {
+      grid-column: 1 / -1;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .figure-row figure { margin: 0; }
+    .figure-row img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      border: 1px solid var(--border-light);
+      background: #f7f8fa;
+    }
+    .figure-row a { display: block; }
+    .figure-row figcaption {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+    .figure-row figcaption strong { color: var(--text-main); }
+
+    /* 푸터 */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 0;
+      text-align: center;
+      color: var(--text-sub);
+      font-size: 0.85rem;
+    }
+
+    /* 프린트 전용 스타일 */
+    @media print {
+      /* 어두운 테마용 색 변수를 인쇄용 밝은 색으로 교체 (흰 종이에 흰 글씨가 찍히는 문제 방지) */
+      :root {
+        --text-main: #111827;
+        --text-muted: #4b5563;
+        --text-sub: #6b7280;
+        --bg-card: #ffffff;
+        --border: #e5e7eb;
+        --border-light: #d1d5db;
+        --code-bg: #f8fafc;
+      }
+      body {
+        background: #ffffff !important;
+        color: #111827 !important;
+      }
+      nav.navbar, .hero-glow, .btn-sm {
+        display: none !important;
+      }
+      .meta-box, .flow-row, .flow-pill, .tag, .trial-card, .trial-step, .trouble-box,
+      .callout, .trial-takeaway, .note, .code-header, .custom-table th {
+        background: #ffffff !important;
+        border-color: #e5e7eb !important;
+      }
+      .trial-headline, .trial-step h5, .flow-pill strong, .callout-text strong,
+      .trial-title-wrap h3, .footer-title, .stage-title {
+        color: #111827 !important;
+      }
+      .flow-pill, .tag, .callout-text, .trial-takeaway, .trouble-desc, .trial-intro,
+      .custom-table td, .custom-table th, .code-body, .trial-step p, .role-badge.team {
+        color: #374151 !important;
+      }
+      .trial-card, .trial-step, .trouble-card, figure {
+        page-break-inside: avoid;
+      }
+      .shot, .figure-row img {
+        border-color: #e5e7eb !important;
+      }
+      code {
+        background: #f1f5f9 !important;
+        color: #111827 !important;
+      }
+      .card, .deepdive-block, .arch-container, .trouble-card {
+        background: #ffffff !important;
+        border: 1px solid #e5e7eb !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        color: #111827 !important;
+      }
+      .code-container {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+      }
+      .hero-title {
+        background: none !important;
+        -webkit-text-fill-color: #111827 !important;
+        color: #111827 !important;
+      }
+      .hero-subtitle, .section-desc, .text-block p, .card-body, .trouble-box p {
+        color: #4b5563 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 네비게이션 -->
+  <nav class="navbar">
+    <a href="#" class="nav-brand">
+      <span>👔 Style.ai</span>
+      <span class="brand-badge">Tech Portfolio</span>
+    </a>
+    <ul class="nav-menu">
+      <li><a href="#overview" class="nav-link">개요</a></li>
+      <li><a href="#role" class="nav-link">내 역할</a></li>
+      <li><a href="#architecture" class="nav-link">구조</a></li>
+      <li><a href="#demo" class="nav-link">시연 화면</a></li>
+      <li><a href="#cv-engine" class="nav-link">컬러·체형</a></li>
+      <li><a href="#llm-tpo" class="nav-link">LLM·날씨</a></li>
+      <li><a href="#search-engine" class="nav-link">상품 검색</a></li>
+      <li><a href="#tryon" class="nav-link">가상 피팅</a></li>
+      <li><a href="#troubleshooting" class="nav-link">트러블슈팅</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button onclick="window.print()" class="btn-sm btn-outline">🖨️ PDF 인쇄</button>
+      <a href="https://github.com/P03-03-AX/PJ03_STYLE_AI" target="_blank" rel="noopener" class="btn-sm btn-primary">GitHub</a>
+    </div>
+  </nav>
+
+  <!-- 메인 본문 -->
+  <div class="container">
+
+    <!-- 히어로 섹션 -->
+    <header class="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-badge">
+        <span>✨ Team Style.at · 3인 팀 프로젝트 · 2026</span>
+      </div>
+      <h1 class="hero-title">Style.ai : AI Personal Style Director</h1>
+      <p class="hero-subtitle">
+        사진으로 사용자의 <strong>퍼스널 컬러(12톤)</strong>와 <strong>체형</strong>을 분석하고,<br>
+        <strong>날씨 · 상황(TPO) · 예산</strong>까지 함께 고려해 실제로 살 수 있는 무신사 상품 코디와 가상 피팅을 보여주는 AI 패션 추천 서비스
+      </p>
+
+      <div class="hero-meta-grid">
+        <div class="meta-box">
+          <div class="meta-label">개발 기간</div>
+          <div class="meta-val">2026. 03. 25 ~ 2026. 04. 10 (17일)</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">팀 구성</div>
+          <div class="meta-val">3인 (하준우, 복만수, 임경빈)</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">내 담당</div>
+          <div class="meta-val">퍼스널 컬러 분석 구현, FastAPI 백엔드 통합, 데모 실행 환경</div>
+        </div>
+        <div class="meta-box">
+          <div class="meta-label">서비스 구성</div>
+          <div class="meta-val">FastAPI 백엔드 + Streamlit 웹 + ComfyUI 가상 피팅</div>
+        </div>
+      </div>
+
+      <div class="hero-tags">
+        <span class="tag primary">FastAPI</span>
+        <span class="tag primary">Streamlit</span>
+        <span class="tag primary">OpenAI GPT-4o</span>
+        <span class="tag primary">Google SigLIP</span>
+        <span class="tag primary">FAISS</span>
+        <span class="tag">MediaPipe Face Mesh</span>
+        <span class="tag">MediaPipe Pose</span>
+        <span class="tag">OpenCV</span>
+        <span class="tag">K-Means</span>
+        <span class="tag">Whisper STT</span>
+        <span class="tag">OpenWeatherMap</span>
+        <span class="tag">ComfyUI (CatVTON)</span>
+        <span class="tag">edge-tts</span>
+      </div>
+    </header>
+
+    <!-- 01. 프로젝트 배경 및 문제 정의 -->
+    <section class="section" id="overview">
+      <span class="section-num">01. Overview</span>
+      <h2 class="section-title">기획 배경과 해결하려는 문제</h2>
+      <p class="section-desc">
+        기존 쇼핑몰은 많이 팔리는 인기 상품 위주로 보여줍니다. Style.ai는 사용자의 피부톤·체형과 그날의 상황·날씨·예산을 함께 반영해 '나에게 맞는 코디'를 추천하는 것을 목표로 했습니다.
+      </p>
+
+      <div class="card-grid" style="margin-top: 2rem;">
+        <div class="card">
+          <div class="card-icon">🎯</div>
+          <h3 class="card-title">1. 개인 맞춤 안내 부족</h3>
+          <p class="card-body">
+            무신사 등 주요 쇼핑몰은 랭킹·판매량 중심으로 상품을 보여줍니다. 수많은 상품 중에서 "내 피부톤에 어울리는지", "내 체형에 맞는지"는 사용자가 직접 판단해야 합니다.
+          </p>
+          <ul class="card-list">
+            <li>인기순이 아닌 개인 조건 중심의 추천</li>
+            <li>피부톤과 체형 비율을 반영한 색상·핏 제안</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">💡</div>
+          <h3 class="card-title">2. 진단 비용과 주관성</h3>
+          <p class="card-body">
+            오프라인 퍼스널 컬러·체형 진단은 비용 부담이 크고, 진단하는 사람이나 조명 상태에 따라 결과가 달라질 수 있습니다.
+          </p>
+          <ul class="card-list">
+            <li>A4 용지로 조명 색을 먼저 보정한 뒤 분석</li>
+            <li>얼굴 랜드마크로 피부 영역만 골라 12톤으로 분류</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🌦️</div>
+          <h3 class="card-title">3. 상황·날씨 반영 부족</h3>
+          <p class="card-body">
+            "비 오는 토요일 결혼식, 20만 원 이하"처럼 날씨, 자리의 격식, 예산을 한 번에 고려해 주는 추천은 찾기 어려웠습니다.
+          </p>
+          <ul class="card-list">
+            <li>음성·텍스트로 상황 입력, 해당 날짜의 날씨 예보 반영</li>
+            <li>장례식·우천처럼 꼭 지켜야 할 조건은 코드 규칙으로 한 번 더 확인</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="callout-icon">🏁</div>
+        <div class="callout-text">
+          <strong>결과</strong><br>
+          촬영 → 퍼스널 컬러 → 체형 → 상황·날씨 분석 → 실제 상품 3세트 추천 → 가상 피팅까지, 끊기지 않는 하나의 흐름을 FastAPI 서버 1개(API 6개)로 완성했습니다. 무신사 상품 6,096건을 검색 대상으로 사용했습니다.<br>
+          다만 정답 데이터(골드셋)를 확보하지 못해 정확도 수치는 측정하지 않았고, 이 문서는 구현한 기능과 구조를 기준으로 설명합니다.
+        </div>
+      </div>
+    </section>
+
+    <!-- 02. 내 역할 -->
+    <section class="section" id="role">
+      <span class="section-num">02. My Role</span>
+      <h2 class="section-title">내 역할</h2>
+      <p class="section-desc">
+        3인 팀에서 제가 직접 구현한 부분과, 팀원이 만든 모듈을 연결(통합)한 부분을 구분해 정리했습니다. 이후 각 섹션 제목 옆 배지(<span class="role-badge mine">직접 구현</span> / <span class="role-badge team">팀원 구현 · 통합 담당</span>)로도 구분해 두었습니다.
+      </p>
+
+      <div class="card-grid" style="margin-top: 2rem;">
+        <div class="card">
+          <div class="card-icon">🎨</div>
+          <h3 class="card-title">퍼스널 컬러 분석 구현</h3>
+          <ul class="card-list">
+            <li>FastAPI + Streamlit으로 퍼스널 컬러 분석 프로토타입 구성</li>
+            <li>A4 용지 중앙 영역 기준 화이트밸런스 보정 구현</li>
+            <li>MediaPipe Face Mesh로 양 볼 피부 영역 추출</li>
+            <li>K-Means 대표색 + LAB 기준 규칙으로 12톤 분류</li>
+            <li>분석 지점·보정 영역을 이미지로 표시해 결과 근거 확인 가능하게 개선</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🔗</div>
+          <h3 class="card-title">백엔드 모듈화와 통합</h3>
+          <ul class="card-list">
+            <li>컬러 분석 코드를 API · service · domain · utils 계층으로 분리</li>
+            <li>팀원의 체형 분석, TPO·날씨 분석, 상품 추천 기능을 하나의 FastAPI 서버로 통합</li>
+            <li>프로젝트 루트 기준 경로로 바꿔 실행 위치에 따른 경로 오류 해결</li>
+            <li>상품 이미지 서빙 경로, 메타데이터·FAISS 인덱스 경로 정리</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📱</div>
+          <h3 class="card-title">데모 실행 환경과 문서화</h3>
+          <ul class="card-list">
+            <li>FastAPI · Streamlit · ngrok을 한 번에 띄우는 <code>run.bat</code> 작성</li>
+            <li>스마트폰 카메라 시연을 위한 같은 Wi-Fi / ngrok 접속 방법 정리</li>
+            <li>아이폰 사진(HEIC) 업로드 오류 해결</li>
+            <li>이미지 404, ComfyUI 연결 실패 등 시연 장애 원인과 해결 방법 문서화</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03. 시스템 구조 -->
+    <section class="section" id="architecture">
+      <span class="section-num">03. System Architecture</span>
+      <h2 class="section-title">전체 시스템 흐름</h2>
+      <p class="section-desc">
+        FastAPI 서버 하나에 6개의 API를 두고, 사진 분석 → 상황·날씨 분석 → 상품 검색 → 가상 피팅을 순서대로 연결했습니다. 화면은 Streamlit으로 단계별 진행(스텝퍼) 형태로 구성했습니다.
+      </p>
+
+      <div class="arch-container" style="margin-top: 2rem;">
+        <div class="arch-flow">
+          <!-- 1단계: 사용자 입력 -->
+          <div class="flow-row">
+            <div class="flow-stage">
+              <span class="stage-title">Step 1. 사용자 입력</span>
+              <span class="stage-sub">Streamlit Client</span>
+            </div>
+            <div class="flow-content">
+              <span class="flow-pill">📸 A4 용지 사진 <span class="chip">/calibrate</span></span>
+              <span class="flow-pill">👤 정면 얼굴 사진 <span class="chip">/analyze</span></span>
+              <span class="flow-pill">🧍 전신 사진 + 키·몸무게 <span class="chip">/measure</span></span>
+              <span class="flow-pill">🎙️ 음성 또는 텍스트로 상황 입력 <span class="chip">/analyze-tpo-text · audio</span></span>
+              <span class="flow-pill">💰 총예산(원) <span class="chip">budget</span></span>
+            </div>
+          </div>
+
+          <!-- 2단계: 사진 분석 -->
+          <div class="flow-row">
+            <div class="flow-stage">
+              <span class="stage-title">Step 2. 사진 분석</span>
+              <span class="stage-sub">Physical Profiling</span>
+            </div>
+            <div class="flow-content">
+              <span class="flow-pill">🎨 <strong>화이트밸런스 보정</strong> (A4 기준 채널별 보정 배율)</span>
+              <span class="flow-pill">🔍 <strong>MediaPipe Face Mesh</strong> (양 볼 피부 영역 추출)</span>
+              <span class="flow-pill">🌈 <strong>K-Means + LAB</strong> (12톤 분류)</span>
+              <span class="flow-pill">📐 <strong>MediaPipe Pose 3D</strong> (어깨·골반 관절 거리)</span>
+              <span class="flow-pill">⚖️ <strong>BMI 보정</strong> (치수 추정 · 체형 분류)</span>
+            </div>
+          </div>
+
+          <!-- 3단계: 상황·날씨 분석 -->
+          <div class="flow-row">
+            <div class="flow-stage">
+              <span class="stage-title">Step 3. 상황·날씨 분석</span>
+              <span class="stage-sub">Context Reasoning</span>
+            </div>
+            <div class="flow-content">
+              <span class="flow-pill">🎤 <strong>Whisper STT</strong> (음성 → 텍스트)</span>
+              <span class="flow-pill">🌤️ <strong>OpenWeatherMap</strong> (현재 날씨 · 5일/3시간 예보)</span>
+              <span class="flow-pill">🧠 <strong>GPT-4o</strong> (4단계 우선순위 규칙 프롬프트)</span>
+              <span class="flow-pill">📝 <strong>JSON 출력</strong> (카테고리별 검색 문구 vector_target)</span>
+              <span class="flow-pill">🔊 <strong>edge-tts</strong> (한국어 스타일 설명 음성)</span>
+            </div>
+          </div>
+
+          <!-- 4단계: 상품 검색·코디 구성 -->
+          <div class="flow-row">
+            <div class="flow-stage">
+              <span class="stage-title">Step 4. 상품 검색·코디 구성</span>
+              <span class="stage-sub">Search &amp; Filter</span>
+            </div>
+            <div class="flow-content">
+              <span class="flow-pill">⚡ <strong>SigLIP 텍스트 임베딩</strong> (768차원)</span>
+              <span class="flow-pill">🔎 <strong>FAISS 검색</strong> (상위 1,000개 후보)</span>
+              <span class="flow-pill">🛡️ <strong>규칙 필터</strong> (우천 시 가죽 신발 제외 / 격식 자리 캐주얼 제외)</span>
+              <span class="flow-pill">💸 <strong>예산 배분</strong> (남은 카테고리 최소 금액 먼저 확보)</span>
+              <span class="flow-pill">🚫 <strong>3세트 중복 방지</strong> (DB 번호 + 상품명)</span>
+              <span class="flow-pill">👕 <strong>사이즈 제안</strong> (추정 치수 vs 상품 사이즈표)</span>
+            </div>
+          </div>
+
+          <!-- 5단계: 가상 피팅 -->
+          <div class="flow-row">
+            <div class="flow-stage">
+              <span class="stage-title">Step 5. 가상 피팅</span>
+              <span class="stage-sub">ComfyUI Virtual Try-On</span>
+            </div>
+            <div class="flow-content">
+              <span class="flow-pill">🖼️ <strong>사용자·상의·하의 이미지</strong> ComfyUI input 폴더로 복사</span>
+              <span class="flow-pill">⚙️ <strong>workflow_api.json</strong> 이미지 노드 파일명 교체</span>
+              <span class="flow-pill">🔄 <strong>/prompt 실행 요청</strong> → /history 1초 간격 확인</span>
+              <span class="flow-pill">✨ <strong>결과 이미지 반환</strong> (Base64)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04. 실제 시연 화면 -->
+    <section class="section" id="demo">
+      <span class="section-num">04. Live Demo</span>
+      <h2 class="section-title">실제 시연 화면</h2>
+      <p class="section-desc">
+        2026년 7월, 스마트폰에서 ngrok HTTPS 주소로 접속해 직접 촬영하고 분석한 화면입니다. 왼쪽부터 실제 사용 순서이며, 이미지를 누르면 크게 볼 수 있습니다.
+      </p>
+
+      <ol class="demo-strip">
+        <li>
+          <figure>
+            <a class="shot" href="images/demo_1_a4.jpg" target="_blank" rel="noopener"><img src="images/demo_1_a4.jpg" width="540" height="900" loading="lazy" alt="A4 용지 인식 영역 검증 화면"></a>
+            <figcaption><strong><span class="step-no">1</span>A4 보정</strong>A4 용지를 비춰 흰색 기준을 잡고, 인식한 영역(TARGET)을 표시</figcaption>
+          </figure>
+        </li>
+        <li>
+          <figure>
+            <a class="shot" href="images/demo_2_color.jpg" target="_blank" rel="noopener"><img src="images/demo_2_color.jpg" width="540" height="830" loading="lazy" alt="퍼스널 컬러 분석 결과 가을 트루 화면"></a>
+            <figcaption><strong><span class="step-no">2</span>퍼스널 컬러</strong>보정 배율을 적용한 뒤 분석한 결과 (가을 트루)</figcaption>
+          </figure>
+        </li>
+        <li>
+          <figure>
+            <a class="shot" href="images/demo_3_skeleton.jpg" target="_blank" rel="noopener"><img src="images/demo_3_skeleton.jpg" width="540" height="746" loading="lazy" alt="MediaPipe Pose 관절 인식 화면"></a>
+            <figcaption><strong><span class="step-no">3</span>체형 분석</strong>전신 사진에서 MediaPipe Pose로 관절 인식</figcaption>
+          </figure>
+        </li>
+        <li>
+          <figure>
+            <a class="shot" href="images/demo_4_tpo_input.jpg" target="_blank" rel="noopener"><img src="images/demo_4_tpo_input.jpg" width="540" height="900" loading="lazy" alt="상황과 예산 입력 화면"></a>
+            <figcaption><strong><span class="step-no">4</span>상황·예산 입력</strong>지역·예산과 함께 상황을 텍스트 또는 음성으로 입력</figcaption>
+          </figure>
+        </li>
+        <li>
+          <figure>
+            <a class="shot" href="images/demo_5_curation.jpg" target="_blank" rel="noopener"><img src="images/demo_5_curation.jpg" width="540" height="896" loading="lazy" alt="AI 큐레이션 보드 화면"></a>
+            <figcaption><strong><span class="step-no">5</span>코디 추천</strong>실제 무신사 상품으로 구성한 코디 3세트</figcaption>
+          </figure>
+        </li>
+        <li>
+          <figure>
+            <a class="shot" href="images/demo_6_fitting.jpg" target="_blank" rel="noopener"><img src="images/demo_6_fitting.jpg" width="540" height="900" loading="lazy" alt="가상 피팅 코디 선택 화면"></a>
+            <figcaption><strong><span class="step-no">6</span>가상 피팅</strong>세트를 고르면 체형 단계의 전신 사진이 자동으로 연결</figcaption>
+          </figure>
+        </li>
+      </ol>
+    </section>
+
+    <!-- 05. 퍼스널 컬러·체형 분석 -->
+    <section class="section" id="cv-engine">
+      <span class="section-num">05. Deep Dive : Vision</span>
+      <h2 class="section-title">사진 기반 퍼스널 컬러 · 체형 분석</h2>
+      <p class="section-desc">
+        사진은 조명과 옷차림에 따라 쉽게 왜곡됩니다. 이를 줄이기 위해 퍼스널 컬러는 A4 용지로 색을 보정한 뒤 분석하고, 체형은 옷 외곽선 대신 관절 위치를 기준으로 측정했습니다.
+      </p>
+
+      <!-- 1) A4 화이트밸런스 & 12톤 퍼스널 컬러 -->
+      <div class="deepdive-block" style="margin-top: 2rem;">
+        <div class="deepdive-header">
+          <div class="deepdive-title">
+            <span>🎨</span> A4 화이트밸런스 보정 &amp; 12톤 퍼스널 컬러 분석 <span class="role-badge mine">직접 구현</span>
+          </div>
+          <span class="deepdive-badge">White Balance · LAB 12-Tone</span>
+        </div>
+
+        <div class="deepdive-content">
+          <div class="text-block">
+            <h4 class="subheading">💡 조명 때문에 피부색이 달라지는 문제</h4>
+            <p>
+              같은 사람도 노란 실내등 아래에서는 Warm(봄·가을), 창가 자연광에서는 Cool(여름·겨울)로 판정될 수 있습니다. 그래서 얼굴을 찍기 전에 <strong>흰색 기준이 되는 A4 용지</strong>를 먼저 촬영하게 했습니다.
+            </p>
+            <p>
+              OpenCV로 <strong>채도가 낮고 밝은 영역</strong>을 찾아 A4 후보로 잡고, 잡음을 정리한 뒤 가장 큰 영역이 화면의 3% 이상일 때만 A4로 인정합니다. 용지 가장자리의 그림자가 섞이지 않도록 <strong>중앙의 작은 정사각형(짧은 변 길이의 6%)</strong>에서만 색을 재고, 세 색 채널(B·G·R)이 같은 값이 되도록 하는 <strong>채널별 보정 배율(gain)</strong>을 계산해 얼굴 사진에 그대로 적용합니다.
+            </p>
+            <p>
+              A4 중앙이 너무 어두우면 '품질 낮음'으로 알려 주고, A4를 어디서 인식했는지 표시한 이미지를 함께 돌려줘 사용자가 다시 찍을지 판단할 수 있게 했습니다.
+            </p>
+
+            <h4 class="subheading">🎯 피부 영역만 골라내기</h4>
+            <p>
+              얼굴 전체 평균을 쓰면 머리카락·눈썹·입술·배경색이 섞입니다. MediaPipe Face Mesh의 얼굴 랜드마크(468개) 중 <strong>양쪽 볼을 둘러싸는 16개 점으로 다각형</strong>을 만들어 그 안의 픽셀만 사용했습니다. 결과 화면에는 얼굴 그물망, 이마·양 볼 샘플 지점 32개, 핵심 지점 3개(이마 중앙, 좌·우 볼)를 겹쳐 그려 어디서 색을 뽑았는지 확인할 수 있습니다.
+            </p>
+
+            <h4 class="subheading">🔬 LAB 색공간으로 12톤 분류</h4>
+            <p>
+              피부 픽셀을 K-Means(3개 그룹)로 묶어 <strong>가장 큰 그룹의 중심색</strong>을 대표 피부색으로 정합니다. 단순 평균보다 그림자·하이라이트에 덜 흔들립니다. 이 색을 <strong>LAB 색공간</strong>으로 바꾸면 밝기(L)와 색 성향(a: 빨강↔초록, b: 노랑↔파랑)을 따로 볼 수 있어, '조명이 어두운 것'과 '피부색이 노란/붉은 것'을 섞지 않고 판단할 수 있습니다. <code>b &gt; 12</code>면 Warm, 아니면 Cool로 먼저 나누고, 밝기와 a·b 값에 따라 봄·여름·가을·겨울의 세부 톤(Light / Bright / True / Mute / Deep)으로 정합니다.
+            </p>
+
+            <div class="note">
+              <strong>한계</strong> · 12톤 분류는 전문가 라벨로 학습한 모델이 아니라 LAB 값 기준의 규칙(휴리스틱)입니다. 정답 데이터가 없어 정확도는 측정하지 못했고, 현재 규칙에서는 Winter Bright 톤이 나오지 않아 실제로 판정되는 톤은 11개입니다.
+            </div>
+          </div>
+
+          <div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>app/backend/services/wb_service.py</span>
+                <span>Python</span>
+              </div>
+              <div class="code-body"><span class="comment"># A4 검출 → 중앙 6% 영역 색 측정 → 채널별 보정 배율 계산</span>
+hsv  = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+mask = cv2.inRange(hsv, np.array([<span class="num">0</span>, <span class="num">0</span>, <span class="num">130</span>]), np.array([<span class="num">180</span>, <span class="num">60</span>, <span class="num">255</span>]))
+mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  kernel, iterations=<span class="num">1</span>)  <span class="comment"># 잡음 제거</span>
+mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=<span class="num">2</span>)  <span class="comment"># 구멍 메우기</span>
+
+c = max(contours, key=cv2.contourArea)
+<span class="keyword">if</span> cv2.contourArea(c) &gt; (h * w * <span class="num">0.03</span>):    <span class="comment"># 화면의 3% 이상일 때만 A4로 인정</span>
+    box_size = int(min(w, h) * <span class="num">0.06</span>)          <span class="comment"># 중앙 6% 크기 박스만 샘플링</span>
+    sample_roi = img[y1:y2, x1:x2]
+    avg = np.maximum(np.array(cv2.mean(sample_roi)[:<span class="num">3</span>], dtype=np.float32), <span class="num">1.0</span>)
+    gains = (avg.mean() / avg).tolist()        <span class="comment"># [B_gain, G_gain, R_gain]</span></div>
+            </div>
+
+            <div class="code-container">
+              <div class="code-header">
+                <span>app/backend/domain/season.py</span>
+                <span>Python</span>
+              </div>
+              <div class="code-body"><span class="comment"># LAB 색공간 기준 세부 톤 분류</span>
+<span class="keyword">def</span> <span class="fn">classify_season</span>(bgr_color):
+    lab = cv2.cvtColor(np.uint8([[bgr_color]]), cv2.COLOR_BGR2LAB)[<span class="num">0</span>][<span class="num">0</span>]
+    L = lab[<span class="num">0</span>] / <span class="num">2.55</span>   <span class="comment"># 밝기 (0~100)</span>
+    a = lab[<span class="num">1</span>] - <span class="num">128</span>    <span class="comment"># + 빨강 / - 초록</span>
+    b = lab[<span class="num">2</span>] - <span class="num">128</span>    <span class="comment"># + 노랑 / - 파랑</span>
+
+    <span class="keyword">if</span> b &gt; <span class="num">12</span>:                                <span class="comment"># Warm</span>
+        <span class="keyword">if</span> L &gt; <span class="num">65</span>:                            <span class="comment"># 밝음 → 봄</span>
+            <span class="keyword">if</span> L &gt; <span class="num">70</span> <span class="keyword">and</span> b &lt; <span class="num">18</span>: <span class="keyword">return</span> <span class="str">"spring_light"</span>
+            <span class="keyword">return</span> <span class="str">"spring_bright"</span> <span class="keyword">if</span> a &gt; <span class="num">10</span> <span class="keyword">else</span> <span class="str">"spring_true"</span>
+        <span class="keyword">if</span> L &lt; <span class="num">55</span>: <span class="keyword">return</span> <span class="str">"autumn_deep"</span>        <span class="comment"># 어두움 → 가을</span>
+        <span class="keyword">return</span> <span class="str">"autumn_mute"</span> <span class="keyword">if</span> a &lt; <span class="num">10</span> <span class="keyword">else</span> <span class="str">"autumn_true"</span>
+    <span class="keyword">else</span>:                                     <span class="comment"># Cool</span>
+        <span class="keyword">if</span> L &gt; <span class="num">65</span>:                            <span class="comment"># 밝음 → 여름</span>
+            <span class="keyword">if</span> L &gt; <span class="num">70</span>: <span class="keyword">return</span> <span class="str">"summer_light"</span>
+            <span class="keyword">return</span> <span class="str">"summer_mute"</span> <span class="keyword">if</span> a &lt; <span class="num">5</span> <span class="keyword">else</span> <span class="str">"summer_true"</span>
+        <span class="keyword">return</span> <span class="str">"winter_deep"</span> <span class="keyword">if</span> L &lt; <span class="num">50</span> <span class="keyword">else</span> <span class="str">"winter_true"</span>  <span class="comment"># 어두움 → 겨울</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="figure-row">
+          <div class="figure-row-title">📷 실제 분석 화면</div>
+          <figure>
+            <a href="images/color_original.jpg" target="_blank" rel="noopener"><img src="images/color_original.jpg" width="520" height="693" loading="lazy" alt="퍼스널 컬러 분석에 사용한 원본 얼굴 사진"></a>
+            <figcaption><strong>① 원본 얼굴 사진</strong> · A4 보정 배율을 적용하기 전의 촬영 이미지</figcaption>
+          </figure>
+          <figure>
+            <a href="images/color_facemesh.jpg" target="_blank" rel="noopener"><img src="images/color_facemesh.jpg" width="520" height="693" loading="lazy" alt="Face Mesh 그물망과 피부 샘플 지점을 표시한 사진"></a>
+            <figcaption><strong>② Face Mesh + 샘플 지점</strong> · 회색 그물망(얼굴 인식), 작은 점 32개(이마·양 볼 샘플 영역), 큰 점 3개(이마 중앙·좌우 볼 핵심 지점)</figcaption>
+          </figure>
+          <figure>
+            <a href="images/color_log.jpg" target="_blank" rel="noopener"><img src="images/color_log.jpg" width="640" height="669" loading="lazy" alt="Warm/Cool 판정과 12톤 분류 근거를 보여주는 분석 로그"></a>
+            <figcaption><strong>③ 판정 근거 표시</strong> · 대표 피부색의 b값이 18.0으로 기준(12)보다 커서 Warm, 이어서 밝기·a값으로 '가을 트루'로 분류된 과정을 화면에 그대로 보여줌</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <!-- 2) 3D 관절 좌표 기반 치수 추정 -->
+      <div class="deepdive-block">
+        <div class="deepdive-header">
+          <div class="deepdive-title">
+            <span>📏</span> MediaPipe Pose 3D 관절 좌표 기반 치수 추정 <span class="role-badge team">팀원 구현 · 통합 담당</span>
+          </div>
+          <span class="deepdive-badge">3D Pose Landmarks · BMI 보정</span>
+        </div>
+
+        <div class="deepdive-content">
+          <div class="text-block">
+            <h4 class="subheading">📐 옷 외곽선 대신 관절 사이 거리로 측정</h4>
+            <p>
+              초기 버전은 사람 영역 마스크(segmentation mask)에서 가로 폭을 재는 방식이었는데, 오버핏 옷이나 두꺼운 외투를 입으면 옷의 폭이 그대로 어깨·골반 폭으로 잡혀 실제보다 크게 측정됐습니다. 그래서 MediaPipe Pose가 주는 <strong>3D 관절 좌표(world landmarks, 깊이 z 포함)</strong>를 사용해 어깨 관절(11–12번)과 골반 관절(23–24번) 사이의 <strong>3D 거리</strong>를 재는 방식으로 바꿨습니다.
+            </p>
+
+            <h4 class="subheading">⚖️ 키로 실제 cm 환산 + BMI 보정</h4>
+            <p>
+              입력한 키를 3D 좌표상의 머리~발뒤꿈치 길이로 나눠 cm 환산 비율(<code>scale_cm</code>)을 구합니다. 키를 입력하지 않으면 사진 속 전신 높이(픽셀)로 키를 대략 추정하고, 150~195cm 범위로 제한합니다.
+            </p>
+            <p>
+              관절 사이 거리에는 살·근육 두께가 빠져 있으므로 고정 보정 계수(어깨 ×1.35, 골반 ×1.45)를 곱하고, BMI가 25를 넘으면 <code>1 + (BMI − 25) × 0.015</code>만큼 더 키웁니다. 가슴 단면은 어깨 값의 0.86배로 추정합니다.
+            </p>
+
+            <h4 class="subheading">📊 체형 분류</h4>
+            <p>
+              어깨 ÷ 골반 비율이 <code>0.95 ~ 1.15</code>면 <strong>직사각형(균형형)</strong>, 그 외는 <strong>역삼각형</strong>으로 분류해 LLM 프롬프트에 전달합니다. 측정선을 그린 이미지와 스켈레톤(뼈대) 이미지를 함께 보여줍니다.
+            </p>
+
+            <div class="note">
+              <strong>한계</strong> · 사진 한 장으로 계산한 추정값이라 정밀 실측은 아닙니다. 보정 계수는 경험적으로 정한 값이며 촬영 거리·자세에 따라 오차가 생깁니다. 또한 비율이 0.95 미만인 경우(삼각형 체형)도 현재 코드에서는 역삼각형으로 분류되어 분기 보완이 필요합니다.
+            </div>
+          </div>
+
+          <div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>app/backend/services/measure.py</span>
+                <span>Python</span>
+              </div>
+              <div class="code-body"><span class="comment"># 3D 관절 좌표로 어깨·골반 너비 계산</span>
+wl = results.pose_world_landmarks.landmark
+
+<span class="keyword">def</span> <span class="fn">dist_3d</span>(i, j):
+    <span class="keyword">return</span> math.sqrt((wl[i].x - wl[j].x)**<span class="num">2</span> +
+                     (wl[i].y - wl[j].y)**<span class="num">2</span> +
+                     (wl[i].z - wl[j].z)**<span class="num">2</span>)
+
+<span class="comment"># 키 ÷ 3D 머리~발뒤꿈치 길이 = cm 환산 비율</span>
+head_y_3d = wl[<span class="num">0</span>].y - <span class="num">0.08</span>
+heel_y_3d = (wl[<span class="num">29</span>].y + wl[<span class="num">30</span>].y) / <span class="num">2</span>
+scale_cm  = display_height / abs(heel_y_3d - head_y_3d)
+
+base_sh_cm = dist_3d(<span class="num">11</span>, <span class="num">12</span>) * scale_cm  <span class="comment"># 어깨 관절 사이</span>
+base_pl_cm = dist_3d(<span class="num">23</span>, <span class="num">24</span>) * scale_cm  <span class="comment"># 골반 관절 사이</span>
+
+<span class="comment"># BMI 25 초과 시 둘레 보정</span>
+bmi_factor = <span class="num">1.0</span> + (bmi - <span class="num">25</span>) * <span class="num">0.015</span> <span class="keyword">if</span> bmi &gt; <span class="num">25</span> <span class="keyword">else</span> <span class="num">1.0</span>
+
+final_sh = base_sh_cm * <span class="num">1.35</span> * bmi_factor
+final_ch = max(final_sh * <span class="num">0.86</span>, <span class="num">50.0</span>)   <span class="comment"># 가슴 단면</span>
+final_pl = base_pl_cm * <span class="num">1.45</span> * (bmi_factor * <span class="num">0.9</span>)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="figure-row narrow">
+          <div class="figure-row-title">📷 실제 측정 화면</div>
+          <figure>
+            <a href="images/body_measure.jpg" target="_blank" rel="noopener"><img src="images/body_measure.jpg" width="520" height="693" loading="lazy" alt="어깨, 가슴, 골반, 다리 측정선을 그린 전신 사진"></a>
+            <figcaption><strong>측정선 표시</strong> · 키 176cm·몸무게 95kg(BMI 30.7) 입력 시 어깨 60.6cm, 가슴 단면 52.2cm, 골반 38.7cm로 추정. 키와 골반 라벨이 겹쳐 보이는 표시 문제는 개선이 필요합니다.</figcaption>
+          </figure>
+          <figure>
+            <a href="images/body_report.jpg" target="_blank" rel="noopener"><img src="images/body_report.jpg" width="520" height="568" loading="lazy" alt="신체 측정 리포트와 체형 분류 결과"></a>
+            <figcaption><strong>측정 리포트</strong> · 어깨÷골반 비율로 '역삼각형'으로 분류하고, 체형에 맞는 핏 가이드를 함께 보여줌</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06. LLM & TPO 추론 -->
+    <section class="section" id="llm-tpo">
+      <span class="section-num">06. Deep Dive : Context &amp; Reasoning</span>
+      <h2 class="section-title">상황(TPO)·날씨 분석과 GPT-4o 스타일 추론</h2>
+      <p class="section-desc">
+        LLM이 그럴듯하지만 틀린 답을 만들지 않도록, 날짜 계산은 코드가 맡고 LLM은 정해진 JSON 형식으로 '검색 조건'만 만들게 했습니다.
+      </p>
+
+      <div class="deepdive-block" style="margin-top: 2rem;">
+        <div class="deepdive-header">
+          <div class="deepdive-title">
+            <span>🧠</span> 4단계 우선순위 프롬프트 (Stylist Hierarchy of Needs) <span class="role-badge team">팀 공동 설계 · 통합 담당</span>
+          </div>
+          <span class="deepdive-badge">GPT-4o JSON Output · Weather Forecast</span>
+        </div>
+
+        <div class="deepdive-content">
+          <div class="text-block">
+            <h4 class="subheading">📅 '이번 주 토요일'은 코드가 날짜로 바꿔서 전달</h4>
+            <p>
+              "이번 주 토요일 비 오는데 데이트 룩 추천해줘" 같은 요청에서 날짜 계산을 LLM에 맡기면 요일을 틀리는 경우가 있었습니다. 그래서 백엔드 Python 코드가 오늘 요일을 기준으로 '토요일·일요일·내일'을 <strong>실제 날짜(YYYY-MM-DD)</strong>로 계산하고, OpenWeatherMap <strong>5일 예보(3시간 단위)</strong>에서 그 날짜 오후(12시·15시)의 기온과 날씨를 찾아 프롬프트에 넣습니다. 예보를 찾지 못하면 현재 날씨, 그마저 실패하면 기본값(15°C, 맑음)을 사용합니다.
+            </p>
+
+            <h4 class="subheading">👑 조건이 부딪힐 때 무엇을 먼저 지킬지 순서를 정함</h4>
+            <p>
+              예를 들어 장례식인데 퍼스널 컬러는 밝은 봄 웜톤인 경우처럼, 조건이 서로 부딪힐 때 어떤 것을 우선할지 프롬프트에 순서를 적어 두었습니다. 번호가 낮을수록 우선합니다.
+            </p>
+            <ul class="card-list">
+              <li><span><strong>Priority 1 · 자리의 격식(TPO)</strong> — 장례식은 퍼스널 컬러를 무시하고 검정·짙은 네이비 정장만 추천, 청바지·후드·스웻팬츠 금지. 결혼식 하객은 흰색·아이보리 상의를 피함.</span></li>
+              <li><span><strong>Priority 2 · 날씨</strong> — 10°C 미만이면 긴팔·니트·울과 아우터 필수. 비·눈이 오면 방수 신발, 가죽·스웨이드·캔버스 신발 금지.</span></li>
+              <li><span><strong>Priority 3 · 체형</strong> — 키 175cm 미만이면 신발 검색어에 청키·부츠·더비를 추가하고, 체형 균형을 맞추는 핏을 제안.</span></li>
+              <li><span><strong>Priority 4 · 색·소재</strong> — 위 조건을 지킨 뒤 퍼스널 컬러 톤에 맞는 색, 실제로 흔한 소재(코튼·린넨·데님·나일론·울)를 사용.</span></li>
+            </ul>
+
+            <h4 class="subheading">🎙️ 사용자용 설명과 검색용 문구를 분리</h4>
+            <p>
+              <code>response_format={"type": "json_object"}</code>로 JSON 출력을 강제했습니다. 사용자에게 들려줄 한국어 설명(<code>docent</code>)은 edge-tts(ko-KR-SunHiNeural) 음성으로 읽어 주고, 상품 검색에 쓸 문구(<code>vector_target</code>)는 <code>[색상] [소재] [핏] [아이템]</code> 형태의 짧은 영어로 따로 받습니다. 아우터는 기온이 18°C 미만이거나 필요할 때만 <code>required: true</code>로 받아 검색합니다.
+            </p>
+
+            <div class="note">
+              <strong>한계</strong> · JSON 형식은 보장되지만 필수 필드가 빠지는 경우까지 막지는 못해 스키마 검증(Pydantic)이 필요합니다. 날짜 표현은 '내일·토요일·일요일' 같은 키워드만 처리합니다.
+            </div>
+          </div>
+
+          <div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>app/backend/engines/_03_llm_core.py</span>
+                <span>Prompt (요약)</span>
+              </div>
+              <div class="code-body"><span class="str">[System Directive: The Stylist Hierarchy of Needs]
+
+PRIORITY 1: TPO Override (Absolute Social Rules)
+- FUNERALS: IGNORE Personal Color. ALL items 'Black'
+  or 'Dark Navy' AND strictly FORMAL. FORBID casual.
+- WEDDING GUEST: AVOID 'White', 'Ivory', 'Cream' tops.
+
+PRIORITY 2: Weather &amp; Survival (Functional Rules)
+- Cold (Under 10°C): 'Long sleeve', 'Heavy knit', 'Wool'.
+- Rain/Snow: FORBID 'leather', 'suede', 'canvas' shoes.
+
+PRIORITY 3: Body Shape &amp; Proportion
+- Under 175cm: add 'Chunky', 'Boots', 'Derby' to shoes.
+
+PRIORITY 4: Aesthetics &amp; Realism
+- Match {season_en} palette. Standard materials only.
+
+[Mission: Vector Target Extraction]
+vector_target = concise English phrase
+[Color] [Material] [Fit] [Item Name]
+e.g. 'Navy wool relax fit jacket'</span></div>
+            </div>
+
+            <div class="callout">
+              <div class="callout-icon">💡</div>
+              <div class="callout-text">
+                <strong>설계 원칙 : LLM에게 상품을 직접 만들게 하지 않는다</strong><br>
+                LLM에게 상품명이나 가격까지 답하게 하면 실제로 없는 상품을 지어낼 수 있습니다. 그래서 LLM은 '어떤 상품을 찾아야 하는지'만 정하고, 상품명·가격·이미지·구매 링크는 모두 실제 상품 DB에서 가져오도록 역할을 나눴습니다.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="figure-row narrow">
+          <div class="figure-row-title">📷 실제 결과 화면</div>
+          <figure>
+            <a href="images/tpo_concierge.jpg" target="_blank" rel="noopener"><img src="images/tpo_concierge.jpg" width="560" height="787" loading="lazy" alt="음성 인식 결과, 날씨, 스타일 설명을 보여주는 컨시어지 화면"></a>
+            <figcaption><strong>음성 입력 → 날씨 → 스타일 설명</strong> · "석촌호수 나들이"를 Whisper로 인식하고, 날짜 표현이 없어 현재 날씨(25.44°C, 튼구름)를 사용. GPT-4o가 만든 한국어 설명(<code>docent</code>)은 edge-tts 음성으로도 재생됩니다.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07. 상품 검색 & 예산 배분 -->
+    <section class="section" id="search-engine">
+      <span class="section-num">07. Deep Dive : Search</span>
+      <h2 class="section-title">SigLIP + FAISS 상품 검색과 예산 배분</h2>
+      <p class="section-desc">
+        LLM이 만든 검색 문구로 실제 무신사 상품을 찾고, 정해진 예산 안에서 서로 다른 코디 3세트를 구성합니다.
+      </p>
+
+      <div class="deepdive-block" style="margin-top: 2rem;">
+        <div class="deepdive-header">
+          <div class="deepdive-title">
+            <span>🔍</span> 벡터 검색 → 규칙 필터 → 예산 배분 <span class="role-badge team">팀 공동 설계 · 통합 담당</span>
+          </div>
+          <span class="deepdive-badge">SigLIP 768d · FAISS · Budget Reserve</span>
+        </div>
+
+        <div class="deepdive-content">
+          <div class="text-block">
+            <h4 class="subheading">⚡ 검색 문구와 상품 이미지를 같은 SigLIP 공간에서 비교</h4>
+            <p>
+              무신사 상품 <strong>6,096건</strong>의 이미지를 Google SigLIP으로 768차원 벡터로 바꿔 FAISS 인덱스로 저장했습니다. 요청이 오면 <code>vector_target</code> 문구를 같은 SigLIP 텍스트 인코더로 벡터화·정규화한 뒤, 코사인 유사도 기준 <strong>상위 1,000개 후보</strong>를 넓게 가져옵니다.
+            </p>
+            <p>
+              초기 버전은 한국어 검색 문장을 OpenAI 임베딩(text-embedding-3-small)으로 바꿔 검색했는데, 상품 인덱스는 SigLIP으로 만들어져 있어 서로 다른 기준의 벡터를 비교하는 셈이었습니다. 그래서 검색 문구도 SigLIP으로 통일하고, SigLIP이 영어 위주로 학습된 점을 고려해 문구를 짧은 영어로 바꿨습니다. (SigLIP 모델 호출에 이미지 입력이 함께 필요해, 고정된 검은색 더미 이미지를 넣었습니다.)
+            </p>
+
+            <h4 class="subheading">🛡️ 규칙 필터로 한 번 더 거르기</h4>
+            <p>
+              벡터 검색은 '비슷한' 상품을 찾을 뿐이라 금지 품목이 섞일 수 있습니다. 그래서 후보마다 카테고리 일치, 비·눈일 때 가죽·스웨이드·캔버스 신발 제외, 격식 자리에서 트랙·스웻·후드·데님 등 캐주얼 제외, 가격 상한, 유사도 0.15 미만 제외를 차례로 확인합니다. 통과한 상위 5개 중 하나를 골라 세트마다 다른 상품이 나오게 했습니다.
+            </p>
+
+            <h4 class="subheading">💸 예산 배분: 뒤에 고를 카테고리 몫을 먼저 남겨두기</h4>
+            <p>
+              상의 → 하의 → 아우터 → 신발 순서로 고르면 앞에서 예산을 다 써서 신발을 못 고르는 문제가 생깁니다. 그래서 각 카테고리를 고를 때 <strong>아직 고르지 않은 카테고리의 최소 금액</strong>(하의 3만 · 아우터 5만 · 신발 4만 원)을 먼저 빼 두고, 남은 금액을 그 카테고리의 가격 상한으로 씁니다. 예를 들어 총예산이 20만 원이면 상의는 최대 8만 원까지만 고려합니다. 앞에서 싸게 고르면 남은 돈은 다음 카테고리로 넘어갑니다.
+            </p>
+
+            <h4 class="subheading">🚫 3세트 간 중복 방지 + 사이즈 제안</h4>
+            <p>
+              3세트에 같은 상품이 반복되지 않도록, 이미 고른 상품의 DB 번호와 <strong>상품명(소문자)</strong>을 함께 제외 목록에 넣었습니다. 크롤링 데이터에 같은 상품이 다른 번호로 중복 저장된 경우가 있어 상품명도 비교합니다. 상품 사이즈표와 추정 치수가 모두 있으면 차이가 가장 작은 사이즈를 함께 제안합니다(상의: 어깨+가슴, 하의: 허리+기장×0.5).
+            </p>
+
+            <div class="note">
+              <strong>한계</strong> · 카테고리를 순서대로 하나씩 고르는 방식(greedy)이라 전체 조합의 최적해는 아닙니다. 후보 5개 중 무작위로 고르기 때문에 같은 요청도 결과가 달라질 수 있고, FAISS 인덱스를 요청마다 디스크에서 다시 읽고 있어 서버 시작 시 한 번만 읽도록 개선이 필요합니다.
+            </div>
+          </div>
+
+          <div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>app/backend/main.py · 예산 배분 &amp; 중복 방지</span>
+                <span>Python</span>
+              </div>
+              <div class="code-body">min_costs    = {<span class="str">'outer'</span>: <span class="num">50000</span>, <span class="str">'shoes'</span>: <span class="num">40000</span>, <span class="str">'bottom'</span>: <span class="num">30000</span>, <span class="str">'top'</span>: <span class="num">20000</span>}
+search_order = [<span class="str">'top'</span>, <span class="str">'bottom'</span>, <span class="str">'outer'</span>, <span class="str">'shoes'</span>]
+
+used_indices = set()   <span class="comment"># 이미 고른 상품의 DB 번호</span>
+used_names   = set()   <span class="comment"># 이미 고른 상품명 (소문자)</span>
+
+<span class="keyword">for</span> set_num <span class="keyword">in</span> range(<span class="num">3</span>):
+    remaining_budget = total_budget
+    <span class="keyword">for</span> i, cat <span class="keyword">in</span> enumerate(search_order):
+        current_max_price = None                 <span class="comment"># 예산 0원 = 제한 없음</span>
+        <span class="keyword">if</span> total_budget &gt; <span class="num">0</span> <span class="keyword">and</span> remaining_budget &gt; <span class="num">0</span>:
+            <span class="comment"># 아직 안 고른 카테고리의 최소 금액을 먼저 남겨둠</span>
+            reserve = sum(min_costs[c] <span class="keyword">for</span> c <span class="keyword">in</span> search_order[i+<span class="num">1</span>:])
+            current_max_price = remaining_budget - reserve
+            <span class="keyword">if</span> current_max_price &lt; min_costs[cat]:
+                current_max_price = remaining_budget
+
+        item = <span class="fn">find_best_match_in_index</span>(
+            query_data, cat, max_price=current_max_price,
+            exclude_indices=used_indices, exclude_names=used_names,
+            body_measurements=b_data.get(<span class="str">"measurements"</span>))
+        <span class="keyword">if</span> item:
+            used_indices.add(item[<span class="str">'db_idx'</span>])
+            used_names.add(str(item[<span class="str">'item_name'</span>]).lower())
+            remaining_budget -= item[<span class="str">'price'</span>]</div>
+            </div>
+
+            <div class="code-container">
+              <div class="code-header">
+                <span>app/backend/main.py · 검색 후 규칙 필터 (요약)</span>
+                <span>Python</span>
+              </div>
+              <div class="code-body">D, I = index.search(query_vector, <span class="num">1000</span>)   <span class="comment"># 넓게 검색</span>
+
+<span class="keyword">for</span> i, idx <span class="keyword">in</span> enumerate(I[<span class="num">0</span>]):              <span class="comment"># 규칙으로 좁히기</span>
+    <span class="keyword">if</span> idx <span class="keyword">in</span> exclude_indices: <span class="keyword">continue</span>
+    <span class="keyword">if</span> <span class="keyword">not</span> category_match: <span class="keyword">continue</span>
+    <span class="keyword">if</span> item_name <span class="keyword">in</span> exclude_names: <span class="keyword">continue</span>
+    <span class="keyword">if</span> cat == <span class="str">'shoes'</span> <span class="keyword">and</span> is_rainy_or_snowy <span class="keyword">and</span> has_banned_material: <span class="keyword">continue</span>
+    <span class="keyword">if</span> is_formal <span class="keyword">and</span> has_casual_keyword: <span class="keyword">continue</span>
+    <span class="keyword">if</span> max_price <span class="keyword">and</span> price &gt; max_price: <span class="keyword">continue</span>
+    <span class="keyword">if</span> D[<span class="num">0</span>][i] &lt; <span class="num">0.15</span>: <span class="keyword">continue</span>          <span class="comment"># 유사도 하한</span>
+    candidates_pool.append(...)
+    <span class="keyword">if</span> len(candidates_pool) &gt;= <span class="num">5</span>: <span class="keyword">break</span>
+
+selected = random.choice(candidates_pool)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="figure-row">
+          <div class="figure-row-title">📷 실제 추천 결과 · "석촌호수 나들이" 1번째 세트 (예산 30만 원 설정, 합계 216,700원)</div>
+          <figure>
+            <a href="images/cur_top.jpg" target="_blank" rel="noopener"><img src="images/cur_top.jpg" width="420" height="563" loading="lazy" alt="추천 상의: 워시드 코튼 아우터 셔츠 차콜"></a>
+            <figcaption><strong>상의</strong> · 113,400원 · 유사도 0.4616</figcaption>
+          </figure>
+          <figure>
+            <a href="images/cur_bottom.jpg" target="_blank" rel="noopener"><img src="images/cur_bottom.jpg" width="420" height="563" loading="lazy" alt="추천 하의: 코튼 퍼티그 팬츠 베이지"></a>
+            <figcaption><strong>하의</strong> · 62,100원 · 유사도 0.4448</figcaption>
+          </figure>
+          <figure>
+            <a href="images/cur_shoes.jpg" target="_blank" rel="noopener"><img src="images/cur_shoes.jpg" width="420" height="563" loading="lazy" alt="추천 신발: 모카신 스웨이드 왈라비"></a>
+            <figcaption><strong>신발</strong> · 41,200원 · 유사도 0.5038</figcaption>
+          </figure>
+          <p class="figure-row-title" style="font-weight: 400; font-size: 0.85rem; color: var(--text-muted);">
+            기온이 25°C라 LLM이 아우터를 '필요 없음'으로 판단해 아우터는 검색하지 않았습니다(화면의 "OUTER No Matches"). 비 예보가 없어 스웨이드 신발도 제외되지 않았고, 상의를 고를 때 남은 카테고리 몫(하의 3만·아우터 5만·신발 4만 원)을 먼저 빼 두어 상의 상한은 18만 원이었습니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08. 가상 피팅 -->
+    <section class="section" id="tryon">
+      <span class="section-num">08. Deep Dive : Virtual Fitting</span>
+      <h2 class="section-title">ComfyUI 연동 가상 피팅</h2>
+      <p class="section-desc">
+        추천된 상의·하의를 사용자 전신 사진에 입혀 보는 기능입니다. 이미지 생성은 별도로 실행 중인 ComfyUI(CatVTON 워크플로우)가 맡고, FastAPI는 입력 전달과 결과 회수를 담당합니다.
+      </p>
+
+      <div class="deepdive-block" style="margin-top: 2rem;">
+        <div class="deepdive-header">
+          <div class="deepdive-title">
+            <span>👕</span> FastAPI → ComfyUI 워크플로우 실행 <span class="role-badge team">팀 공동 · 통합 담당</span>
+          </div>
+          <span class="deepdive-badge">ComfyUI API · Polling</span>
+        </div>
+
+        <div class="deepdive-content">
+          <div class="text-block">
+            <h4 class="subheading">🔄 워크플로우 템플릿에서 이미지 노드만 교체</h4>
+            <p>
+              FastAPI가 사용자 전신 사진을 ComfyUI input 폴더에 저장하고, 추천 상의(아우터가 있으면 아우터)와 하의 이미지를 상품 이미지 폴더에서 찾아 같은 폴더로 복사합니다.
+            </p>
+            <p>
+              미리 저장해 둔 <code>workflow_api.json</code>을 불러와 인물(노드 2)·상의(노드 16)·하의(노드 7)의 이미지 파일명만 바꿔 실행합니다.
+            </p>
+
+            <h4 class="subheading">⏱️ 실행 요청 후 1초 간격으로 완료 확인</h4>
+            <p>
+              ComfyUI API(<code>/prompt</code>)에 작업을 등록해 <code>prompt_id</code>를 받고, <code>/history/{prompt_id}</code>를 1초마다 확인합니다(최대 150초). 완료되면 결과 이미지를 받아 Base64로 프론트엔드에 보내고 임시 파일을 지웁니다. 화면에서는 원본과 결과를 나란히 비교할 수 있습니다.
+            </p>
+
+            <div class="note">
+              <strong>한계</strong> · 생성이 끝날 때까지 서버가 기다리는 동기 방식이라, 그동안 다른 요청 처리가 막힙니다. ComfyUI 주소와 input 폴더 경로가 코드에 고정되어 있어 다른 PC에서는 수정이 필요합니다.
+            </div>
+          </div>
+
+          <div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>app/backend/main.py</span>
+                <span>Python</span>
+              </div>
+              <div class="code-body"><span class="comment"># 워크플로우의 이미지 노드 파일명 교체 후 실행 요청</span>
+prompt_workflow[<span class="str">"2"</span>][<span class="str">"inputs"</span>][<span class="str">"image"</span>]  = temp_user_filename  <span class="comment"># 사용자 전신</span>
+prompt_workflow[<span class="str">"16"</span>][<span class="str">"inputs"</span>][<span class="str">"image"</span>] = temp_top_filename   <span class="comment"># 추천 상의</span>
+prompt_workflow[<span class="str">"7"</span>][<span class="str">"inputs"</span>][<span class="str">"image"</span>]  = temp_bot_filename   <span class="comment"># 추천 하의</span>
+
+prompt_id = queue_prompt(prompt_workflow)[<span class="str">'prompt_id'</span>]
+
+<span class="comment"># 1초 간격으로 완료 여부 확인 (최대 150초)</span>
+start_time = time.time()
+<span class="keyword">while</span> True:
+    <span class="keyword">if</span> time.time() - start_time &gt; <span class="num">150</span>:
+        <span class="keyword">raise</span> Exception(<span class="str">"ComfyUI Virtual Fitting Timeout"</span>)
+    history = get_history(prompt_id)
+    <span class="keyword">if</span> prompt_id <span class="keyword">in</span> history:
+        <span class="comment"># 결과 이미지를 받아 Base64로 변환</span>
+        <span class="keyword">break</span>
+    time.sleep(<span class="num">1</span>)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="figure-row narrow">
+          <div class="figure-row-title">📷 실제 피팅 결과 (Before &amp; After)</div>
+          <figure>
+            <a href="images/vton_before.jpg" target="_blank" rel="noopener"><img src="images/vton_before.jpg" width="520" height="694" loading="lazy" alt="가상 피팅 전 원본 전신 사진"></a>
+            <figcaption><strong>Before</strong> · 체형 분석 단계에서 찍은 전신 사진</figcaption>
+          </figure>
+          <figure>
+            <a href="images/vton_after.jpg" target="_blank" rel="noopener"><img src="images/vton_after.jpg" width="520" height="695" loading="lazy" alt="추천 상의와 하의를 입힌 가상 피팅 결과"></a>
+            <figcaption><strong>After</strong> · 1번째 세트의 상의(차콜 셔츠)와 하의(베이지 팬츠)를 입힌 결과. 생성 이미지라 해상도가 낮고 색감이 원본 상품과 조금 다릅니다.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09. 트러블슈팅 -->
+    <section class="section" id="troubleshooting">
+      <span class="section-num">09. Troubleshooting</span>
+      <h2 class="section-title">트러블슈팅</h2>
+      <p class="section-desc">
+        노트북 + 스마트폰 환경에서 실제 시연을 준비하며 겪은 문제와 해결 과정입니다.
+      </p>
+
+      <div style="margin-top: 2rem;">
+        <!-- 이슈 1: 모바일 카메라 & API 주소 -->
+        <div class="trouble-card danger">
+          <div class="trouble-header">
+            <h3 class="trouble-title">🚨 이슈 1. 스마트폰에서 카메라가 안 켜지고 API 요청이 실패 <span class="role-badge mine">직접 해결</span></h3>
+            <span class="tag">Network &amp; Security</span>
+          </div>
+          <p class="trouble-desc">
+            시연을 위해 스마트폰으로 Streamlit 화면에 접속하자 카메라가 실행되지 않았고, 분석 요청은 연결 거부(Connection Refused)로 실패했습니다.
+          </p>
+          <div class="trouble-grid">
+            <div class="trouble-box">
+              <div class="trouble-box-title problem">원인</div>
+              <p>
+                1. 모바일 브라우저는 보안 정책상 <strong>HTTPS 주소</strong>가 아니면 카메라 접근을 막습니다.<br>
+                2. 프론트엔드의 <code>API_BASE = "localhost"</code>가 노트북이 아니라 <strong>스마트폰 자기 자신</strong>을 가리켜 요청이 백엔드에 닿지 않았습니다.
+              </p>
+            </div>
+            <div class="trouble-box">
+              <div class="trouble-box-title solution">해결</div>
+              <p>
+                1. <strong>ngrok</strong>으로 프론트엔드에 HTTPS 주소를 발급해 스마트폰 카메라를 사용할 수 있게 했습니다.<br>
+                2. 백엔드를 <code>0.0.0.0</code>으로 실행해 같은 Wi-Fi에서 접근할 수 있게 하고, <code>API_BASE</code>를 노트북의 Wi-Fi IP(172.16.x.x)로 설정했습니다.<br>
+                3. 백엔드·프론트엔드·ngrok을 한 번에 띄우는 <code>run.bat</code>을 만들어 시연 준비 과정을 단순화했습니다. (해결 후 스마트폰에서 촬영한 화면은 <a href="#demo" style="color: var(--primary);">04. 실제 시연 화면</a> 참고)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 이슈 2: 상품 이미지 404 & 경로 -->
+        <div class="trouble-card danger">
+          <div class="trouble-header">
+            <h3 class="trouble-title">🚨 이슈 2. 추천은 되는데 상품 이미지가 전부 404 <span class="role-badge mine">직접 해결</span></h3>
+            <span class="tag">Path &amp; Static Files</span>
+          </div>
+          <p class="trouble-desc">
+            FAISS 검색과 메타데이터 조회는 정상이었지만 추천 카드의 이미지가 모두 깨졌습니다. 서버를 다른 폴더에서 실행하면 인덱스·메타데이터 로딩부터 실패하기도 했습니다.
+          </p>
+          <div class="trouble-grid">
+            <div class="trouble-box">
+              <div class="trouble-box-title problem">원인</div>
+              <p>
+                경로 기준이 세 가지로 뒤섞여 있었습니다.<br>
+                1. 서버의 이미지 경로가 <code>data/image</code>였지만 실제 폴더는 <code>data/images</code><br>
+                2. 메타데이터의 이미지 경로에 크롤링 당시 PC의 절대 경로(<code>C:/PJ03/.../data/image/...</code>)가 그대로 저장됨<br>
+                3. <code>BASE_DIR</code>가 특정 개발자 PC 경로로 고정되어 다른 환경에서 동작하지 않음
+              </p>
+            </div>
+            <div class="trouble-box">
+              <div class="trouble-box-title solution">해결</div>
+              <p>
+                1. <code>BASE_DIR = Path(__file__).resolve().parent.parent.parent</code>로 소스 파일 위치에서 프로젝트 루트를 계산해, 어디서 실행해도 같은 경로를 쓰게 했습니다.<br>
+                2. <code>/static</code>을 <code>data/images</code>로 다시 연결하고, 메타데이터의 옛 절대 경로는 응답 전에 상대 경로로 정리했습니다.<br>
+                3. 프론트엔드에서는 정규식으로 <code>(top|bottom|outer|shoes)/...</code> 부분만 뽑아 <code>/static/</code> URL을 만들고, 같은 경로에서 상품 번호를 뽑아 무신사 구매 링크도 생성했습니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 이슈 3: 아이폰 HEIC -->
+        <div class="trouble-card danger">
+          <div class="trouble-header">
+            <h3 class="trouble-title">🚨 이슈 3. 아이폰으로 찍은 사진을 올리면 바로 500 에러 <span class="role-badge mine">직접 해결</span></h3>
+            <span class="tag">Image Decoding</span>
+          </div>
+          <p class="trouble-desc">
+            PC에서 준비한 JPG로는 잘 되던 <code>/calibrate</code>, <code>/analyze</code>가 아이폰으로 직접 촬영한 사진에서는 곧바로 실패했습니다. "그 자리에서 찍어서 분석"이 핵심인 시연이라 꼭 해결해야 했습니다.
+          </p>
+          <div class="trouble-grid">
+            <div class="trouble-box">
+              <div class="trouble-box-title problem">원인</div>
+              <p>
+                아이폰의 기본 사진 형식은 <strong>HEIC</strong>인데, OpenCV의 <code>cv2.imdecode()</code>는 HEIC를 읽지 못합니다. 게다가 에러를 내지 않고 <code>None</code>을 반환해, 실제 원인과 다른 위치(<code>img.shape</code>)에서 에러가 나 원인을 찾기 어려웠습니다.
+              </p>
+            </div>
+            <div class="trouble-box">
+              <div class="trouble-box-title solution">해결</div>
+              <p>
+                이미지 읽기를 <code>decode_image()</code> 한 곳으로 모았습니다. JPG·PNG는 빠른 OpenCV로 먼저 읽고, 실패했을 때만 PIL + <code>pillow-heif</code>로 다시 읽습니다. 그래도 실패하면 원인이 드러나는 메시지로 명확한 에러를 냅니다. 화이트밸런스·퍼스널 컬러 분석이 같은 함수를 사용해 기기 종류와 상관없이 같은 방식으로 처리됩니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 이슈 4: ComfyUI 연결 거부 -->
+        <div class="trouble-card">
+          <div class="trouble-header">
+            <h3 class="trouble-title">⚠️ 이슈 4. ComfyUI가 꺼져 있으면 가상 피팅이 연결 거부로 실패 <span class="role-badge mine">원인 분석 · 문서화</span></h3>
+            <span class="tag">External Dependency</span>
+          </div>
+          <p class="trouble-desc">
+            가상 피팅 요청 시 <code>ConnectionRefusedError: [WinError 10061]</code>가 발생했습니다.
+          </p>
+          <div class="trouble-grid">
+            <div class="trouble-box">
+              <div class="trouble-box-title problem">원인</div>
+              <p>
+                가상 피팅은 FastAPI 안에서 이미지를 만드는 구조가 아니라, 별도로 실행 중인 ComfyUI(<code>127.0.0.1:8188</code>)에 작업을 넘기는 구조입니다. ComfyUI가 실행 중이지 않으면 요청을 받아줄 서버가 없어 연결이 거부됩니다. 또 결과를 최대 150초까지 기다리는 동안 서버가 다른 요청을 처리하지 못합니다.
+              </p>
+            </div>
+            <div class="trouble-box">
+              <div class="trouble-box-title solution">대응 &amp; 개선 방향</div>
+              <p>
+                1. (적용) 원인을 README에 정리하고, 시연 전 <code>http://127.0.0.1:8188</code> 접속을 먼저 확인하도록 실행 절차에 추가했습니다.<br>
+                2. (개선 제안, 미구현) 호출 전 ComfyUI 상태를 확인하는 API와 친절한 안내 메시지, 그리고 무거운 생성 작업을 작업 큐(Celery + Redis 등)로 분리하는 구조를 제안했습니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 시행착오와 해결 과정 -->
+        <div class="trial-container">
+          <div class="trial-title-wrap">
+            <span class="trial-badge">🔥 Trial &amp; Error</span>
+            <h3>시행착오와 해결 과정</h3>
+            <p>
+              처음 시도한 방식이 실패하고, 원인을 찾아 방향을 바꾼 사례 중 제가 직접 구현한 2가지입니다. (전체 8개 사례는 저장소의 <code>PORTFOLIO.md</code>에 정리했습니다.)
+            </p>
+          </div>
+
+          <!-- 시행착오 1: 조명 -->
+          <div class="trial-card">
+            <div class="trial-header">
+              <div class="trial-headline">
+                <span>💡</span> 시행착오 1. 촬영 조명에 따라 퍼스널 컬러 결과가 뒤집히는 문제
+              </div>
+              <span class="role-badge mine">직접 구현</span>
+            </div>
+
+            <p class="trial-intro">
+              같은 사람이 같은 날 찍어도 노란 실내등 아래에서는 Warm(봄·가을), 창가 자연광에서는 Cool(여름·겨울)로 결과가 바뀌었습니다. 퍼스널 컬러 결과는 LLM 프롬프트와 추천 상품의 색까지 바꾸기 때문에, 첫 단계의 이 오차가 추천 전체를 흔드는 구조였습니다.
+            </p>
+
+            <div class="trial-flow">
+              <div class="trial-step">
+                <span class="trial-step-badge fail">❌ 원인</span>
+                <h5>분류 로직이 아니라 입력 사진의 문제</h5>
+                <p>
+                  스마트폰의 자동 화이트밸런스가 장면마다 다르게 적용되어, 찍힌 RGB 값 자체가 이미 조명 색에 물들어 있었습니다. 이 치우침이 Warm/Cool을 가르는 LAB의 <code>b</code>(노랑–파랑) 값에 그대로 실려 판정 경계를 넘겨 버렸습니다.
+                </p>
+              </div>
+
+              <div class="trial-step">
+                <span class="trial-step-badge pivot">✅ 해결</span>
+                <h5>A4 용지를 흰색 기준으로 삼는 보정 단계 추가</h5>
+                <p>
+                  누구나 가진 A4 용지를 흰색 기준으로 사용하는 보정 단계를 얼굴 촬영 앞에 별도 API(<code>/calibrate</code>)로 분리했습니다. A4 중앙의 색이 회색(무채색)에서 얼마나 벗어났는지를 채널별 보정 배율로 계산해 얼굴 사진에 적용합니다. 보정값은 화면 상태로 남아 얼굴을 여러 번 다시 찍어도 같은 기준을 재사용합니다.
+                </p>
+              </div>
+            </div>
+
+            <div class="trial-takeaway">
+              <span>💡</span>
+              <div>
+                <strong>배운 점:</strong> 모델이나 규칙을 바꾸기 전에 입력 데이터부터 의심해야 합니다. 컴퓨터 비전 서비스에서는 촬영 조건과 전처리 품질이 결과 안정성에 큰 영향을 줍니다.
+              </div>
+            </div>
+          </div>
+
+          <!-- 시행착오 2: 피부 영역 -->
+          <div class="trial-card">
+            <div class="trial-header">
+              <div class="trial-headline">
+                <span>🎯</span> 시행착오 2. 머리카락·입술·배경색이 대표 피부색에 섞이는 문제
+              </div>
+              <span class="role-badge mine">직접 구현</span>
+            </div>
+
+            <p class="trial-intro">
+              초기에는 얼굴 검출 박스 전체의 평균색을 피부색으로 사용했습니다. 그 결과 검은 머리카락, 짙은 눈썹, 붉은 입술, 밝은 배경이 함께 섞여 실제보다 어두운 색이 나왔고, 분류 결과가 Deep 계열로 쏠렸습니다. 안경을 쓴 경우에는 오차가 더 컸습니다.
+            </p>
+
+            <div class="trial-flow">
+              <div class="trial-step">
+                <span class="trial-step-badge fail">❌ 원인</span>
+                <h5>사각형 영역 + 평균값 + 근거 없음</h5>
+                <p>
+                  사각형 박스는 피부가 아닌 픽셀을 포함할 수밖에 없고, 평균값은 그림자·하이라이트 같은 극단값에 끌려갑니다. 또 어느 픽셀이 쓰였는지 볼 수 없어, 결과가 이상해도 원인을 추적할 수 없었습니다.
+                </p>
+              </div>
+
+              <div class="trial-step">
+                <span class="trial-step-badge pivot">✅ 해결</span>
+                <h5>영역 → 대표값 → 근거 순서로 개선</h5>
+                <p>
+                  ① 랜드마크 16개로 만든 볼 다각형 안의 픽셀만 사용하고, ② 평균 대신 K-Means에서 가장 큰 그룹의 중심색을 대표색으로 쓰고, ③ 샘플 지점을 이미지에 표시하고 LAB 값도 응답에 넣어 경계 근처 결과를 숫자로 확인할 수 있게 했습니다.
+                </p>
+              </div>
+            </div>
+
+            <div class="trial-takeaway">
+              <span>💡</span>
+              <div>
+                <strong>배운 점:</strong> 결과뿐 아니라 '어디서 어떤 값을 뽑았는지'를 함께 보여주면 디버깅이 쉬워지고 사용자도 결과를 더 믿을 수 있습니다.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. 기술 선택 정리 -->
+    <section class="section">
+      <span class="section-num">10. Technology</span>
+      <h2 class="section-title">기술 선택 정리</h2>
+      <p class="section-desc">
+        단계별로 흔히 쓰는 방식과 Style.ai가 택한 방식을 비교했습니다. 정답 데이터를 확보하지 못해 정확도 수치는 측정하지 않았으며, 아래는 구현 방식 기준의 비교입니다.
+      </p>
+
+      <table class="custom-table" style="margin-top: 1.5rem;">
+        <thead>
+          <tr>
+            <th>단계</th>
+            <th>일반적인 방식</th>
+            <th>Style.ai 적용 기술</th>
+            <th>선택한 이유</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>조명 보정</strong></td>
+            <td>보정 없음</td>
+            <td class="highlight-cell">A4 용지 기준 채널별 보정</td>
+            <td>조명 색 때문에 피부색이 치우치는 문제 완화</td>
+          </tr>
+          <tr>
+            <td><strong>퍼스널 컬러</strong></td>
+            <td>4계절 분류</td>
+            <td class="highlight-cell">LAB 기반 12톤 규칙 분류</td>
+            <td>밝기와 색 성향을 따로 보고 세부 톤까지 구분</td>
+          </tr>
+          <tr>
+            <td><strong>체형·치수</strong></td>
+            <td>2D 실루엣 폭 측정</td>
+            <td class="highlight-cell">MediaPipe Pose 3D 관절 좌표 + BMI 보정</td>
+            <td>헐렁한 옷의 폭에 덜 흔들리는 측정</td>
+          </tr>
+          <tr>
+            <td><strong>날짜·날씨</strong></td>
+            <td>LLM이 날짜 추정</td>
+            <td class="highlight-cell">코드로 날짜 계산 + 5일 예보 매칭</td>
+            <td>"이번 주 토요일"을 실제 날짜의 날씨와 연결</td>
+          </tr>
+          <tr>
+            <td><strong>스타일 추론</strong></td>
+            <td>LLM 자유 서술</td>
+            <td class="highlight-cell">4단계 우선순위 프롬프트 + JSON 출력</td>
+            <td>장례식·우천 등 필수 조건 우선, 출력 형식 고정</td>
+          </tr>
+          <tr>
+            <td><strong>상품 검색</strong></td>
+            <td>키워드 일치 검색</td>
+            <td class="highlight-cell">SigLIP(768차원) + FAISS 벡터 검색</td>
+            <td>색·소재·스타일의 의미가 비슷한 상품 검색</td>
+          </tr>
+          <tr>
+            <td><strong>예산 배분</strong></td>
+            <td>가격 필터만 적용</td>
+            <td class="highlight-cell">남은 카테고리 최소 금액을 먼저 남겨두는 배분</td>
+            <td>앞 카테고리가 예산을 다 써버리는 문제 방지</td>
+          </tr>
+          <tr>
+            <td><strong>가상 피팅</strong></td>
+            <td>이미지 단순 합성</td>
+            <td class="highlight-cell">ComfyUI (CatVTON) 워크플로우</td>
+            <td>사용자 사진에 옷을 자연스럽게 입힌 결과 확인</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 11. 한계와 개선 방향 -->
+    <section class="section">
+      <span class="section-num">11. Next Steps</span>
+      <h2 class="section-title">한계와 개선 방향</h2>
+      <p class="section-desc">
+        현재 구현에서 확인한 한계와, 실제 서비스 수준으로 가기 위한 다음 단계입니다.
+      </p>
+
+      <div class="card-grid" style="margin-top: 2rem;">
+        <div class="card">
+          <div class="card-icon">🚀</div>
+          <h3 class="card-title">1. 무거운 작업 분리</h3>
+          <p class="card-body">
+            지금은 FAISS 인덱스를 요청마다 디스크에서 읽습니다. 서버 시작 시 한 번만 읽어 메모리에 두도록 바꾸고, ComfyUI 가상 피팅처럼 오래 걸리는 작업은 <strong>작업 큐(Celery + Redis 등)</strong>로 분리해 진행 상황을 SSE/WebSocket으로 알려 줄 계획입니다.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🎯</div>
+          <h3 class="card-title">2. 추천 순위 개선</h3>
+          <p class="card-body">
+            상위 5개 중 무작위로 고르는 방식을, 유사도·가격·TPO 적합도를 합친 <strong>점수 기반 정렬</strong>과 다양성을 함께 고려하는 <strong>MMR</strong>로 바꾸고, 예산은 카테고리 조합 전체를 비교하는 방식으로 개선합니다.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📏</div>
+          <h3 class="card-title">3. 정량 평가</h3>
+          <p class="card-body">
+            전문가가 진단한 퍼스널 컬러 데이터와 실측 치수 데이터를 확보해 정확도·오차를 측정하고, 고정된 테스트 요청으로 TPO 규칙 위반율을 확인합니다.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">⚙️</div>
+          <h3 class="card-title">4. 설정 분리와 안정성</h3>
+          <p class="card-body">
+            <code>API_BASE</code>, ComfyUI 주소·input 폴더 경로를 <code>.env</code>로 분리하고, LLM 응답은 Pydantic으로 검증합니다. ComfyUI 상태 확인 API를 추가해 꺼져 있을 때 바로 안내합니다.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🔒</div>
+          <h3 class="card-title">5. 개인정보 보호</h3>
+          <p class="card-body">
+            현재는 데모 분석을 위해 업로드한 얼굴·전신 사진과 음성이 <code>data/user_logs</code>에 저장됩니다. 실제 서비스에서는 사용자 동의, 보관 기간, 자동 삭제 정책을 마련하고, 분석이 끝나면 원본을 지우는 방식으로 바꿔야 합니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer>
+      <p class="footer-title">
+        Style.ai — AX YOUR STYLE (AI Personal Style Director)
+      </p>
+      <p>
+        Team Style.at (하준우, 복만수, 임경빈) · 포트폴리오 작성: 임경빈
+      </p>
+      <p style="margin-top: 1rem; font-size: 0.78rem;">
+        이 문서는 저장소의 실제 코드(<code>app/backend</code>, <code>app/frontend</code>)를 기준으로 작성했습니다.
+      </p>
+    </footer>
+
+  </div>
+
+</body>
+</html>

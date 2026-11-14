@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pet Log (펫로그) - AI Agent 기반 반려동물 케어 플랫폼 포트폴리오</title>
+  <meta name="description" content="반려동물 기록을 AI가 정리하고, 쌓인 기록을 읽어 다음 행동을 제안하는 AI Agent 기반 반려동물 케어 서비스 Pet Log 포트폴리오">
+  <script>
+    // Apply saved/system theme before first paint to avoid a light-mode flash.
+    (function () {
+      var saved = null;
+      try { saved = localStorage.getItem('petlog-portfolio-theme'); } catch (e) {}
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', saved || (prefersDark ? 'dark' : 'light'));
+    })();
+  </script>
+  <style>
+    /* ==========================================================================
+       CSS Reset & Global Variables
+       ========================================================================== */
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --primary-border: #bfdbfe;
+      --accent: #f59e0b;
+      --accent-light: #fef3c7;
+      --success: #10b981;
+      --success-light: #ecfdf5;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --purple: #8b5cf6;
+      --purple-light: #f5f3ff;
+      
+      --bg: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-alt: #f1f5f9;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      
+      --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      
+      --header-height: 64px;
+    }
+
+    /* Dark Mode Theme */
+    [data-theme="dark"] {
+      --bg: #090d16;
+      --bg-card: #111827;
+      --bg-alt: #1f2937;
+      --border: #283548;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-light: #64748b;
+      
+      --primary-light: rgba(37, 99, 235, 0.15);
+      --primary-border: rgba(37, 99, 235, 0.3);
+      --accent-light: rgba(245, 158, 11, 0.15);
+      --success-light: rgba(16, 185, 129, 0.15);
+      --danger-light: rgba(239, 68, 68, 0.15);
+      --purple-light: rgba(139, 92, 246, 0.15);
+      
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.05em 0.35em;
+    }
+
+    /* ==========================================================================
+       Layout & Container
+       ========================================================================== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    section {
+      padding: 5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section:last-of-type {
+      border-bottom: none;
+    }
+
+    /* Scroll progress bar */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent), var(--purple));
+      width: 0%;
+      z-index: 1000;
+      transition: width 0.1s;
+    }
+
+    /* ==========================================================================
+       Navigation Bar
+       ========================================================================== */
+    header {
+      position: sticky;
+      top: 0;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      height: var(--header-height);
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      transition: background 0.25s ease, border-color 0.25s ease;
+    }
+
+    [data-theme="dark"] header {
+      background: rgba(17, 24, 39, 0.88);
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .logo .logo-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary-border);
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-full);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--primary);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .theme-toggle {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--border);
+    }
+
+    /* ==========================================================================
+       Hero Section
+       ========================================================================== */
+    .hero {
+      padding: 5rem 0 4rem;
+      background: radial-gradient(circle at 10% 20%, var(--primary-light) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 80%, var(--purple-light) 0%, transparent 40%);
+      position: relative;
+    }
+
+    .hero-badge-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: var(--bg-alt);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .badge.badge-primary {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: var(--primary-border);
+    }
+
+    .badge.badge-accent {
+      background: var(--accent-light);
+      color: #b45309;
+      border-color: #fde68a;
+    }
+
+    [data-theme="dark"] .badge.badge-accent {
+      color: #fbbf24;
+      border-color: #78350f;
+    }
+
+    .badge.badge-success {
+      background: var(--success-light);
+      color: #047857;
+      border-color: #a7f3d0;
+    }
+
+    [data-theme="dark"] .badge.badge-success {
+      color: #34d399;
+      border-color: #064e3b;
+    }
+
+    .badge.badge-purple {
+      background: var(--purple-light);
+      color: #6d28d9;
+      border-color: #ddd6fe;
+    }
+
+    [data-theme="dark"] .badge.badge-purple {
+      color: #a78bfa;
+      border-color: #4c1d95;
+    }
+
+    .hero-title {
+      font-size: 2.75rem;
+      font-weight: 900;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 800px;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+
+    .hero-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 1.25rem;
+      margin-top: 2rem;
+    }
+
+    .meta-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .meta-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .meta-card .label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+
+    .meta-card .value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* ==========================================================================
+       Typography & Section Headers
+       ========================================================================== */
+    .section-header {
+      margin-bottom: 3rem;
+    }
+
+    .section-subtitle {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+    }
+
+    .section-desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 720px;
+    }
+
+    /* ==========================================================================
+       Cards, Grids & Comparisons
+       ========================================================================== */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.75rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.25s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary-border);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.01em;
+    }
+
+    .card-text {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Before & After Comparison */
+    .compare-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .compare-box {
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+
+    .compare-box.before {
+      border-left: 4px solid var(--danger);
+      background: linear-gradient(180deg, var(--danger-light) 0%, var(--bg-card) 30%);
+    }
+
+    .compare-box.after {
+      border-left: 4px solid var(--success);
+      background: linear-gradient(180deg, var(--success-light) 0%, var(--bg-card) 30%);
+    }
+
+    .compare-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .compare-box.before .compare-title { color: var(--danger); }
+    .compare-box.after .compare-title { color: var(--success); }
+
+    .compare-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .compare-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    /* Lists inside cards have no bullet span: keep label and text in one flowing line */
+    .card .compare-list li,
+    .architecture-box .compare-list li {
+      display: block;
+    }
+
+    .compare-list li span.bullet {
+      font-weight: bold;
+    }
+
+    /* ==========================================================================
+       Feature & Screenshot Showcase
+       ========================================================================== */
+    .feature-item {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 3rem;
+      align-items: center;
+      margin-bottom: 4rem;
+    }
+
+    .feature-item.reverse {
+      grid-template-columns: 1.2fr 1fr;
+    }
+
+    .feature-item.reverse .feature-media {
+      order: 1;
+    }
+
+    .feature-item.reverse .feature-content {
+      order: 2;
+    }
+
+    .feature-content .feature-tag {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-content h3 {
+      font-size: 1.65rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .feature-content p {
+      font-size: 1rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .feature-points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .feature-points li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .feature-points li::before {
+      content: "✓";
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .feature-media {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 0.75rem;
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .feature-media:hover {
+      transform: scale(1.02);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .feature-media img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: var(--radius-md);
+    }
+
+    .media-zoom-hint {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(15, 23, 42, 0.75);
+      color: #ffffff;
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-full);
+      backdrop-filter: blur(4px);
+      pointer-events: none;
+    }
+
+    /* Screen Gallery Grid */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .gallery-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .gallery-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary);
+    }
+
+    .gallery-card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .gallery-info {
+      padding: 1rem;
+    }
+
+    .gallery-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .gallery-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       Architecture & AI Pipeline Flow
+       ========================================================================== */
+    .architecture-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem;
+      margin: 2rem 0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .arch-flow-diagram {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .arch-layer {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.5rem;
+      background: var(--bg);
+      position: relative;
+    }
+
+    .arch-layer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .arch-layer-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .arch-components {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .arch-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .arch-connector {
+      text-align: center;
+      color: var(--text-light);
+      font-weight: bold;
+      font-size: 1.25rem;
+      margin: -0.5rem 0;
+    }
+
+    /* Tables */
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tech-table {
+      min-width: 640px;
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.95rem;
+    }
+
+    .tech-table th, .tech-table td {
+      padding: 0.9rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .tech-table th {
+      background: var(--bg-alt);
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .tech-table tr:hover {
+      background: var(--primary-light);
+    }
+
+    /* ==========================================================================
+       Troubleshooting & Trial and Error
+       ========================================================================== */
+    .trouble-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.25s ease;
+    }
+
+    .trouble-card:hover {
+      border-color: var(--primary-border);
+      box-shadow: var(--shadow-md);
+    }
+
+    .trouble-badge-wrap {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .trouble-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    .trouble-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-top: 1.25rem;
+    }
+
+    .trouble-sub-box {
+      background: var(--bg-alt);
+      padding: 1.25rem;
+      border-radius: var(--radius-md);
+      border-top: 3px solid var(--text-light);
+    }
+
+    .trouble-sub-box.problem { border-top-color: var(--danger); }
+    .trouble-sub-box.cause { border-top-color: var(--accent); }
+    .trouble-sub-box.solution { border-top-color: var(--success); }
+
+    .trouble-sub-box h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .trouble-sub-box.problem h4 { color: var(--danger); }
+    .trouble-sub-box.cause h4 { color: #b45309; }
+    [data-theme="dark"] .trouble-sub-box.cause h4 { color: #fbbf24; }
+    .trouble-sub-box.solution h4 { color: var(--success); }
+
+    .trouble-sub-box p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ==========================================================================
+       Agent Track & RAG Pipeline
+       ========================================================================== */
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+
+    .agent-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      transition: all 0.2s;
+    }
+
+    .agent-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+    }
+
+    .agent-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .agent-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .agent-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ==========================================================================
+       Results & Metrics
+       ========================================================================== */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin: 2.5rem 0;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .metric-num {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       Modal Lightbox
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-xl);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-content img {
+      max-width: 100%;
+      max-height: calc(85vh - 70px);
+      object-fit: contain;
+      display: block;
+    }
+
+    .modal-header {
+      padding: 0.85rem 1.25rem;
+      background: var(--bg-alt);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: var(--danger);
+    }
+
+    /* ==========================================================================
+       Footer
+       ========================================================================== */
+    footer {
+      background: var(--bg-alt);
+      border-top: 1px solid var(--border);
+      padding: 3rem 0;
+      text-align: center;
+    }
+
+    .footer-text {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* ==========================================================================
+       Responsive Media Queries
+       ========================================================================== */
+    @media (max-width: 1180px) {
+      .logo .logo-badge { display: none; }
+      .nav-links { gap: 1rem; }
+      .nav-links a { font-size: 0.9rem; }
+    }
+
+    @media (max-width: 968px) {
+      .grid-4, .grid-3 { grid-template-columns: repeat(2, 1fr); }
+      .grid-2, .trouble-grid { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      .feature-item, .feature-item.reverse {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      .feature-item.reverse .feature-media { order: 2; }
+      .feature-item.reverse .feature-content { order: 1; }
+      .compare-container { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .hero-title { font-size: 2rem; }
+      .metric-grid { grid-template-columns: 1fr; }
+      .grid-4, .grid-3 { grid-template-columns: 1fr; }
+      section { padding: 3.5rem 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Scroll Progress Indicator -->
+  <div id="progress-bar"></div>
+
+  <!-- Header / Navigation Bar -->
+  <header>
+    <div class="container nav-container">
+      <a href="#hero" class="logo">
+        🐾 Pet Log <span class="logo-badge">AI Agent Portfolio</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#problem">문제정의</a></li>
+        <li><a href="#my-role">내 역할</a></li>
+        <li><a href="#features">핵심기능</a></li>
+        <li><a href="#architecture">아키텍처</a></li>
+        <li><a href="#ai-deepdive">AI 에이전트</a></li>
+        <li><a href="#troubleshooting">시행착오</a></li>
+        <li><a href="#verification">테스트</a></li>
+        <li><a href="#results">성과 & 회고</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button id="themeToggle" class="theme-toggle" aria-label="다크/라이트 모드 전환" title="테마 전환">
+          🌓
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="hero" class="hero">
+    <div class="container">
+      <div class="hero-badge-group">
+        <span class="badge badge-primary">🚀 AI Agent 기반 반려동물 케어</span>
+        <span class="badge badge-accent">⚡ LangGraph 파이프라인</span>
+        <span class="badge badge-success">🤖 GPT + 로컬 Gemma(Ollama) 하이브리드</span>
+        <span class="badge badge-purple">📱 Next.js 16 + FastAPI</span>
+      </div>
+
+      <h1 class="hero-title">
+        기록을 쌓아두는 데서 끝나지 않고, <br>
+        쌓인 기록을 읽어 <span class="gradient-text">다음에 할 일을 알려주는</span> AI 케어 에이전트
+      </h1>
+
+      <p class="hero-desc">
+        <strong>Pet Log (펫로그)</strong>는 반려동물의 식사, 배변, 산책, 병원 기록을 말하듯 편하게 적거나 음성으로 남기면 AI가 항목별로 정리해 주는 서비스입니다.
+        기록 한 건만 보는 대신 최근 기록 흐름을 함께 보고, 주의가 필요한 변화 안내, 행동 개선 제안, 일정 알림, 맞춤 상품 추천, 동물병원 찾기까지 보호자가 다음 행동을 정하도록 돕습니다.
+      </p>
+
+      <div class="hero-meta-grid">
+        <div class="meta-card">
+          <div class="label">프로젝트 기간</div>
+          <div class="value">2026. 04. 22 ~ 2026. 05. 18</div>
+        </div>
+        <div class="meta-card">
+          <div class="label">팀 구성 (4인)</div>
+          <div class="value">강현준, 김경표, 복만수, 임경빈</div>
+        </div>
+        <div class="meta-card">
+          <div class="label">내 역할</div>
+          <div class="value">백엔드 · AI Agent · 외부 API 연동</div>
+        </div>
+        <div class="meta-card">
+          <div class="label">주요 기술 스택</div>
+          <div class="value">Next.js 16, FastAPI, LangGraph, SQLite</div>
+        </div>
+        <div class="meta-card">
+          <div class="label">AI 모델</div>
+          <div class="value">GPT-5-mini (Cloud) + Gemma 4 (Local)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 1: Overview & Problem Definition -->
+  <section id="problem">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle">Why We Built Pet Log</div>
+        <h2 class="section-title">기존 펫 케어 앱의 한계와 Pet Log의 해결책</h2>
+        <p class="section-desc">
+          반려동물 앱은 많지만 대부분 캘린더나 기록장처럼 '저장'에서 끝납니다. 기록이 쌓여도 보호자가 직접 해석해야 하니 꾸준히 쓰기 어렵습니다.
+        </p>
+      </div>
+
+      <!-- Before vs After -->
+      <div class="compare-container">
+        <div class="compare-box before">
+          <div class="compare-title">
+            <span>❌</span> 기존 반려동물 관리 앱 (저장 중심)
+          </div>
+          <ul class="compare-list">
+            <li>
+              <span class="bullet">•</span>
+              <strong>입력이 번거로움:</strong> 시간, 사료 양, 배변 상태를 칸마다 따로 입력해야 해서 기록이 빠지고 결국 앱을 안 쓰게 됨.
+            </li>
+            <li>
+              <span class="bullet">•</span>
+              <strong>쌓이기만 하는 기록:</strong> 지난 기록을 다시 보는 용도일 뿐, "지금 무엇을 해야 하는지"는 알려주지 않음.
+            </li>
+            <li>
+              <span class="bullet">•</span>
+              <strong>흐름을 보지 못함:</strong> 같은 '구토'나 '식욕 저하'라도 나이, 지병, 최근 며칠간의 변화에 따라 의미가 다르지만 기록을 한 건씩만 보여줌.
+            </li>
+            <li>
+              <span class="bullet">•</span>
+              <strong>늦은 대응:</strong> 증상이 심해진 뒤에야 병원을 찾게 되기 쉬움.
+            </li>
+          </ul>
+        </div>
+
+        <div class="compare-box after">
+          <div class="compare-title">
+            <span>✅</span> Pet Log (해석하고 다음 행동을 제안)
+          </div>
+          <ul class="compare-list">
+            <li>
+              <span class="bullet">•</span>
+              <strong>말하듯 입력:</strong> "아침에 사료 50g 먹고 저녁에 20분 산책했어"처럼 적거나 말하면 AI가 식사·산책 같은 항목으로 나눠 정리.
+            </li>
+            <li>
+              <span class="bullet">•</span>
+              <strong>기록 → 해석 → 다음 행동:</strong> "주의 기록이 있습니다. 같은 변화가 반복되는지 지켜보고 필요하면 병원 상담을 권합니다"처럼 다음에 할 일을 안내.
+            </li>
+            <li>
+              <span class="bullet">•</span>
+              <strong>최근 흐름을 함께 분석:</strong> 반려동물 프로필(품종·나이·특이사항)과 최근 30일 기록을 같이 보고 반복 패턴, 기록 누락, 상태 변화를 찾음.
+            </li>
+            <li>
+              <span class="bullet">•</span>
+              <strong>병원·상품까지 연결:</strong> 주변 동물병원 찾기와 병원 상담 전 기록 요약 미리보기, 기록에 맞는 사료·용품 추천으로 이어짐.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 3 Core Philosophy Cards -->
+      <div class="grid-3" style="margin-top: 2.5rem;">
+        <div class="card">
+          <div class="card-icon">🎙️</div>
+          <h3 class="card-title">1. 기록 부담 줄이기</h3>
+          <p class="card-text">
+            음성은 Whisper로 글자로 바꾸고, 자유롭게 쓴 문장은 LLM이 항목·수치·신뢰도로 정리합니다. 저장 전에 정리된 결과를 미리 보고 고칠 수 있습니다.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧠</div>
+          <h3 class="card-title">2. 쌓인 기록의 흐름 읽기</h3>
+          <p class="card-text">
+            한 번 묻고 끝나는 대화가 아니라, 프로필과 최근 기록을 함께 보고 식사량·산책·배변·행동의 변화와 빠진 기록을 찾아 알림과 제안으로 연결합니다.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🛡️</div>
+          <h3 class="card-title">3. 진단하지 않는 AI</h3>
+          <p class="card-text">
+            병명을 단정하거나 처방하지 않고 병원 상담을 권하도록, '위험 신호 판단'과 '행동 제안'을 서로 다른 에이전트로 나눠 역할을 제한했습니다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: My Role -->
+  <section id="my-role">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle">My Contribution</div>
+        <h2 class="section-title">내가 맡은 부분</h2>
+        <p class="section-desc">
+          4인 팀 프로젝트에서 임경빈이 직접 구현한 범위입니다. 백엔드, AI Agent, 외부 API 연동을 맡았습니다.
+        </p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon">🗄️</div>
+          <h3 class="card-title">데이터 저장</h3>
+          <p class="card-text">
+            SQLite 연결과 초기 데이터(seed)를 구성하고, 반려동물·기록·일정 저장소(repository)를 실제 DB에 연결했습니다.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🛒</div>
+          <h3 class="card-title">쇼핑·병원 추천</h3>
+          <p class="card-text">
+            Naver Shopping 상품 추천과 Google Places 동물병원 추천을 구현하고, API가 실패해도 화면이 멈추지 않도록 대체 결과·캐시·호출 횟수 제한을 붙였습니다.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-icon">💬</div>
+          <h3 class="card-title">커뮤니티 기능</h3>
+          <p class="card-text">
+            게시판·게시글·댓글·반응 API와 저장소를 만들고, Next.js 커뮤니티 화면을 실제 API에 연결했습니다.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔀</div>
+          <h3 class="card-title">쇼핑 추천 흐름 개선</h3>
+          <p class="card-text">
+            프로젝트 종료 후 쇼핑 추천을 카테고리 준비 → 상품 검색 → 후보 선택 → 결과 생성의 LangGraph 4단계로 나눠, 단계별로 테스트할 수 있게 고쳤습니다.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧪</div>
+          <h3 class="card-title">테스트 작성</h3>
+          <p class="card-text">
+            DB, 커뮤니티, 쇼핑, 병원 추천에 대해 단위·HTTP·스모크 테스트를 작성해 정상 동작과 실패 상황을 함께 검증했습니다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Core Features & UI Showcase -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle">Core Capabilities & UI</div>
+        <h2 class="section-title">주요 기능 및 서비스 화면 상세</h2>
+        <p class="section-desc">
+          Next.js 16으로 만든 모바일 우선 웹 화면과 백엔드 AI 에이전트가 함께 동작하는 주요 흐름입니다. (이미지를 누르면 크게 볼 수 있습니다)
+        </p>
+      </div>
+
+      <!-- Feature 1: Home & AI Question Flow -->
+      <div class="feature-item">
+        <div class="feature-content">
+          <div class="feature-tag">Feature 01 · Home</div>
+          <h3>홈 화면: AI가 먼저 묻고, 보호자도 물어보기</h3>
+          <p>
+            앱을 열면 오늘의 식사·활동·배변 요약과 알림, 다가오는 일정이 먼저 보입니다. 기록이 비어 있으면 AI가 먼저 질문 카드를 띄우고, 궁금한 점은 '물어보기' 버튼으로 바로 질문할 수 있습니다.
+          </p>
+          <ul class="feature-points">
+            <li>오늘 요약(식사·활동·배변), 오늘 알림, 오늘 할 일, 최근 기록 표시</li>
+            <li>어제 기록이 비어 있으면 "오늘 배변 상태는 어땠나요?" 같은 AI 질문 카드 노출</li>
+            <li>'물어보기' 패널에서 반려동물 기록을 참고한 답변 받기 (음성 입력 지원)</li>
+          </ul>
+        </div>
+        <div class="feature-media" onclick="openModal('./assets/images/portfolio-02-ai-question-flow.png', '홈 화면의 AI 질문 카드와 물어보기 흐름')">
+          <img src="./assets/images/portfolio-02-ai-question-flow.png" alt="홈 AI 질문 흐름" loading="lazy">
+          <span class="media-zoom-hint">🔍 클릭하여 확대</span>
+        </div>
+      </div>
+
+      <!-- Feature 2: Natural Language Record Structuring -->
+      <div class="feature-item reverse">
+        <div class="feature-content">
+          <div class="feature-tag">Feature 02 · Record Input</div>
+          <h3>말하듯 쓰면 AI가 항목별로 정리</h3>
+          <p>
+            보호자가 평소 말투로 적거나 음성으로 남긴 기록을 AI가 식사, 산책, 배변, 병원/약, 행동 같은 항목과 수치로 나눠 정리합니다.
+          </p>
+          <ul class="feature-points">
+            <li>음성 입력: 녹음 파일을 Whisper로 글자로 바꾸고, LLM이 문장을 다듬음</li>
+            <li>RecordStructuringAgent: 항목, 제목, 내용, 수치, 신뢰도, 확인 필요 여부 추출</li>
+            <li>저장 전에 정리 결과를 미리 보여줘 잘못 저장되는 것을 방지</li>
+          </ul>
+        </div>
+        <div class="feature-media" onclick="openModal('./assets/images/portfolio-04-record-ai-structure.png', '자연어 기록 입력 및 AI 구조화 미리보기')">
+          <img src="./assets/images/portfolio-04-record-ai-structure.png" alt="기록 구조화 화면" loading="lazy">
+          <span class="media-zoom-hint">🔍 클릭하여 확대</span>
+        </div>
+      </div>
+
+      <!-- Feature 3: Analysis Report & Timeline -->
+      <div class="feature-item">
+        <div class="feature-content">
+          <div class="feature-tag">Feature 03 · Analysis</div>
+          <h3>쌓인 기록으로 보는 주간·월간 리포트</h3>
+          <p>
+            식사, 산책, 배변, 행동 기록을 주간·월간 단위로 모아 항목별 상태(안정·확인 필요·주의)와 변화 추이 그래프로 보여줍니다.
+          </p>
+          <ul class="feature-points">
+            <li>ContextAnalysisAgent가 최근 기록의 반복 패턴, 빠진 기록, 상태 변화를 분석</li>
+            <li>주의 기록이 있으면 "반복되는지 지켜보고 필요하면 병원 상담" 같은 안내 표시</li>
+            <li>타임라인에서 항목별·날짜별로 지난 기록을 바로 찾아보기</li>
+          </ul>
+        </div>
+        <div class="feature-media" onclick="openModal('./assets/images/portfolio-05-analysis-report.png', '기록 기반 분석 리포트')">
+          <img src="./assets/images/portfolio-05-analysis-report.png" alt="분석 리포트 화면" loading="lazy">
+          <span class="media-zoom-hint">🔍 클릭하여 확대</span>
+        </div>
+      </div>
+
+      <!-- Feature 4: Shopping Recommendation Agent -->
+      <div class="feature-item reverse">
+        <div class="feature-content">
+          <div class="feature-tag">Feature 04 · Shopping</div>
+          <h3>기록을 근거로 한 맞춤 상품 추천</h3>
+          <p>
+            인기 상품 순위가 아니라 반려동물 프로필과 최근 기록을 바탕으로 Naver Shopping에서 상품을 찾고, LLM이 "왜 이 상품인지" 추천 이유를 붙여 보여줍니다.
+          </p>
+          <ul class="feature-points">
+            <li>ShoppingAgent(LangGraph 4단계) + ShoppingRecommendationAgent(후보 선택·이유 생성)</li>
+            <li>"식사량이 흔들린 기록이 있어 급여량과 원료를 함께 확인" 같은 기록 기반 추천 이유</li>
+            <li>사료·건강 용품·케어 용품·생활 용품 필터, 최저가와 상품 링크 표시</li>
+            <li>API나 LLM이 실패해도 화면이 비지 않도록 단계별 대체 결과 제공</li>
+          </ul>
+        </div>
+        <div class="feature-media" onclick="openModal('./assets/images/portfolio-06-shopping-recommendation.png', '기록 기반 맞춤 쇼핑 추천')">
+          <img src="./assets/images/portfolio-06-shopping-recommendation.png" alt="쇼핑 추천 화면" loading="lazy">
+          <span class="media-zoom-hint">🔍 클릭하여 확대</span>
+        </div>
+      </div>
+
+      <!-- Feature 5: Hospital Finder & Medical Summary -->
+      <div class="feature-item">
+        <div class="feature-content">
+          <div class="feature-tag">Feature 05 · Hospital</div>
+          <h3>내 주변 동물병원 찾기 & 상담 준비 리포트</h3>
+          <p>
+            Google Places로 현재 위치 근처 동물병원을 찾아 지도에 표시하고, 병원에 가기 전 최근 주의 기록과 보호자 메모를 묶은 상담 준비 리포트 미리보기를 만들어 줍니다.
+          </p>
+          <ul class="feature-points">
+            <li>'응급·호흡·출혈·경련' 같은 표현이나 밤 10시~아침 6시에는 검색 반경을 10km로 넓히고 24시 병원을 우선 표시</li>
+            <li>병원별 거리와 운영 상태(24시 운영·진료 중·진료 종료) 표시</li>
+            <li>주의 기록, 증상 메모, 확인할 항목 체크리스트(식사량·배변·행동 변화·복용 약/접종)를 한 화면에 정리</li>
+          </ul>
+        </div>
+        <div class="feature-media" onclick="openModal('./assets/images/portfolio-07-hospital-report.png', '병원 연계 및 상담 준비 리포트')">
+          <img src="./assets/images/portfolio-07-hospital-report.png" alt="병원 추천 화면" loading="lazy">
+          <span class="media-zoom-hint">🔍 클릭하여 확대</span>
+        </div>
+      </div>
+
+      <!-- Feature 6: Pet Persona & Q&A Panel -->
+      <div class="feature-item reverse">
+        <div class="feature-content">
+          <div class="feature-tag">Feature 06 · AI Care Q&A</div>
+          <h3>AI 케어 질문 패널 & 반려동물 대화</h3>
+          <p>
+            "오늘 상태 괜찮아?", "백신 전에 확인할 게 있어?"처럼 물으면 반려동물의 최근 기록을 참고해 답합니다. 반려동물이 직접 말하는 듯한 대화 모드도 있습니다.
+          </p>
+          <ul class="feature-points">
+            <li>CareAnswerProvider: 질문할 때 최근 기록과 케어 지식 검색 결과를 함께 넣어 답변</li>
+            <li>PetPersonaAgent: 이름·성격·최근 기록을 반영한 반려동물 말투로 대화</li>
+            <li>edge-tts 음성 합성으로 기록 입력 안내와 새 알림을 소리로 읽어줌</li>
+          </ul>
+        </div>
+        <div class="feature-media" onclick="openModal('./assets/images/portfolio-08-ai-care-panel.png', 'AI 케어 질문 패널')">
+          <img src="./assets/images/portfolio-08-ai-care-panel.png" alt="AI 케어 패널 화면" loading="lazy">
+          <span class="media-zoom-hint">🔍 클릭하여 확대</span>
+        </div>
+      </div>
+
+      <!-- Additional Gallery Grid -->
+      <div class="section-header" style="margin-top: 5rem; margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800;">📱 전체 서비스 화면 및 인포그래픽 모음</h3>
+      </div>
+      
+      <div class="gallery-grid">
+        <div class="gallery-card" onclick="openModal('./assets/images/portfolio-01-overall-screens.png', 'Pet Log 전체 화면 구성 (디자인 시안)')">
+          <img src="./assets/images/portfolio-01-overall-screens.png" alt="전체 화면 디자인 시안" loading="lazy">
+          <div class="gallery-info">
+            <div class="gallery-title">전체 화면 구성 (디자인 시안)</div>
+            <div class="gallery-desc">기획 단계에서 정리한 12개 화면 구성</div>
+          </div>
+        </div>
+        <div class="gallery-card" onclick="openModal('./assets/images/portfolio-03-home-ai-care.png', '홈 화면')">
+          <img src="./assets/images/portfolio-03-home-ai-care.png" alt="홈 화면" loading="lazy">
+          <div class="gallery-info">
+            <div class="gallery-title">홈 화면</div>
+            <div class="gallery-desc">오늘 요약, 알림, AI 질문 카드</div>
+          </div>
+        </div>
+        <div class="gallery-card" onclick="openModal('./assets/images/infographic-shopping-agent.png', '쇼핑 추천 에이전트 인포그래픽')">
+          <img src="./assets/images/infographic-shopping-agent.png" alt="쇼핑 인포그래픽" loading="lazy">
+          <div class="gallery-info">
+            <div class="gallery-title">쇼핑 추천 에이전트 구조</div>
+            <div class="gallery-desc">LangGraph 4단계와 단계별 대체 결과</div>
+          </div>
+        </div>
+        <div class="gallery-card" onclick="openModal('./assets/images/infographic-hospital-recommendation.png', '병원 추천 인포그래픽')">
+          <img src="./assets/images/infographic-hospital-recommendation.png" alt="병원 인포그래픽" loading="lazy">
+          <div class="gallery-info">
+            <div class="gallery-title">병원 추천 구조</div>
+            <div class="gallery-desc">응급 판단 → 반경 조정 → 검색 → 정렬, 실패 시 대체 링크</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: System Architecture & Clean Architecture -->
+  <section id="architecture">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle">System Architecture</div>
+        <h2 class="section-title">전체 시스템 구조와 계층 분리</h2>
+        <p class="section-desc">
+          프론트엔드와 백엔드의 역할을 나누고, 백엔드의 핵심 로직이 웹 프레임워크(FastAPI)나 DB, OpenAI SDK 같은 외부 라이브러리에 직접 묶이지 않도록 계층을 나눴습니다.
+        </p>
+      </div>
+
+      <!-- Architecture Box -->
+      <div class="architecture-box">
+        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;">🏗️ End-to-End System Flow</h3>
+        
+        <div class="arch-flow-diagram">
+          <!-- Layer 1 -->
+          <div class="arch-layer">
+            <div class="arch-layer-header">
+              <span class="arch-layer-title">🖥️ Client / Presentation Layer</span>
+              <span class="badge badge-primary">Mobile-First</span>
+            </div>
+            <div class="arch-components">
+              <div class="arch-pill">Next.js 16 (App Router)</div>
+              <div class="arch-pill">React 19 & Tailwind CSS 4</div>
+              <div class="arch-pill">모바일 화면 기준 (375px ~ 430px)</div>
+              <div class="arch-pill">Web Speech API / 음성 녹음(MediaRecorder)</div>
+            </div>
+          </div>
+
+          <div class="arch-connector">↓ JSON (Axios)</div>
+
+          <!-- Layer 2 -->
+          <div class="arch-layer">
+            <div class="arch-layer-header">
+              <span class="arch-layer-title">🌐 Next.js API 프록시</span>
+              <span class="badge badge-accent">Boundary</span>
+            </div>
+            <div class="arch-components">
+              <div class="arch-pill">Next.js Route Handlers (/api/v1/...)</div>
+              <div class="arch-pill">FastAPI로 요청 전달 + 요청별 타임아웃</div>
+              <div class="arch-pill">백엔드 미연결 시 Mock 데이터로 대체</div>
+            </div>
+          </div>
+
+          <div class="arch-connector">↓ REST API</div>
+
+          <!-- Layer 3 -->
+          <div class="arch-layer">
+            <div class="arch-layer-header">
+              <span class="arch-layer-title">⚙️ Backend Application & Agent Orchestration</span>
+              <span class="badge badge-purple">Python 3.12 + FastAPI + LangGraph</span>
+            </div>
+            <div class="arch-components">
+              <div class="arch-pill">FastAPI Entrypoint</div>
+              <div class="arch-pill">Application Pipeline (기능 흐름)</div>
+              <div class="arch-pill">LangGraph StateGraph (기록 파이프라인·쇼핑 추천)</div>
+              <div class="arch-pill">ToolRegistry & LangChain Middleware</div>
+              <div class="arch-pill">Domain (순수 데이터 타입)</div>
+            </div>
+          </div>
+
+          <div class="arch-connector">↓ 인터페이스로 구현체 주입</div>
+
+          <!-- Layer 4 -->
+          <div class="arch-layer">
+            <div class="arch-layer-header">
+              <span class="arch-layer-title">🗄️ Infrastructure · 모델 · 외부 API</span>
+              <span class="badge badge-success">Cloud + Local</span>
+            </div>
+            <div class="arch-components">
+              <div class="arch-pill">SQLite (Repository 패턴)</div>
+              <div class="arch-pill">ChromaDB (케어 지식 벡터 검색)</div>
+              <div class="arch-pill">OpenAI GPT-5-mini · Gemini (예비)</div>
+              <div class="arch-pill">로컬 Ollama (Gemma 4 e4b)</div>
+              <div class="arch-pill">Whisper (STT) & edge-tts (TTS)</div>
+              <div class="arch-pill">Naver Shopping · Google Places · Tavily</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer Rule & Hybrid LLM -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-icon">🏛️</div>
+          <h3 class="card-title">계층 분리 규칙과 자동 검사</h3>
+          <p class="card-text">
+            <code>domain</code>과 <code>application</code> 계층에는 FastAPI, OpenAI SDK, DB 드라이버를 직접 import하지 않는다는 규칙을 두고, 이를 <code>rg</code> 명령으로 검사해 위반이 생기면 바로 드러나게 했습니다.
+            DB나 LLM 구현체는 <code>infrastructure</code>에 두고 시작 시점에 주입하므로, 모델이나 저장소를 바꿔도 상위 코드는 그대로 둘 수 있습니다.
+            (단, 단계 흐름을 그래프로 정의하기 위해 LangGraph는 <code>application</code>의 파이프라인에서 사용합니다.)
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🔄</div>
+          <h3 class="card-title">여러 모델을 이어 붙인 예비(Fallback) 구조</h3>
+          <p class="card-text">
+            기능마다 사용할 모델을 환경변수로 정하고(기본 GPT-5-mini), 타임아웃·호출 한도 초과·서버 오류가 나면 예비 GPT 모델 → Gemini → 로컬 Gemma(Ollama) 순서로 자동으로 넘어갑니다.
+            모델 이름만 바꾸면 로컬 Gemma를 기본 모델로 쓸 수도 있고, 서버 시작 시 Ollama 실행과 모델 미리 불러오기를 자동으로 처리합니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- Tech Stack Table -->
+      <div style="margin-top: 3rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 1rem;">📋 기술 스택</h3>
+        <div class="table-scroll">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>영역</th>
+              <th>기술 / 라이브러리</th>
+              <th>버전</th>
+              <th>쓰임새</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Frontend</strong></td>
+              <td>Next.js, React, TypeScript</td>
+              <td>16.2.4 / 19.2.5</td>
+              <td>App Router 페이지, API 프록시(Route Handler), 타입 검사</td>
+            </tr>
+            <tr>
+              <td><strong>UI</strong></td>
+              <td>Tailwind CSS</td>
+              <td>4.x</td>
+              <td>모바일 우선 화면 스타일링</td>
+            </tr>
+            <tr>
+              <td><strong>Frontend 테스트</strong></td>
+              <td>tsx --test, Playwright</td>
+              <td>4.21 / 1.59.1</td>
+              <td>단위 테스트(스프린트 1~19), 모바일 화면 점검과 기록 입력 E2E</td>
+            </tr>
+            <tr>
+              <td><strong>Backend</strong></td>
+              <td>Python, FastAPI, Uvicorn</td>
+              <td>3.12+ / 0.136.1</td>
+              <td>REST API 서버, Pydantic 요청·응답 검증</td>
+            </tr>
+            <tr>
+              <td><strong>Agent</strong></td>
+              <td>LangGraph, LangChain</td>
+              <td>1.1+ / 1.0+</td>
+              <td>기록 파이프라인·쇼핑 추천의 단계 흐름(StateGraph), Tool·Middleware 연결</td>
+            </tr>
+            <tr>
+              <td><strong>AI / LLM</strong></td>
+              <td>GPT-5-mini, Gemini 2.0 Flash, Gemma 4 (Ollama), Whisper</td>
+              <td>Cloud & Local</td>
+              <td>기록 정리, 케어 답변, 추천 이유 생성, 음성 → 글자 변환(STT)</td>
+            </tr>
+            <tr>
+              <td><strong>Storage</strong></td>
+              <td>SQLite, ChromaDB</td>
+              <td>-</td>
+              <td>기록·일정·알림·커뮤니티 저장 / 케어 지식 벡터 검색</td>
+            </tr>
+            <tr>
+              <td><strong>External APIs</strong></td>
+              <td>Naver Shopping, Google Places, Tavily</td>
+              <td>REST API</td>
+              <td>상품 검색, 주변·24시 동물병원 검색, 케어 지식 웹 검색</td>
+            </tr>
+            <tr>
+              <td><strong>Deploy</strong></td>
+              <td>Azure App Service</td>
+              <td>-</td>
+              <td>프론트·백엔드 패키징/배포 스크립트 준비</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: AI Agent & LLM Orchestration Deep Dive -->
+  <section id="ai-deepdive">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle">AI Agent Deep Dive</div>
+        <h2 class="section-title">역할별 AI Agent와 LangGraph 적용 범위</h2>
+        <p class="section-desc">
+          프롬프트 하나에 모든 일을 맡기지 않고, 기록 정리·분석·위험 판단·제안·알림·추천을 각각 다른 Agent가 맡도록 나눴습니다.
+          LangGraph는 단계가 길고 중간에 갈림길이 있는 흐름(기록 입력 파이프라인, 쇼핑 추천)에만 쓰고, 짧은 흐름(병원 추천)은 일반 코드로 두었습니다.
+        </p>
+      </div>
+
+      <!-- Record pipeline flow -->
+      <div class="architecture-box" style="margin-top: 0;">
+        <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;">🧭 기록 입력 파이프라인 (LangGraph StateGraph)</h3>
+        <div class="arch-components">
+          <div class="arch-pill">structure_record</div><span class="arch-connector" style="margin:0">→</span>
+          <div class="arch-pill">load_context</div><span class="arch-connector" style="margin:0">→</span>
+          <div class="arch-pill">analyze_context</div><span class="arch-connector" style="margin:0">→</span>
+          <div class="arch-pill">detect_risk</div>
+        </div>
+        <p class="card-text" style="margin: 1rem 0 0.5rem;">여기서 두 갈래로 나뉩니다.</p>
+        <ul class="compare-list">
+          <li><strong>미리보기 또는 확인 필요:</strong> build_confirmation_result → 끝 (보호자가 결과를 확인)</li>
+          <li><strong>저장 확정:</strong> save_records → suggest_care → recommend_shopping → plan_reminders → build_saved_result → 끝</li>
+        </ul>
+      </div>
+
+      <!-- Agent Grid -->
+      <div class="agent-grid">
+        <div class="agent-card">
+          <div class="agent-header">
+            <span class="agent-name">RecordStructuringAgent</span>
+            <span class="badge badge-primary">Input</span>
+          </div>
+          <p class="agent-desc">자유롭게 쓴 문장에서 항목, 제목, 내용, 수치, 신뢰도, 확인 필요 여부를 뽑아 저장할 수 있는 형태로 정리</p>
+        </div>
+
+        <div class="agent-card">
+          <div class="agent-header">
+            <span class="agent-name">ContextAnalysisAgent</span>
+            <span class="badge badge-primary">Analytics</span>
+          </div>
+          <p class="agent-desc">최근 기록을 보고 반복 행동, 상태 변화, 빠진 기록을 찾고 관련 화면으로 이동할 경로까지 제안</p>
+        </div>
+
+        <div class="agent-card">
+          <div class="agent-header">
+            <span class="agent-name">RiskDetectionAgent</span>
+            <span class="badge badge-accent">Safety</span>
+          </div>
+          <p class="agent-desc">위험 신호 여부만 판단하고 행동 제안은 하지 않음. 판단은 교체 가능한 정책 객체(RiskSignalPolicy)에 맡기며, 연결 구조는 완성했고 판정 규칙은 최소 구현 상태</p>
+        </div>
+
+        <div class="agent-card">
+          <div class="agent-header">
+            <span class="agent-name">SuggestionAgent</span>
+            <span class="badge badge-primary">Care</span>
+          </div>
+          <p class="agent-desc">분석 결과를 바탕으로 산책량 조절, 식사 확인 같은 행동 개선 가이드와 건강 관리 제안 생성</p>
+        </div>
+
+        <div class="agent-card">
+          <div class="agent-header">
+            <span class="agent-name">ReminderAgent</span>
+            <span class="badge badge-purple">Schedule</span>
+          </div>
+          <p class="agent-desc">예방접종, 약 복용, 건강검진, 사료 변경 시기에 맞춘 리마인더 계획</p>
+        </div>
+
+        <div class="agent-card">
+          <div class="agent-header">
+            <span class="agent-name">NotificationAgent</span>
+            <span class="badge badge-purple">Notify</span>
+          </div>
+          <p class="agent-desc">기록 누락·위험·행동 변화·일정 4가지 알림 후보를 만들고, 같은 알림이 반복되지 않게 중복 제거 후 읽음 처리까지 연결</p>
+        </div>
+
+        <div class="agent-card">
+          <div class="agent-header">
+            <span class="agent-name">ShoppingAgent</span>
+            <span class="badge badge-success">Commerce</span>
+          </div>
+          <p class="agent-desc">LangGraph 4단계(카테고리 준비 → 상품 검색 → 후보 선택 → 결과 생성)로 Naver Shopping 상품을 찾고 LLM이 추천 이유 작성</p>
+        </div>
+
+        <div class="agent-card">
+          <div class="agent-header">
+            <span class="agent-name">HospitalRecommendationAgent</span>
+            <span class="badge badge-accent">Hospital</span>
+          </div>
+          <p class="agent-desc">응급 표현이나 심야 시간이면 반경 10km·24시 병원 우선으로 바꿔 Google Places에서 검색. 단계가 짧아 LangGraph 없이 일반 코드로 구현</p>
+        </div>
+
+        <div class="agent-card">
+          <div class="agent-header">
+            <span class="agent-name">PetPersonaAgent</span>
+            <span class="badge badge-primary">Chat</span>
+          </div>
+          <p class="agent-desc">반려동물 프로필(이름, 성격, 나이)과 최근 기록을 반영해 반려동물이 직접 말하는 듯한 대화 응답 생성</p>
+        </div>
+
+        <div class="agent-card">
+          <div class="agent-header">
+            <span class="agent-name">CareAnswerProvider (RAG)</span>
+            <span class="badge badge-purple">Knowledge</span>
+          </div>
+          <p class="agent-desc">질문과 비슷한 케어 지식을 벡터 검색으로 찾아 반려동물의 최근 기록과 함께 넣고 답변 생성</p>
+        </div>
+      </div>
+
+      <!-- Middleware & Safety Architecture -->
+      <div class="grid-2" style="margin-top: 2.5rem;">
+        <div class="card">
+          <h3 class="card-title">🛡️ 도구 분리와 LangChain Middleware</h3>
+          <p class="card-text">
+            Agent가 할 수 있는 일을 제한하기 위해 읽기 도구(<code>get_pet_profile</code>, <code>list_recent_records</code>)와 쓰기 도구(<code>save_pet_record</code>)를 나누고, 파이프라인 단계마다 필요한 미들웨어만 붙였습니다.
+          </p>
+          <ul class="compare-list" style="margin-top: 1rem;">
+            <li><strong>저장 승인:</strong> 기록 저장 도구는 실행 전에 승인을 받도록 설정 (Human-in-the-loop)</li>
+            <li><strong>호출 횟수 제한:</strong> 조회 도구 최대 6회, 저장 도구 최대 5회로 제한해 무한 반복 방지</li>
+            <li><strong>개인정보 가림:</strong> 입력과 도구 결과에 들어간 이메일 주소를 자동으로 가림(redact)</li>
+            <li><strong>재시도 & 디버그 로그:</strong> 모델·도구 호출이 일시적으로 실패하면 재시도하고 단계별 로그 기록</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">📚 케어 지식 검색(RAG) 파이프라인</h3>
+          <p class="card-text">
+            AI가 근거 없이 지어내는 답변을 줄이기 위해, 웹에서 찾은 케어 정보를 LLM이 한 번 걸러낸 뒤 저장해 두고 질문할 때 꺼내 쓰는 구조를 만들었습니다.
+          </p>
+          <ul class="compare-list" style="margin-top: 1rem;">
+            <li><strong>수집:</strong> Tavily로 케어 주제를 웹 검색</li>
+            <li><strong>검수:</strong> LLM(GPT-5-mini)이 신뢰도·위험도를 평가해 통과한 내용만 정리하고 광고·추측은 제외</li>
+            <li><strong>저장:</strong> text-embedding-3-small로 임베딩해 ChromaDB에 저장 (중복·빈 내용은 건너뜀)</li>
+            <li><strong>답변:</strong> 질문과 비슷한 지식을 찾아 반려동물 기록과 함께 케어 답변 프롬프트에 넣음</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Troubleshooting & Trial and Error (시행착오) -->
+  <section id="troubleshooting">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle">Trial & Error</div>
+        <h2 class="section-title">시행착오와 해결 과정</h2>
+        <p class="section-desc">
+          외부 API와 LLM은 언제든 실패할 수 있다는 전제에서, 서비스가 계속 동작하도록 경계를 정한 3가지 사례입니다.
+        </p>
+      </div>
+
+      <!-- Trouble 1 -->
+      <div class="trouble-card">
+        <div class="trouble-badge-wrap">
+          <span class="badge badge-accent">시행착오 01</span>
+          <span class="badge badge-primary">장애 격리</span>
+          <span class="badge badge-success">Fallback · Middleware</span>
+        </div>
+        <h3 class="trouble-title">부가 기능(쇼핑 추천)이 실패하면 기록 저장까지 실패로 보이던 문제</h3>
+
+        <div class="trouble-grid">
+          <div class="trouble-sub-box problem">
+            <h4>🚨 문제</h4>
+            <p>
+              쇼핑 추천은 Naver Shopping API와 두 번의 LLM 판단에 기대고, 병원 추천은 Google Places에 기댑니다. API 키 누락, 호출 한도 초과, 타임아웃, 결과 0건 등으로 언제든 실패할 수 있습니다.
+              그런데 쇼핑 추천은 기록 저장과 같은 요청 안에서 <em>save_records → suggest_care → recommend_shopping</em> 순서로 실행되어, 추천 한 단계가 실패하면 요청 전체가 500 오류가 됐습니다.
+              기록은 이미 저장됐는데 화면에는 실패로 보여 다시 누르면 같은 기록이 두 번 저장될 수 있었습니다.
+            </p>
+          </div>
+
+          <div class="trouble-sub-box cause">
+            <h4>🔍 판단</h4>
+            <p>
+              Agent마다 <code>try/except</code>를 흩어 두면 어떤 실패가 어디서 처리되는지 알기 어렵습니다. 그래서 코드를 쓰기 전에 <strong>"실패 지점마다 무엇을 돌려줄지"를 표로 먼저 정했습니다.</strong>
+              예: 카테고리 생성 실패 → 빈 추천, 후보 선택 LLM 실패 → 첫 번째 후보 유지, LLM이 후보에 없는 상품을 고르면 → 첫 번째 후보로 대체, Google Places 실패 → Google Maps 검색 링크 1건, 호출 한도 초과 → 오류 대신 빈 결과.
+            </p>
+          </div>
+
+          <div class="trouble-sub-box solution">
+            <h4>💡 해결과 결과</h4>
+            <p>
+              1. 이 정책을 Agent 본문이 아니라 API 호출부를 감싸는 <strong>미들웨어 체인</strong>(대체 결과 → 캐시·호출 제한 → 실제 API)에 두어 계층마다 역할을 하나씩만 맡겼습니다.<br>
+              2. API 키가 없어도 서버가 정상 실행되고, 병원·쇼핑 화면은 오류 대신 쓸 수 있는 대체 결과를 보여줍니다.<br>
+              3. 같은 위치 반복 조회는 10분 캐시로 외부 호출 1회로 줄이고, 1분당 30회로 호출을 제한했습니다. Naver 호출은 타임아웃 3초, LLM에는 상위 3개 후보만 전달합니다.<br>
+              4. 정상·실패 경로를 테스트 19개(쇼핑 11, 병원 8)로 나눠 검증했습니다.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trouble 2 -->
+      <div class="trouble-card">
+        <div class="trouble-badge-wrap">
+          <span class="badge badge-accent">시행착오 02</span>
+          <span class="badge badge-purple">LangGraph</span>
+          <span class="badge badge-primary">기술 선택 기준</span>
+        </div>
+        <h3 class="trouble-title">모든 AI 기능에 LangGraph를 쓸지, 필요한 곳에만 쓸지</h3>
+
+        <div class="trouble-grid">
+          <div class="trouble-sub-box problem">
+            <h4>🚨 문제</h4>
+            <p>
+              모든 기능을 그래프로 만들면 기술은 통일되지만, 단순한 흐름까지 상태 타입·노드·연결을 정의해야 해서 코드가 길어지고 흐름이 여기저기 흩어집니다.
+              무엇보다 "왜 LangGraph를 썼나요?"라는 질문에 "요구사항이라서"밖에 답할 수 없게 됩니다.
+            </p>
+          </div>
+
+          <div class="trouble-sub-box cause">
+            <h4>🔍 판단</h4>
+            <p>
+              기준을 <strong>"상태가 단계별로 바뀌는 흐름인가"</strong>로 정하고, 다음 셋 중 둘 이상일 때만 쓰기로 했습니다.<br>
+              ① 단계가 3개 이상이고 앞 단계 결과에 의존한다 ② 중간에 조건에 따라 갈라진다 ③ 단계별 중간 상태를 따로 보거나 테스트할 가치가 있다.
+            </p>
+          </div>
+
+          <div class="trouble-sub-box solution">
+            <h4>💡 해결과 결과</h4>
+            <p>
+              1. <strong>적용 ① 기록 입력:</strong> 위험 판단 뒤 '미리보기'와 '저장'으로 갈라지는 흐름이라 그래프로 만들었고, 두 갈래를 테스트 7개로 나눠 검증했습니다.<br>
+              2. <strong>적용 ② 쇼핑 추천:</strong> 4단계 노드 경계가 시행착오 01의 실패 정책 경계와 그대로 맞아떨어졌습니다.<br>
+              3. <strong>미적용: 병원 추천</strong> — 응급 판단 → 반경 조정 → 검색 → 정렬이 갈림길 없는 한 줄 흐름이라 일반 코드로 두었습니다. 처음엔 그래프로 만들려다 노드 3개가 단순 대입뿐인 것을 보고 되돌렸습니다.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trouble 3 -->
+      <div class="trouble-card">
+        <div class="trouble-badge-wrap">
+          <span class="badge badge-accent">시행착오 03</span>
+          <span class="badge badge-success">AI Safety</span>
+          <span class="badge badge-primary">건강 도메인</span>
+        </div>
+        <h3 class="trouble-title">AI가 진단하지 않으면서도 쓸모 있게 답하도록 경계 정하기</h3>
+
+        <div class="trouble-grid">
+          <div class="trouble-sub-box problem">
+            <h4>🚨 문제</h4>
+            <p>
+              구토, 혈변, 호흡 이상처럼 건강과 직결된 기록을 다룹니다. LLM이 "위염일 가능성이 높습니다"처럼 그럴듯하게 답하면 보호자가 병원 방문을 미룰 수 있습니다.
+              반대로 건강 질문을 모두 피하면 서비스의 의미가 없어집니다.
+            </p>
+          </div>
+
+          <div class="trouble-sub-box cause">
+            <h4>🔍 판단</h4>
+            <p>
+              문제는 모델 성능이 아니라 <strong>AI의 역할이 '판단하는 주체'인지 '판단을 돕는 도구'인지 흐릿한 것</strong>이었습니다.
+              프롬프트 문장만으로 막으면 모델을 바꿀 때마다 무너지므로, 경계를 코드 구조로 강제하기로 했습니다.
+            </p>
+          </div>
+
+          <div class="trouble-sub-box solution">
+            <h4>💡 해결과 한계</h4>
+            <p>
+              1. 위험 판단(RiskDetectionAgent)과 행동 제안(SuggestionAgent)을 다른 Agent로 나눠, 한 Agent가 "위험하다 + 이렇게 하라"를 함께 말하지 못하게 했습니다.<br>
+              2. 확신이 낮은 기록은 <code>needs_confirmation</code>으로 저장 대신 미리보기로 보내고, 응급 표현·심야 시간의 병원 검색은 LLM이 아닌 명시적 규칙으로 처리했습니다.<br>
+              3. 같은 위험 알림은 중복 제거 키로 반복 노출을 막았고, 이 경로를 테스트 8개로 검증했습니다.<br>
+              <strong>한계:</strong> 위험 판정 정책(RiskSignalPolicy)은 연결 구조까지 완성했지만 판정 규칙은 최소 구현 상태로, 규칙 채우기가 다음 과제입니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Engineering & Verification -->
+  <section id="verification">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle">Process & Testing</div>
+        <h2 class="section-title">개발 방식과 테스트</h2>
+        <p class="section-desc">
+          감에 의존하지 않도록 단계별 검토 절차를 두고, 자동 테스트로 기능과 계층 규칙을 확인했습니다.
+        </p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon">📐</div>
+          <h3 class="card-title">1. 역할별 단계 검토 (하네스)</h3>
+          <p class="card-text">
+            AI 코딩 도구에 기획자 → UX 설계 → AI Agent 설계 → 구현 계획 → QA 리뷰 역할을 나눠 맡기고, 각 단계의 결과 문서를 다음 단계가 이어받아 검토하는 방식으로 MVP 범위를 정했습니다.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🧪</div>
+          <h3 class="card-title">2. 단위 테스트</h3>
+          <p class="card-text">
+            백엔드는 unittest 기반 테스트 265개(39개 파일)로 정상 경로와 실패 경로를 나눠 검증합니다. 프론트엔드는 <code>tsx --test</code>로 스프린트 1~19 기능별 테스트를 포함한 단위 테스트를 돌립니다.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📱</div>
+          <h3 class="card-title">3. 모바일 화면 점검 (Playwright)</h3>
+          <p class="card-text">
+            375px·430px 두 가지 모바일 화면에서 주요 7개 페이지를 열어 가로 스크롤이 생기지 않는지, 콘솔 에러가 없는지 자동으로 확인하고, 기록 입력 흐름은 E2E로 검증합니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- Verification Summary -->
+      <div class="card" style="margin-top: 2rem;">
+        <h3 class="card-title">🔍 계층 규칙도 명령어로 검사</h3>
+        <p class="card-text">
+          "application·domain 계층은 FastAPI, OpenAI SDK, DB 드라이버를 직접 쓰지 않는다"는 규칙을 문서로만 두지 않고 <code>rg</code> 검색 명령으로 만들어, 출력이 없어야 통과하도록 했습니다.
+          프론트엔드는 lint, typecheck, build로 함께 확인합니다. 실행 방법과 환경 설정은 같은 폴더의 <strong>포트폴리오 구동 가이드</strong> 문서에 정리했습니다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 7: Results & Retrospective -->
+  <section id="results">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle">Project Retrospective</div>
+        <h2 class="section-title">프로젝트 성과와 회고</h2>
+        <p class="section-desc">
+          만든 결과물과 잘한 점, 아쉬운 점을 정리합니다.
+        </p>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-num">14</div>
+          <div class="metric-label">구현한 웹 화면</div>
+          <div class="metric-sub">Next.js App Router 모바일 우선 페이지</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">10</div>
+          <div class="metric-label">기록 파이프라인 LangGraph 노드</div>
+          <div class="metric-sub">미리보기·저장 두 갈래 포함</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">265</div>
+          <div class="metric-label">백엔드 테스트</div>
+          <div class="metric-sub">39개 파일, 정상·실패 경로 분리</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">4단계</div>
+          <div class="metric-label">LLM 예비 모델 체인</div>
+          <div class="metric-sub">GPT → 예비 GPT → Gemini → 로컬 Gemma</div>
+        </div>
+      </div>
+
+      <!-- Retrospective 3 Pillars -->
+      <div class="grid-3" style="margin-top: 2rem;">
+        <div class="card">
+          <h3 class="card-title">👍 잘한 점: 실패할 때의 동작을 먼저 정함</h3>
+          <p class="card-text">
+            "LLM 호출을 try/except로 감싸면 된다"고 생각했지만, 중요한 건 예외를 잡는 게 아니라 실패 지점마다 무엇을 돌려줄지 정하는 일이었습니다. 이걸 표로 정하고 나서야 실패 상황별 테스트를 나눌 수 있었습니다.
+          </p>
+        </div>
+        <div class="card">
+          <h3 class="card-title">⚖️ 배운 점: AI가 말하면 안 되는 것부터</h3>
+          <p class="card-text">
+            건강 도메인에서는 "AI가 무엇을 말할 수 있나"보다 "무엇을 말하면 안 되나"를 먼저 정해야 했습니다. 그 경계는 프롬프트가 아니라 Agent 분리와 정책 객체 같은 구조로 강제해야 지켜졌습니다.
+          </p>
+        </div>
+        <div class="card">
+          <h3 class="card-title">🔧 아쉬운 점과 다음에 할 일</h3>
+          <p class="card-text">
+            정리 정확도, 응답 시간, 실패율 같은 품질 지표를 처음부터 재지 못해 프롬프트 변경 효과를 숫자로 말하기 어렵습니다. 다음에는 대표 입력 30~50건의 평가 세트를 먼저 만들고, 위험 판정 규칙도 구조와 함께 채우겠습니다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p style="font-weight: 800; font-size: 1.1rem; color: var(--text); margin-bottom: 0.5rem;">🐾 Pet Log (펫로그)</p>
+      <p class="footer-text">
+        AI Agent 기반 반려동물 케어 서비스 포트폴리오 | Team: 강현준, 김경표, 복만수, 임경빈
+      </p>
+      <p class="footer-text" style="margin-top: 0.5rem; font-size: 0.8rem;">
+        Built with Next.js 16, FastAPI, LangGraph, OpenAI & Ollama(Gemma) · <a href="https://github.com/fdt15ss/pj04-pet-log" style="color: var(--primary);">GitHub</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Modal Lightbox for Images -->
+  <div id="imageModal" class="modal-overlay" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div id="modalTitle" class="modal-title">이미지 확대보기</div>
+        <button class="modal-close" onclick="closeModal()" title="닫기">&times;</button>
+      </div>
+      <img id="modalImg" src="" alt="확대 이미지">
+    </div>
+  </div>
+
+  <!-- Vanilla JavaScript for Interactivity -->
+  <script>
+    // 1. Scroll Progress Bar
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      document.getElementById('progress-bar').style.width = scrolled + '%';
+    });
+
+    // 2. Dark / Light Theme Toggle (initial theme is applied in <head> to avoid a flash)
+    const themeToggleBtn = document.getElementById('themeToggle');
+    updateThemeIcon(document.documentElement.getAttribute('data-theme'));
+
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      try { localStorage.setItem('petlog-portfolio-theme', newTheme); } catch (e) {}
+      updateThemeIcon(newTheme);
+    });
+
+    function updateThemeIcon(theme) {
+      themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+
+    // 3. Image Modal Lightbox
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+    const modalTitle = document.getElementById('modalTitle');
+
+    let modalClearTimer = null;
+
+    function openModal(imgSrc, title) {
+      clearTimeout(modalClearTimer);
+      modalImg.src = imgSrc;
+      modalTitle.textContent = title || '이미지 확대보기';
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      modalClearTimer = setTimeout(() => { modalImg.removeAttribute('src'); }, 250);
+    }
+
+    // Close on ESC key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) {
+        closeModal();
+      }
+    });
+
+    // 4. Smooth scroll active nav link highlighting
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 100;
+        const sectionHeight = section.clientHeight;
+        if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

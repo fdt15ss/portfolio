@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>디지털 샤머니즘 데이터 분석 | 포트폴리오</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd', 400: '#a78bfa',
+                            500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9', 800: '#5b21b6', 900: '#4c1d95',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Fonts -->
+    <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons (Free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <!-- Chart.js (버전 고정) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Pretendard', 'Inter', sans-serif;
+            letter-spacing: -0.015em;
+            word-break: keep-all;
+        }
+        section[id] { scroll-margin-top: 5.5rem; }
+        .no-scrollbar { scrollbar-width: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* 스크롤바 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* 반투명 패널 */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #818cf8 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ===== 라이트 모드 (인쇄 시에도 자동 적용) ===== */
+        html.light body { background: #f1f5f9; color: #0f172a; }
+        html.light ::-webkit-scrollbar-track { background: #e2e8f0; }
+        html.light .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(15, 23, 42, 0.08);
+        }
+        html.light .text-white { color: #0f172a !important; }
+        html.light [class*="text-slate-100"],
+        html.light [class*="text-slate-200"],
+        html.light [class*="text-slate-300"] { color: #334155 !important; }
+        html.light [class*="text-slate-400"] { color: #64748b !important; }
+        html.light [class*="bg-slate-800"],
+        html.light [class*="bg-slate-900"],
+        html.light [class*="bg-slate-950"] { background-color: #f8fafc !important; }
+        html.light [class*="from-slate-900"] { background-image: none !important; background-color: #ffffff !important; }
+        html.light [class*="border-slate-7"],
+        html.light [class*="border-slate-8"] { border-color: #e2e8f0 !important; }
+        html.light [class*="text-sky-4"] { color: #0369a1 !important; }
+        html.light [class*="text-emerald-4"], html.light [class*="text-emerald-3"] { color: #047857 !important; }
+        html.light [class*="text-amber-4"], html.light [class*="text-amber-3"] { color: #b45309 !important; }
+        html.light [class*="text-rose-4"], html.light [class*="text-rose-3"] { color: #be123c !important; }
+        html.light [class*="text-brand-4"], html.light [class*="text-brand-3"],
+        html.light [class*="text-violet-4"], html.light [class*="text-violet-3"],
+        html.light [class*="text-indigo-4"], html.light [class*="text-indigo-3"] { color: #6d28d9 !important; }
+        /* 코드 블록과 탭 활성 버튼은 라이트 모드에서도 어두운 배경 유지 */
+        html.light .keep-dark, html.light .keep-dark * { background-color: #0f172a !important; }
+        html.light .keep-dark .text-slate-300 { color: #cbd5e1 !important; }
+        html.light .tab-active { background-color: #7c3aed !important; color: #ffffff !important; }
+
+        /* ===== 인쇄 ===== */
+        @media print {
+            .no-print, header, #progress-bar, #lightbox { display: none !important; }
+            main { padding-top: 0 !important; }
+            .glass-panel { backdrop-filter: none !important; box-shadow: none !important; }
+            .wc-tab-content { display: grid !important; margin-bottom: 1.5rem; }
+            .avoid-break { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 transition-colors duration-300 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- 읽기 진행률 표시 바 -->
+    <div id="progress-bar" class="fixed top-0 left-0 h-1 bg-gradient-to-r from-violet-500 via-sky-400 to-indigo-500 z-50 transition-all duration-150" style="width: 0%;"></div>
+
+    <!-- 네비게이션 헤더 -->
+    <header class="fixed top-0 left-0 right-0 z-40 glass-panel border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+            <a href="#hero" class="flex items-center space-x-3 group shrink-0">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-sky-400 flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-wand-magic-sparkles text-white text-lg"></i>
+                </div>
+                <div class="hidden sm:block">
+                    <span class="font-extrabold text-lg tracking-tight group-hover:text-brand-300 transition-colors">디지털 샤머니즘</span>
+                    <span class="text-xs px-2 py-0.5 ml-1.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30 font-medium">Data Portfolio</span>
+                </div>
+            </a>
+
+            <!-- 메뉴 (모바일에서는 가로 스크롤) -->
+            <nav class="flex-1 min-w-0 overflow-x-auto no-scrollbar">
+                <div class="flex items-center justify-start lg:justify-center space-x-1 text-sm font-medium text-slate-300 whitespace-nowrap">
+                    <a href="#overview" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">배경</a>
+                    <a href="#hypothesis" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">가설</a>
+                    <a href="#pipeline" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">수집·처리</a>
+                    <a href="#eda-nlp" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">리뷰 분석</a>
+                    <a href="#association" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">연관 규칙</a>
+                    <a href="#trend" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">검색 트렌드</a>
+                    <a href="#insights" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">결론</a>
+                    <a href="#trials" class="px-2.5 py-1.5 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors text-amber-300 font-semibold">시행착오</a>
+                </div>
+            </nav>
+
+            <!-- 인쇄 & 화면 모드 -->
+            <div class="flex items-center space-x-2 shrink-0">
+                <button onclick="window.print()" class="no-print p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors text-sm flex items-center gap-1.5 shadow" title="PDF로 저장 / 인쇄">
+                    <i class="fa-solid fa-print"></i>
+                    <span class="hidden xl:inline">PDF 출력</span>
+                </button>
+                <button id="theme-toggle" class="no-print p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 transition-colors" title="밝은 화면 / 어두운 화면 전환">
+                    <i class="fa-solid fa-moon text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24 space-y-20">
+
+        <!-- ================= HERO ================= -->
+        <section id="hero" class="relative overflow-hidden rounded-3xl p-6 sm:p-12 lg:p-16 border border-slate-800 glass-panel shadow-2xl">
+            <div class="absolute -top-32 -right-32 w-96 h-96 bg-brand-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-32 -left-32 w-96 h-96 bg-sky-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 space-y-6 max-w-4xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-xs font-semibold text-brand-300">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    포텐업 데이터 분석 프로젝트 1조 · 2026년 2월
+                </div>
+
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight sm:leading-tight">
+                    불안의 시대, <span class="text-gradient">디지털 샤머니즘</span>을<br class="hidden sm:inline" />
+                    데이터로 들여다보다
+                </h1>
+
+                <p class="text-base sm:text-lg text-slate-300 font-normal leading-relaxed">
+                    사람들은 왜 스마트폰으로 사주·운세·타로를 볼까요? 이 질문에 답하기 위해
+                    <strong>검색 트렌드</strong>, <strong>운세 앱 리뷰</strong>, <strong>사주 커뮤니티 게시글</strong>을 모아 분석했습니다.
+                    결론을 먼저 말하면, 높은 앱 만족도와 꾸준한 검색 관심은 확인했지만
+                    <strong>"불안해서 운세를 더 찾는다"는 인과관계는 이번 데이터로 증명하지 못했습니다.</strong>
+                    이 페이지는 무엇을 확인했고, 무엇을 확인하지 못했는지를 구분해 정리했습니다.
+                </p>
+
+                <!-- 메타데이터 -->
+                <div class="flex flex-wrap gap-2 pt-2">
+                    <span class="px-3 py-1 rounded-md bg-slate-800 text-xs text-slate-300 border border-slate-700/60">
+                        <i class="fa-solid fa-users text-brand-400 mr-1.5"></i>팀원: 박시형, 박재혁, 임경빈, 김금비 (4인)
+                    </span>
+                    <span class="px-3 py-1 rounded-md bg-slate-800 text-xs text-slate-300 border border-slate-700/60">
+                        <i class="fa-solid fa-laptop-code text-sky-400 mr-1.5"></i>도구: Python, Selenium, google-play-scraper, KoNLPy(Okt), mlxtend, NetworkX
+                    </span>
+                    <span class="px-3 py-1 rounded-md bg-slate-800 text-xs text-slate-300 border border-slate-700/60">
+                        <i class="fa-solid fa-calendar text-emerald-400 mr-1.5"></i>검색 트렌드 기간: 2021.02 ~ 2026.01 (60개월)
+                    </span>
+                </div>
+
+                <!-- 내 역할 -->
+                <div class="p-4 rounded-2xl bg-slate-900/60 border border-brand-500/30 text-sm text-slate-300 leading-relaxed">
+                    <span class="font-bold text-brand-300"><i class="fa-solid fa-user-check mr-1.5"></i>내 역할</span>
+                    <span class="ml-1">Selenium 카페 게시글 수집 · 플레이스토어 리뷰 수집과 정제 · 네이버/구글 검색 트렌드 통합 · 탐색적 분석(EDA) · 결과 문서화</span>
+                </div>
+
+                <!-- 핵심 수치 -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-slate-800/80">
+                    <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+                        <div class="text-2xl sm:text-3xl font-extrabold text-sky-400">6,925<span class="text-sm font-medium text-slate-400 ml-1">건</span></div>
+                        <div class="text-xs text-slate-400 mt-1">포스텔러 앱 리뷰 (수집 가능한 전체)</div>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+                        <div class="text-2xl sm:text-3xl font-extrabold text-brand-400">816<span class="text-sm font-medium text-slate-400 ml-1">건</span></div>
+                        <div class="text-xs text-slate-400 mt-1">사주 카페 게시글 제목 (55페이지)</div>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+                        <div class="text-2xl sm:text-3xl font-extrabold text-amber-400">60<span class="text-sm font-medium text-slate-400 ml-1">개월</span></div>
+                        <div class="text-xs text-slate-400 mt-1">네이버 데이터랩 검색 추이</div>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+                        <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400">85.6<span class="text-sm font-medium text-slate-400 ml-1">%</span></div>
+                        <div class="text-xs text-slate-400 mt-1">별점 4~5점 리뷰 비율 (평균 4.42점)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 1. 배경 ================= -->
+        <section id="overview" class="space-y-8">
+            <div class="border-l-4 border-brand-500 pl-4">
+                <span class="text-xs uppercase tracking-wider text-brand-400 font-bold font-mono">01. Background</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">프로젝트 배경과 문제의식</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-6 rounded-2xl glass-panel space-y-4">
+                    <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 text-xl">
+                        <i class="fa-solid fa-arrow-trend-down"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">커지는 미래 불안</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        취업난, 고물가, 고금리가 이어지고 1인 가구가 늘면서, 기댈 곳이 마땅치 않은 청년이 많아졌습니다.
+                        "나는 어떤 사람이고 앞으로 어떻게 될까"를 알고 싶은 마음도 함께 커졌습니다.
+                    </p>
+                </div>
+
+                <div class="p-6 rounded-2xl glass-panel space-y-4">
+                    <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 text-xl">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">점집에서 스마트폰으로</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        사주·운세는 이제 점집이 아니라 운세 앱(포스텔러, 점신), 유튜브 타로 영상, SNS에서 소비됩니다.
+                        비싼 상담료나 방문 부담 없이 <strong>언제든 짧고 가볍게 볼 수 있는 콘텐츠</strong>가 되었습니다.
+                        이 현상을 이 프로젝트에서는 '디지털 샤머니즘'이라고 부릅니다.
+                    </p>
+                </div>
+
+                <div class="p-6 rounded-2xl glass-panel space-y-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl">
+                        <i class="fa-solid fa-fire"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">놀이가 된 무속 문화</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        넷플릭스 <em>&lt;케이팝 데몬 헌터스&gt;</em>, 예능 <em>&lt;신들린 연애&gt;</em>처럼 무속은 대중 콘텐츠의 소재가 되었습니다.
+                        MBTI처럼 결과를 친구와 공유하며 즐기는 <strong>놀이 문화</strong>로 받아들여지고 있습니다.
+                    </p>
+                </div>
+            </div>
+
+            <div class="p-6 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950/60 border border-indigo-900/40 flex flex-col md:flex-row items-center gap-6">
+                <div class="w-full md:w-1/3 rounded-xl overflow-hidden shadow-lg border border-slate-700 cursor-pointer group" onclick="openLightbox('./output/portfolio_screenshots/pdf_pages/pdf_ae18c10674-1.png', '초기 기획 발표 슬라이드 표지: 디지털 샤머니즘 \'연애운 주파수\' 분석')">
+                    <img src="./output/portfolio_screenshots/pdf_pages/pdf_ae18c10674-1.png" alt="초기 기획 발표 슬라이드 표지" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300">
+                    <div class="p-2 bg-slate-900 text-center text-xs text-slate-400"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i>클릭하여 기획 슬라이드 크게 보기</div>
+                </div>
+                <div class="w-full md:w-2/3 space-y-3">
+                    <div class="inline-block px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold">핵심 질문</div>
+                    <h4 class="text-xl font-bold text-white">"사회가 불안해질수록 사람들은 운세를 더 찾고, 거기서 위안을 얻을까?"</h4>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        미신이냐 아니냐를 따지기보다, 사람들이 실제로 남긴 데이터(검색 기록, 앱 리뷰, 커뮤니티 고민 글)를 보고
+                        운세 콘텐츠가 <strong>어떤 맥락에서 소비되는지</strong> 살펴봤습니다.
+                        다만 관찰 데이터만으로 원인과 결과를 단정하지 않고, 각 가설이 데이터로 어디까지 확인되는지를 구분했습니다.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 2. 가설 ================= -->
+        <section id="hypothesis" class="space-y-8">
+            <div class="border-l-4 border-sky-500 pl-4">
+                <span class="text-xs uppercase tracking-wider text-sky-400 font-bold font-mono">02. Hypotheses</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">세운 가설과 검증 결과</h2>
+                <p class="text-xs text-slate-400 mt-1">가설이 모두 맞았다고 포장하지 않고, 데이터가 말해 주는 만큼만 판정했습니다.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- H1 -->
+                <div class="p-6 rounded-2xl glass-panel space-y-4 avoid-break">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">H1 · 검색 트렌드</span>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-700/60 text-slate-200 border border-slate-600">미검증</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">사회·경제적 불안이 커질 때 운세 검색이 늘어난다</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        검색 추이는 확보했지만, 같은 기간의 <strong>실업률·물가 같은 경제지표를 함께 분석하지 않아</strong>
+                        둘 사이의 관계를 직접 확인할 수 없었습니다.
+                    </p>
+                    <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-400 space-y-1">
+                        <div><strong>사용 데이터:</strong> 네이버 데이터랩(60개월), 구글 트렌드(37개월)</div>
+                        <div><strong>방법:</strong> 월별 추이 시각화, 연도별 패턴 비교</div>
+                    </div>
+                </div>
+
+                <!-- H2 -->
+                <div class="p-6 rounded-2xl glass-panel space-y-4 avoid-break">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30">H2 · 앱 리뷰</span>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">부분 확인</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">리뷰에 위로·불안 같은 감정 표현이 반복된다</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        '마음'(195건), '위로'(92건), '불안'(32건) 같은 표현은 실제로 있었습니다. 하지만 '재미'(699건), '소름'(266건),
+                        '정확'(249건)처럼 <strong>서비스 자체를 평가하는 표현이 훨씬 많아</strong>, 위안이 주된 이용 목적이라고 보기는 어려웠습니다.
+                    </p>
+                    <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-400 space-y-1">
+                        <div><strong>사용 데이터:</strong> 포스텔러 리뷰 6,925건, 사주 카페 제목 816건</div>
+                        <div><strong>방법:</strong> 명사 추출(Okt), 단어 빈도, 연관 규칙(Apriori)</div>
+                    </div>
+                </div>
+
+                <!-- H3 -->
+                <div class="p-6 rounded-2xl glass-panel space-y-4 avoid-break">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">H3 · 플랫폼 비교</span>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">지지되지 않음</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">네이버와 구글의 검색 흐름이 비슷하다</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        같은 36개월 구간에서 두 플랫폼의 상관계수가 운세 -0.001, 사주 -0.071, 타로 0.238로
+                        <strong>거의 관계가 없었습니다.</strong> 플랫폼마다 이용자와 수치 계산 방식이 달라 단순 비교가 어렵다는 점을 확인했습니다.
+                    </p>
+                    <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-400 space-y-1">
+                        <div><strong>사용 데이터:</strong> 네이버·구글 키워드별 월간 지수 (2023.01~2025.12)</div>
+                        <div><strong>방법:</strong> 키워드별 피어슨 상관계수 (포트폴리오 정리 단계에서 추가 계산)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 3. 수집·처리 ================= -->
+        <section id="pipeline" class="space-y-8">
+            <div class="border-l-4 border-emerald-500 pl-4">
+                <span class="text-xs uppercase tracking-wider text-emerald-400 font-bold font-mono">03. Data Pipeline</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">데이터 수집부터 분석까지의 흐름</h2>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-5 rounded-2xl glass-panel border-t-2 border-t-sky-500 space-y-3">
+                    <div class="text-sky-400 text-xs font-mono font-bold">STEP 01</div>
+                    <h4 class="font-bold text-white text-base">데이터 수집</h4>
+                    <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+                        <li><strong>Selenium</strong>: 네이버 사주 카페 게시판 1~55페이지를 차례로 열어 제목·작성자·등록일·좋아요 수 816건 수집</li>
+                        <li><strong>google-play-scraper</strong>: 포스텔러 리뷰 6,925건 수집 (2017.07~2026.02)</li>
+                        <li><strong>검색 트렌드</strong>: 네이버 데이터랩·구글 트렌드 월별 지수 내려받기</li>
+                        <li><strong>공공데이터</strong>: 전국사업체조사(2023)에서 '점술 및 유사 서비스업' 9,895곳 확인 (참고용)</li>
+                    </ul>
+                </div>
+
+                <div class="p-5 rounded-2xl glass-panel border-t-2 border-t-brand-500 space-y-3">
+                    <div class="text-brand-400 text-xs font-mono font-bold">STEP 02</div>
+                    <h4 class="font-bold text-white text-base">정제</h4>
+                    <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+                        <li><strong>필요 없는 열 제거</strong>: 프로필 이미지, 앱 버전, 개발사 답변 등 6개 열</li>
+                        <li><strong>결측치 확인</strong>: 남은 5개 열 모두 빈 값 0건</li>
+                        <li><strong>특수문자 제거</strong>: 정규식으로 한글·영문·숫자·공백만 남김</li>
+                        <li><strong>날짜 보정</strong>: 당일 글의 시간 표기(예: 14:32)를 수집일 날짜로 변환</li>
+                    </ul>
+                </div>
+
+                <div class="p-5 rounded-2xl glass-panel border-t-2 border-t-amber-500 space-y-3">
+                    <div class="text-amber-400 text-xs font-mono font-bold">STEP 03</div>
+                    <h4 class="font-bold text-white text-base">텍스트 분석</h4>
+                    <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+                        <li><strong>명사 추출</strong>: KoNLPy Okt로 두 글자 이상 명사만 추출</li>
+                        <li><strong>불용어 제거</strong>: 리뷰는 '포스텔러·스텔러·포스', 카페 제목은 '사주질문·질문·사주'</li>
+                        <li><strong>그룹 나누기</strong>: 별점 4~5점은 긍정, 1~3점은 비긍정</li>
+                        <li><strong>빈도 집계</strong>: Counter로 상위 50개 단어를 뽑아 워드클라우드 생성</li>
+                    </ul>
+                </div>
+
+                <div class="p-5 rounded-2xl glass-panel border-t-2 border-t-emerald-500 space-y-3">
+                    <div class="text-emerald-400 text-xs font-mono font-bold">STEP 04</div>
+                    <h4 class="font-bold text-white text-base">연관 규칙 & 연결망</h4>
+                    <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+                        <li><strong>변환</strong>: 리뷰 1건 = 단어 묶음 1개로 보고 TransactionEncoder로 표 형태 변환</li>
+                        <li><strong>Apriori</strong>: min_support=0.005, 두 단어 쌍까지(max_len=2)</li>
+                        <li><strong>규칙 정렬</strong>: lift 기준 상위 50개 규칙 선택</li>
+                        <li><strong>NetworkX</strong>: lift를 선 굵기로 표현한 단어 연결망 그리기</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 데이터 구성 표 -->
+            <div class="overflow-x-auto rounded-xl border border-slate-800">
+                <table class="w-full text-left text-xs sm:text-sm">
+                    <thead class="bg-slate-900/90 text-slate-300 border-b border-slate-800">
+                        <tr>
+                            <th class="p-3.5 whitespace-nowrap">데이터</th>
+                            <th class="p-3.5 whitespace-nowrap">기간 · 규모</th>
+                            <th class="p-3.5">활용 목적</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800 text-slate-300 bg-slate-950/40">
+                        <tr><td class="p-3.5 font-semibold text-white">네이버 데이터랩 (사주·운세·타로 묶음)</td><td class="p-3.5 whitespace-nowrap">2021.02~2026.01, 60개월</td><td class="p-3.5">장기 검색 추이 확인</td></tr>
+                        <tr><td class="p-3.5 font-semibold text-white">네이버 데이터랩 (키워드별)</td><td class="p-3.5 whitespace-nowrap">2023.01~2025.12, 36개월</td><td class="p-3.5">운세·사주·타로·취업운 각각의 흐름 비교</td></tr>
+                        <tr><td class="p-3.5 font-semibold text-white">구글 트렌드</td><td class="p-3.5 whitespace-nowrap">2022.12~2025.12, 37개월</td><td class="p-3.5">네이버와 같은 기간 비교</td></tr>
+                        <tr><td class="p-3.5 font-semibold text-white">플레이스토어 포스텔러 리뷰</td><td class="p-3.5 whitespace-nowrap">2017.07~2026.02, 6,925건</td><td class="p-3.5">별점 분포, 리뷰 단어, 단어 연관성 분석</td></tr>
+                        <tr><td class="p-3.5 font-semibold text-white">네이버 사주 카페 게시글 제목</td><td class="p-3.5 whitespace-nowrap">2020.02~2026.02, 816건</td><td class="p-3.5">이용자가 직접 쓴 고민 주제 파악</td></tr>
+                        <tr><td class="p-3.5 font-semibold text-white">전국사업체조사</td><td class="p-3.5 whitespace-nowrap">2023년 기준</td><td class="p-3.5">점술업 규모 참고 (가설 판정에는 사용하지 않음)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-xs text-slate-400 -mt-4">※ 검색 트렌드 값은 실제 검색 횟수가 아니라, 각 플랫폼이 기간 내 최댓값을 100으로 맞춘 <strong>상대 수치</strong>입니다.</p>
+
+            <!-- 핵심 코드 -->
+            <div class="rounded-2xl glass-panel overflow-hidden border border-slate-800 keep-dark">
+                <div class="bg-slate-900/90 px-6 py-3 border-b border-slate-800 flex items-center justify-between">
+                    <div class="flex items-center space-x-2 text-xs font-mono text-slate-400">
+                        <span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
+                        <span class="ml-2 text-slate-300 font-semibold">실제 노트북 코드 발췌</span>
+                    </div>
+                    <span class="text-xs text-brand-400 font-mono">Python 3.11</span>
+                </div>
+                <div class="p-6 bg-slate-950 font-mono text-xs text-slate-300 overflow-x-auto leading-relaxed">
+<pre><code class="language-python"><span class="text-violet-400"># 1. 포스텔러 앱 리뷰 수집 (google-play-scraper)</span>
+<span class="text-sky-400">from</span> google_play_scraper <span class="text-sky-400">import</span> Sort, reviews_all
+
+result = reviews_all(
+    <span class="text-emerald-300">"com.un7qi3.forceteller"</span>,
+    sleep_milliseconds=<span class="text-amber-300">0</span>, lang=<span class="text-emerald-300">"ko"</span>, country=<span class="text-emerald-300">"kr"</span>,
+    sort=Sort.MOST_RELEVANT,
+)
+df = pd.DataFrame(result)   <span class="text-slate-500"># 6,925건</span>
+
+<span class="text-violet-400"># 2. 네이버 카페 1~55페이지 수집 (Selenium) - 1페이지만 셀렉터가 다름</span>
+<span class="text-sky-400">for</span> page <span class="text-sky-400">in</span> range(<span class="text-amber-300">1</span>, last_page + <span class="text-amber-300">1</span>):
+    driver.get(<span class="text-emerald-300">f"https://cafe.naver.com/f-e/cafes/25615725/menus/530?page=</span>{page}<span class="text-emerald-300">"</span>)
+    time.sleep(<span class="text-amber-300">2</span>)
+    <span class="text-sky-400">if</span> page == <span class="text-amber-300">1</span>:
+        row_selector = <span class="text-emerald-300">"#cafe_content &gt; div.article-board &gt; table &gt; tbody:nth-child(5) &gt; tr"</span>
+    <span class="text-sky-400">else</span>:
+        row_selector = <span class="text-emerald-300">"#cafe_content &gt; div.article-board &gt; table &gt; tbody &gt; tr"</span>
+    rows = driver.find_elements(By.CSS_SELECTOR, row_selector)
+
+<span class="text-violet-400"># 3. 당일 글의 시간 표기('14:32')를 수집일 날짜로 바꾸기</span>
+<span class="text-sky-400">def</span> <span class="text-amber-300">fix_enroll_date</span>(date_val):
+    <span class="text-sky-400">if</span> <span class="text-emerald-300">":"</span> <span class="text-sky-400">in</span> str(date_val):
+        <span class="text-sky-400">return</span> today_str   <span class="text-slate-500"># 예: '2026.02.04.'</span>
+    <span class="text-sky-400">return</span> date_val
+
+<span class="text-violet-400"># 4. 명사 추출 (Okt) - 두 글자 이상, 불용어 제외</span>
+result = okt.pos(re.sub(<span class="text-emerald-300">"[^0-9a-zA-Z가-힣\\s]"</span>, <span class="text-emerald-300">""</span>, sent))
+words = [w <span class="text-sky-400">for</span> w, p <span class="text-sky-400">in</span> result <span class="text-sky-400">if</span> p == <span class="text-emerald-300">"Noun"</span> <span class="text-sky-400">and</span> len(w) &gt; <span class="text-amber-300">1</span> <span class="text-sky-400">and</span> w <span class="text-sky-400">not in</span> stopwords]</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 4. 리뷰 분석 ================= -->
+        <section id="eda-nlp" class="space-y-8">
+            <div class="border-l-4 border-violet-500 pl-4">
+                <span class="text-xs uppercase tracking-wider text-violet-400 font-bold font-mono">04. EDA &amp; Text Mining</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">리뷰·게시글 탐색과 단어 분석</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- 별점 분포 -->
+                <div class="p-6 rounded-2xl glass-panel space-y-4 avoid-break">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-base font-bold text-white">포스텔러 리뷰 별점 분포 (6,925건)</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">5점에 크게 몰리고, 1점이 2~3점보다 많은 J자 모양</p>
+                        </div>
+                        <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-violet-500/20 text-violet-300">Interactive</span>
+                    </div>
+                    <div class="relative h-64 flex items-center justify-center">
+                        <canvas id="scoreChart"></canvas>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 leading-relaxed">
+                        <i class="fa-solid fa-circle-info text-sky-400 mr-1.5"></i>
+                        <strong>발견:</strong> 5점이 73.2%(5,071건)로 대부분이고, 1점(7.5%, 516건)이 2점(2.0%)이나 3점(4.9%)보다 많습니다.
+                        만족한 사람은 아주 만족하고, 불만인 사람은 확실히 불만을 표시하는 앱 리뷰의 전형적인 모습입니다.
+                    </div>
+                </div>
+
+                <!-- 노트북 그래프 -->
+                <div class="p-6 rounded-2xl glass-panel space-y-4 avoid-break">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-base font-bold text-white">노트북에서 그린 원본 그래프</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">pandas / Matplotlib 출력 결과</p>
+                        </div>
+                        <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-slate-800 text-slate-300">Original</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="rounded-xl overflow-hidden border border-slate-800 bg-slate-900/60 p-2 cursor-pointer group" onclick="openLightbox('./output/portfolio_screenshots/project01_playstore_cell012_out01_1.png', '리뷰 별점 막대그래프')">
+                            <img src="./output/portfolio_screenshots/project01_playstore_cell012_out01_1.png" alt="리뷰 별점 막대그래프" class="w-full h-36 object-contain group-hover:scale-105 transition-transform">
+                            <div class="text-[11px] text-center text-slate-400 mt-1 font-medium">별점별 리뷰 수</div>
+                        </div>
+                        <div class="rounded-xl overflow-hidden border border-slate-800 bg-slate-900/60 p-2 cursor-pointer group" onclick="openLightbox('./output/portfolio_screenshots/project01_playstore_cell015_out01_1.png', '긍정(4~5점) / 비긍정(1~3점) 리뷰 수')">
+                            <img src="./output/portfolio_screenshots/project01_playstore_cell015_out01_1.png" alt="긍정/비긍정 리뷰 수" class="w-full h-36 object-contain group-hover:scale-105 transition-transform">
+                            <div class="text-[11px] text-center text-slate-400 mt-1 font-medium">긍정 5,926건(85.6%) / 비긍정 999건</div>
+                        </div>
+                    </div>
+                    <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-2 cursor-pointer group flex items-center gap-3" onclick="openLightbox('./output/portfolio_screenshots/project01_playstore_cell018_out01_1.png', '리뷰 글자 수 히스토그램')">
+                        <img src="./output/portfolio_screenshots/project01_playstore_cell018_out01_1.png" alt="리뷰 글자 수 히스토그램" class="w-32 h-20 object-contain group-hover:scale-105 transition-transform shrink-0">
+                        <div class="text-xs text-slate-300">
+                            <strong>리뷰 길이:</strong> 절반이 25자 이하이고, 73.8%가 50자 이하인 짧은 리뷰입니다.
+                            가장 긴 리뷰(684자)들은 주로 기능 개선 요청이나 상세한 사용 후기였습니다.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 워드클라우드 -->
+            <div class="p-6 rounded-2xl glass-panel space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">그룹별 워드클라우드 비교 (명사 상위 50개)</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">별점 그룹과 카페 고민 글에서 자주 나온 단어를 비교합니다. 글자가 클수록 자주 등장한 단어입니다.</p>
+                    </div>
+
+                    <div class="no-print flex flex-wrap gap-1.5 p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs">
+                        <button onclick="switchWcTab('pos')" id="tab-btn-pos" class="px-3 py-1.5 rounded-lg font-medium transition-all bg-brand-600 text-white tab-active">긍정 (4~5점)</button>
+                        <button onclick="switchWcTab('star5')" id="tab-btn-star5" class="px-3 py-1.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white">5점</button>
+                        <button onclick="switchWcTab('neg')" id="tab-btn-neg" class="px-3 py-1.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white">비긍정 (1~3점)</button>
+                        <button onclick="switchWcTab('star1')" id="tab-btn-star1" class="px-3 py-1.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white">1점</button>
+                        <button onclick="switchWcTab('cafe')" id="tab-btn-cafe" class="px-3 py-1.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white">카페 고민글</button>
+                    </div>
+                </div>
+
+                <!-- 긍정 -->
+                <div id="wc-tab-pos" class="wc-tab-content grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="rounded-xl overflow-hidden border border-slate-700 bg-white p-3 cursor-pointer group shadow-xl" onclick="openLightbox('./output/portfolio_screenshots/project01_playstore_cell024_out01_1.png', '포스텔러 긍정(4~5점) 리뷰 워드클라우드')">
+                        <img src="./output/portfolio_screenshots/project01_playstore_cell024_out01_1.png" alt="긍정 리뷰 워드클라우드" class="w-full h-auto object-cover group-hover:scale-105 transition-transform">
+                        <div class="p-1.5 bg-slate-900 text-center text-xs text-slate-400"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i>클릭하여 크게 보기</div>
+                    </div>
+                    <div class="space-y-3">
+                        <span class="px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 text-xs font-semibold">긍정 리뷰 5,926건</span>
+                        <h4 class="text-xl font-bold text-white">"재미있고, 소름 돋게 잘 맞고, 매일 본다"</h4>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            운세·사주·타로 같은 서비스 이름 외에 <strong>'재미', '진짜', '소름', '무료', '매일', '기분', '마음', '하루'</strong>가 눈에 띕니다.
+                            사람들은 주로 재미와 적중감을 이야기했고, '매일'·'하루'처럼 <strong>일상적으로 습관처럼 확인한다</strong>는 표현도 함께 나타났습니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 5점 -->
+                <div id="wc-tab-star5" class="wc-tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="rounded-xl overflow-hidden border border-slate-700 bg-white p-3 cursor-pointer group shadow-xl" onclick="openLightbox('./output/portfolio_screenshots/project01_playstore_cell038_out01_1.png', '포스텔러 별점 5점 리뷰 워드클라우드')">
+                        <img src="./output/portfolio_screenshots/project01_playstore_cell038_out01_1.png" alt="별점 5점 워드클라우드" class="w-full h-auto object-cover group-hover:scale-105 transition-transform">
+                        <div class="p-1.5 bg-slate-900 text-center text-xs text-slate-400"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i>클릭하여 크게 보기</div>
+                    </div>
+                    <div class="space-y-3">
+                        <span class="px-2.5 py-1 rounded-md bg-sky-500/20 text-sky-300 text-xs font-semibold">5점 리뷰 5,071건</span>
+                        <h4 class="text-xl font-bold text-white">"진짜 소름 돋아요" — 적중감과 캐릭터</h4>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            5점 리뷰에서는 <strong>'재미', '진짜', '소름', '정말', '무료', '캐릭터', '친구'</strong>가 두드러집니다.
+                            잘 맞는다는 느낌(소름), 무료로 볼 수 있는 콘텐츠, 친근한 캐릭터와 친구와 함께 보는 궁합 기능이 높은 평가로 이어진 것으로 보입니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 비긍정 -->
+                <div id="wc-tab-neg" class="wc-tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="rounded-xl overflow-hidden border border-slate-700 bg-white p-3 cursor-pointer group shadow-xl" onclick="openLightbox('./output/portfolio_screenshots/project01_playstore_cell036_out01_1.png', '포스텔러 비긍정(1~3점) 리뷰 워드클라우드')">
+                        <img src="./output/portfolio_screenshots/project01_playstore_cell036_out01_1.png" alt="비긍정 리뷰 워드클라우드" class="w-full h-auto object-cover group-hover:scale-105 transition-transform">
+                        <div class="p-1.5 bg-slate-900 text-center text-xs text-slate-400"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i>클릭하여 크게 보기</div>
+                    </div>
+                    <div class="space-y-3">
+                        <span class="px-2.5 py-1 rounded-md bg-orange-500/20 text-orange-300 text-xs font-semibold">비긍정 리뷰 999건</span>
+                        <h4 class="text-xl font-bold text-white">"결제, 유료, 로그인" — 불만은 운세 내용보다 이용 과정에</h4>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            1~3점 리뷰에서는 <strong>'결제', '유료', '무료', '로그인', '오류', '업데이트', '프리미엄'</strong>이 크게 보입니다.
+                            불만의 대부분이 운세 풀이 자체보다 <strong>돈을 내는 과정과 로그인 같은 사용 경험</strong>에 몰려 있었습니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 1점 -->
+                <div id="wc-tab-star1" class="wc-tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="rounded-xl overflow-hidden border border-slate-700 bg-white p-3 cursor-pointer group shadow-xl" onclick="openLightbox('./output/portfolio_screenshots/project01_playstore_cell040_out01_1.png', '포스텔러 별점 1점 리뷰 워드클라우드')">
+                        <img src="./output/portfolio_screenshots/project01_playstore_cell040_out01_1.png" alt="별점 1점 워드클라우드" class="w-full h-auto object-cover group-hover:scale-105 transition-transform">
+                        <div class="p-1.5 bg-slate-900 text-center text-xs text-slate-400"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i>클릭하여 크게 보기</div>
+                    </div>
+                    <div class="space-y-3">
+                        <span class="px-2.5 py-1 rounded-md bg-rose-500/20 text-rose-300 text-xs font-semibold">1점 리뷰 516건</span>
+                        <h4 class="text-xl font-bold text-white">"무료였던 게 유료로" — 결제와 환불 불만</h4>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            1점 리뷰에서는 <strong>'결제', '유료', '무료', '광고', '로그인', '업데이트', '오류', '환불'</strong>이 핵심입니다.
+                            원문을 읽어 보면 예전엔 무료였던 콘텐츠가 유료로 바뀐 것, 광고를 봐도 보상이 지급되지 않는 오류,
+                            업데이트 후 로그인 문제에 대한 불만이 많았습니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 카페 -->
+                <div id="wc-tab-cafe" class="wc-tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="rounded-xl overflow-hidden border border-slate-700 bg-white p-3 cursor-pointer group shadow-xl" onclick="openLightbox('./output/portfolio_screenshots/project01_데이터_수집_Selenium_cell046_out01_1.png', '사주 카페 고민게시판 제목 워드클라우드')">
+                        <img src="./output/portfolio_screenshots/project01_데이터_수집_Selenium_cell046_out01_1.png" alt="사주 카페 워드클라우드" class="w-full h-auto object-cover group-hover:scale-105 transition-transform">
+                        <div class="p-1.5 bg-slate-900 text-center text-xs text-slate-400"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i>클릭하여 크게 보기</div>
+                    </div>
+                    <div class="space-y-3">
+                        <span class="px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-300 text-xs font-semibold">카페 게시글 제목 816건</span>
+                        <h4 class="text-xl font-bold text-white">"합격할 수 있을까요?" — 진로와 관계 고민</h4>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            Selenium으로 모은 816개 제목에서 <strong>'고민'(41건), '궁합'(24건), '결혼'(21건), '합격'(20건), '연애'(19건), '이직'(14건), '취업'(13건)</strong>이 자주 나왔습니다.
+                            사람들이 사주 커뮤니티에서 <strong>진로·시험과 연애·결혼 문제</strong>를 주로 묻는다는 점을 볼 수 있었습니다.
+                            단, 제목만으로는 고민의 깊이나 감정의 강도까지 판단하지 않았습니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 5. 연관 규칙 ================= -->
+        <section id="association" class="space-y-8">
+            <div class="border-l-4 border-amber-500 pl-4">
+                <span class="text-xs uppercase tracking-wider text-amber-400 font-bold font-mono">05. Association Rules &amp; Network</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">함께 쓰이는 단어 찾기 (Apriori 연관 규칙)</h2>
+            </div>
+
+            <div class="p-6 rounded-2xl glass-panel space-y-6">
+                <div class="space-y-3">
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        단어가 몇 번 나왔는지만 세면 "어떤 단어가 <strong>같이</strong> 쓰이는지"는 알 수 없습니다.
+                        그래서 리뷰 한 건을 단어 묶음 하나로 보고, <strong>Apriori 알고리즘(mlxtend)</strong>으로 자주 함께 등장하는 단어 쌍을 찾았습니다.
+                    </p>
+                    <!-- 지표 설명 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 text-slate-300 leading-relaxed">
+                            <strong class="text-white">지지도 (Support)</strong><br>전체 리뷰 중 두 단어가 함께 나온 리뷰의 비율
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 text-slate-300 leading-relaxed">
+                            <strong class="text-white">신뢰도 (Confidence)</strong><br>A가 나온 리뷰 중 B도 함께 나온 비율
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-900/70 border border-amber-500/30 text-slate-300 leading-relaxed">
+                            <strong class="text-amber-400">향상도 (Lift)</strong><br>우연히 함께 나올 때보다 몇 배 더 자주 함께 나오는지. <strong>1보다 클수록 관련이 깊음</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 규칙 표 -->
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-900/90 text-slate-300 border-b border-slate-800">
+                            <tr>
+                                <th class="p-3.5">그룹</th>
+                                <th class="p-3.5 whitespace-nowrap">A (먼저 나온 단어)</th>
+                                <th class="p-3.5 whitespace-nowrap">B (함께 나온 단어)</th>
+                                <th class="p-3.5">지지도</th>
+                                <th class="p-3.5">신뢰도</th>
+                                <th class="p-3.5 text-amber-400">향상도</th>
+                                <th class="p-3.5 min-w-[16rem]">해석</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800 text-slate-300 bg-slate-950/40 font-mono">
+                            <tr>
+                                <td class="p-3.5"><span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold font-sans">비긍정</span></td>
+                                <td class="p-3.5 text-white font-bold">{가격}</td>
+                                <td class="p-3.5 text-white font-bold">{프리미엄}</td>
+                                <td class="p-3.5">0.0050</td>
+                                <td class="p-3.5">0.625</td>
+                                <td class="p-3.5 font-extrabold text-amber-400 text-sm">17.34</td>
+                                <td class="p-3.5 text-slate-300 font-sans">'가격'을 말한 리뷰의 62.5%가 '프리미엄'(유료 상품)도 언급 → 유료 콘텐츠 가격에 대한 불만</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3.5"><span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold font-sans">비긍정</span></td>
+                                <td class="p-3.5 text-white font-bold">{계정}</td>
+                                <td class="p-3.5 text-white font-bold">{가입}</td>
+                                <td class="p-3.5">0.0060</td>
+                                <td class="p-3.5">0.261</td>
+                                <td class="p-3.5 font-extrabold text-amber-400 text-sm">13.72</td>
+                                <td class="p-3.5 text-slate-300 font-sans">계정·회원가입 관련 불편이 함께 언급됨</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3.5"><span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold font-sans">비긍정</span></td>
+                                <td class="p-3.5 text-white font-bold">{로그인}</td>
+                                <td class="p-3.5 text-white font-bold">{계정}</td>
+                                <td class="p-3.5">0.0130</td>
+                                <td class="p-3.5">0.245</td>
+                                <td class="p-3.5 font-extrabold text-amber-400 text-sm">10.65</td>
+                                <td class="p-3.5 text-slate-300 font-sans">로그인 문제가 계정 문제로 이어진다는 불만 (비긍정 연결망의 중심 단어)</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3.5"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold font-sans">긍정</span></td>
+                                <td class="p-3.5 text-white font-bold">{심심}</td>
+                                <td class="p-3.5 text-white font-bold">{풀이}</td>
+                                <td class="p-3.5">0.0079</td>
+                                <td class="p-3.5">0.959</td>
+                                <td class="p-3.5 font-extrabold text-sky-400 text-sm">47.77</td>
+                                <td class="p-3.5 text-slate-300 font-sans">'심심풀이'라는 한 단어가 형태소 분석에서 둘로 나뉜 것. 가볍게 즐기는 용도라는 표현</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3.5"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold font-sans">긍정</span></td>
+                                <td class="p-3.5 text-white font-bold">{하루}</td>
+                                <td class="p-3.5 text-white font-bold">{시작}</td>
+                                <td class="p-3.5">0.0078</td>
+                                <td class="p-3.5">0.336</td>
+                                <td class="p-3.5 font-extrabold text-sky-400 text-sm">27.64</td>
+                                <td class="p-3.5 text-slate-300 font-sans">"하루를 운세로 시작한다"는 표현이 반복됨 → 일상 습관으로 사용</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3.5"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold font-sans">긍정</span></td>
+                                <td class="p-3.5 text-white font-bold">{기분}</td>
+                                <td class="p-3.5 text-white font-bold">{운세}</td>
+                                <td class="p-3.5">0.0054</td>
+                                <td class="p-3.5">0.174</td>
+                                <td class="p-3.5 font-extrabold text-slate-400 text-sm">1.49</td>
+                                <td class="p-3.5 text-slate-300 font-sans">향상도가 1에 가까워 관련성이 약함. '운세'가 원래 많이 나오는 단어라 함께 잡힌 것에 가까움</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-xs text-slate-400 -mt-2">※ 기준: min_support=0.005, max_len=2, lift ≥ 1. 긍정 리뷰에서 98개, 비긍정 리뷰에서 508개 규칙이 나왔습니다.
+                    향상도가 높은 쌍 중에는 '심심풀이', '마이페이트북'(앱 기능 이름)처럼 <strong>원래 한 단어가 나뉜 경우</strong>도 있어 원문을 함께 확인했습니다.</p>
+
+                <!-- 연결망 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 space-y-4 avoid-break">
+                        <div class="flex items-center justify-between gap-2">
+                            <h4 class="font-bold text-white text-base flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                                긍정 리뷰 단어 연결망
+                            </h4>
+                            <span class="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">lift 상위 50개 규칙</span>
+                        </div>
+                        <div class="rounded-xl overflow-hidden border border-slate-700 bg-white p-2 cursor-pointer group shadow-lg" onclick="openLightbox('./output/portfolio_screenshots/project01_playstore_cell033_out02_1.png', '포스텔러 긍정 리뷰 단어 연결망 (선 굵기 = lift)')">
+                            <img src="./output/portfolio_screenshots/project01_playstore_cell033_out02_1.png" alt="긍정 리뷰 단어 연결망" class="w-full h-80 object-contain group-hover:scale-105 transition-transform">
+                            <div class="p-1 bg-slate-900 text-center text-xs text-slate-400"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i>크게 보기</div>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            <strong>읽는 법:</strong> 선이 굵을수록 함께 쓰이는 정도(lift)가 강합니다.
+                            가운데의 '운세'와 '사주'가 '오늘·매일', '어플', '타로' 등 여러 단어와 연결되는 중심 역할을 합니다.
+                            따로 떨어진 '심심-풀이', '유료-무료', '카드-타로', '소름-정도-진짜'는 "소름 돋을 정도로 잘 맞는다" 같은 관용 표현에서 나온 쌍입니다.
+                        </p>
+                    </div>
+
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 space-y-4 avoid-break">
+                        <div class="flex items-center justify-between gap-2">
+                            <h4 class="font-bold text-white text-base flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-rose-400"></span>
+                                비긍정 리뷰 단어 연결망
+                            </h4>
+                            <span class="text-xs font-mono text-rose-400 bg-rose-500/10 px-2.5 py-0.5 rounded-full border border-rose-500/20">중심 단어: 로그인</span>
+                        </div>
+                        <div class="rounded-xl overflow-hidden border border-slate-700 bg-white p-2 cursor-pointer group shadow-lg" onclick="openLightbox('./output/portfolio_screenshots/project01_playstore_cell048_out02_1.png', '포스텔러 비긍정 리뷰 단어 연결망 (선 굵기 = lift)')">
+                            <img src="./output/portfolio_screenshots/project01_playstore_cell048_out02_1.png" alt="비긍정 리뷰 단어 연결망" class="w-full h-80 object-contain group-hover:scale-105 transition-transform">
+                            <div class="p-1 bg-slate-900 text-center text-xs text-slate-400"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i>크게 보기</div>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            <strong>읽는 법:</strong> 가장 큰 덩어리는 <strong>'로그인'</strong>을 중심으로 '계정·카톡·네이버·아이디·가입'이 모인 로그인 문제입니다.
+                            그 밖에 '고객-센터'·'문의-답변'(고객 응대), '생년-월일'·'음력-양력'(생일 입력 오류), '광고-룰렛'(광고 보상), '가격-프리미엄'(유료 가격)
+                            이 각각 작은 덩어리를 이룹니다. 불만이 운세 내용보다 <strong>앱 이용 과정</strong>에 집중되어 있음을 보여 줍니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 6. 검색 트렌드 ================= -->
+        <section id="trend" class="space-y-8">
+            <div class="border-l-4 border-indigo-500 pl-4">
+                <span class="text-xs uppercase tracking-wider text-indigo-400 font-bold font-mono">06. Search Trends</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">검색 트렌드 분석</h2>
+            </div>
+
+            <!-- 60개월 인터랙티브 차트 -->
+            <div class="p-6 rounded-2xl glass-panel space-y-4 avoid-break">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h3 class="text-base font-bold text-white">네이버 '사주·운세·타로' 검색 추이 (2021.02 ~ 2026.01, 60개월)</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">실제 데이터랩 값 · 기간 내 최댓값 = 100 · 큰 점은 1월(연초) 값</p>
+                    </div>
+                    <span class="text-xs font-mono text-indigo-300 bg-indigo-500/20 px-2 py-0.5 rounded self-start">Interactive</span>
+                </div>
+                <div class="relative h-64 sm:h-72">
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs sm:text-sm text-slate-300">
+                    <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                        <div class="font-bold text-sky-400"><i class="fa-solid fa-chart-line mr-1.5"></i>관심은 꾸준히 높아짐</div>
+                        <p class="leading-relaxed">2021년 58.9에서 시작해 2024년 7월 최고치 100을 찍었고, 이후에도 77~95 사이를 유지했습니다.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                        <div class="font-bold text-amber-400"><i class="fa-solid fa-calendar-check mr-1.5"></i>연말·연초에 올라감</div>
+                        <p class="leading-relaxed">2022년 1월 79.4, 2023년 1월 85.3, 2024년 1월 90.0처럼 매년 12~1월에 오르는 패턴이 보였습니다. 신년운세 수요로 보입니다.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                        <div class="font-bold text-rose-400"><i class="fa-solid fa-circle-exclamation mr-1.5"></i>불안과의 관계는 미확인</div>
+                        <p class="leading-relaxed">최고치는 연초가 아닌 2024년 7월이었습니다. 경제지표와 함께 분석하지 않았기 때문에 "불안 때문에 늘었다"고 말할 수는 없습니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <!-- 합산 그래프 -->
+                <div class="p-6 rounded-2xl glass-panel space-y-4 avoid-break">
+                    <div class="flex items-center justify-between gap-2">
+                        <h3 class="text-base font-bold text-white">키워드별 추이 (네이버 + 구글 합산, 36개월)</h3>
+                        <span class="text-xs font-mono text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded shrink-0">초기 분석</span>
+                    </div>
+                    <div class="rounded-xl overflow-hidden border border-slate-700 bg-white p-2 cursor-pointer group shadow-xl" onclick="openLightbox('./output/portfolio_screenshots/[프로젝트]_1조_데이터_트렌드_분석_cell012_out01_1.png', '키워드별 월별 추이 (네이버 + 구글 값 단순 합산): 운세, 사주, 타로, 취업운, 합계')">
+                        <img src="./output/portfolio_screenshots/[프로젝트]_1조_데이터_트렌드_분석_cell012_out01_1.png" alt="키워드별 월별 추이" class="w-full h-auto max-h-[460px] object-contain group-hover:scale-105 transition-transform">
+                        <div class="p-1 bg-slate-900 text-center text-xs text-slate-400"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i>클릭하여 크게 보기</div>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        처음에는 네이버와 구글 값을 월별로 그대로 더해 추이를 그렸습니다. 그런데 두 값은 기준이 서로 다른 상대 수치라
+                        <strong>더하는 것 자체가 맞지 않는다</strong>는 점을 뒤늦게 알게 되었고, 이 그래프는 결론의 근거로 쓰지 않았습니다.
+                        (<a href="#trials" class="text-amber-300 underline">시행착오 04</a> 참고)
+                    </p>
+                    <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-3 flex items-center gap-4 cursor-pointer group" onclick="openLightbox('./output/portfolio_screenshots/project01_데이터랩_cell002_out01_1.png', '네이버 데이터랩 사주·운세·타로 묶음 검색 추이 (60개월)')">
+                        <img src="./output/portfolio_screenshots/project01_데이터랩_cell002_out01_1.png" alt="데이터랩 원본 그래프" class="w-32 h-20 object-contain rounded border border-slate-700 bg-white shrink-0">
+                        <div class="text-xs text-slate-300">
+                            <strong>데이터랩 원본 그래프:</strong> 위 인터랙티브 차트와 같은 60개월 데이터를 노트북에서 그린 결과입니다.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 플랫폼 비교 -->
+                <div class="p-6 rounded-2xl glass-panel space-y-5 avoid-break">
+                    <div>
+                        <h3 class="text-base font-bold text-white">네이버와 구글, 같은 흐름일까?</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">2023.01~2025.12 공통 36개월, 키워드별 피어슨 상관계수</p>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-slate-800">
+                        <table class="w-full text-left text-xs sm:text-sm">
+                            <thead class="bg-slate-900/90 text-slate-300 border-b border-slate-800">
+                                <tr><th class="p-3">키워드</th><th class="p-3 text-right">상관계수</th><th class="p-3">해석</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800 text-slate-300 bg-slate-950/40">
+                                <tr><td class="p-3 font-semibold text-white">운세</td><td class="p-3 text-right font-mono">-0.001</td><td class="p-3">관계 거의 없음</td></tr>
+                                <tr><td class="p-3 font-semibold text-white">사주</td><td class="p-3 text-right font-mono">-0.071</td><td class="p-3">관계 거의 없음</td></tr>
+                                <tr><td class="p-3 font-semibold text-white">타로</td><td class="p-3 text-right font-mono">0.238</td><td class="p-3">약한 양의 관계</td></tr>
+                                <tr><td class="p-3 font-semibold text-white">취업운</td><td class="p-3 text-right font-mono">계산 불가</td><td class="p-3">구글 값이 전 기간 0</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="space-y-3 text-xs sm:text-sm text-slate-300">
+                        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                            <div class="font-bold text-emerald-400"><i class="fa-solid fa-globe mr-1.5"></i>두 플랫폼의 흐름은 달랐다</div>
+                            <p class="leading-relaxed">상관계수가 0에 가까워 "어느 플랫폼에서든 같은 관심 흐름이 나타난다"는 가설(H3)은 지지되지 않았습니다.
+                                플랫폼마다 이용자층과 수치를 계산하는 방식이 다르기 때문으로 보입니다.</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                            <div class="font-bold text-amber-400"><i class="fa-solid fa-briefcase mr-1.5"></i>'취업운'은 분석할 만큼 검색량이 없었다</div>
+                            <p class="leading-relaxed">취업운은 네이버에서 0.04~0.09 수준으로 매우 낮았고 구글은 전부 0이었습니다.
+                                0은 "관심이 없다"가 아니라 "집계 기준보다 적다"는 뜻일 수 있어, 취업 시즌과의 관계는 판단하지 않았습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 7. 결론 ================= -->
+        <section id="insights" class="space-y-8">
+            <div class="border-l-4 border-rose-500 pl-4">
+                <span class="text-xs uppercase tracking-wider text-rose-400 font-bold font-mono">07. Conclusion</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">결론: 확인한 것과 확인하지 못한 것</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-emerald-950/30 border border-emerald-900/30 space-y-4 avoid-break">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-check-double"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">데이터로 확인한 것</h3>
+                    </div>
+                    <ul class="space-y-3 text-sm text-slate-300 leading-relaxed">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-emerald-400 mt-1 text-xs"></i>
+                            <div><strong>높은 만족도:</strong> 리뷰의 85.6%가 4~5점, 평균 4.42점입니다. 이용자 대부분은 재미와 적중감을 이유로 만족했습니다.</div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-emerald-400 mt-1 text-xs"></i>
+                            <div><strong>일상 속 습관:</strong> '하루-시작', '오늘·매일-운세' 같은 연결이 나타나, 운세를 매일 확인하는 습관처럼 쓰는 모습이 보였습니다.</div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-emerald-400 mt-1 text-xs"></i>
+                            <div><strong>불만은 결제·로그인:</strong> 비긍정 리뷰의 핵심은 운세 내용이 아니라 유료 전환, 가격, 로그인·계정 문제였습니다.</div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-emerald-400 mt-1 text-xs"></i>
+                            <div><strong>고민 주제:</strong> 커뮤니티에서는 합격·취업·이직 같은 진로 고민과 궁합·연애·결혼 같은 관계 고민이 많았습니다.</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-rose-950/30 border border-rose-900/30 space-y-4 avoid-break">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">확인하지 못한 것 (한계)</h3>
+                    </div>
+                    <ul class="space-y-3 text-sm text-slate-300 leading-relaxed">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-xmark text-rose-400 mt-1 text-xs"></i>
+                            <div><strong>불안 → 운세 검색 증가:</strong> 경제지표를 결합하지 않아 인과관계는 물론 상관관계도 확인하지 못했습니다.</div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-xmark text-rose-400 mt-1 text-xs"></i>
+                            <div><strong>위안이 주된 이용 목적:</strong> 감정 표현은 있었지만 '재미'·'정확' 같은 평가 표현보다 훨씬 적었습니다.</div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-xmark text-rose-400 mt-1 text-xs"></i>
+                            <div><strong>별점 = 감정은 아님:</strong> 별점으로 긍정/비긍정을 나눴을 뿐, 리뷰 문장의 실제 감정을 판별한 것은 아닙니다.</div>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-xmark text-rose-400 mt-1 text-xs"></i>
+                            <div><strong>제목만 수집:</strong> 카페는 제목만 모았고, 광고성 글도 일부 섞여 있어 본문 기반 분석이 필요합니다.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 개선 제안 -->
+            <div class="p-6 rounded-2xl glass-panel space-y-4">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                    리뷰 분석 결과로 본 서비스 개선 제안
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs sm:text-sm text-slate-300">
+                    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1.5">
+                        <span class="text-sky-400 font-bold">1. 유료 전환을 더 투명하게</span>
+                        <p class="leading-relaxed">'가격-프리미엄'(lift 17.34)과 1점 리뷰의 '무료→유료' 불만을 근거로, 무료·유료 범위와 가격을 미리 분명히 안내하고 작은 단위 결제를 제공하는 방안.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1.5">
+                        <span class="text-brand-400 font-bold">2. 로그인·계정 안정화</span>
+                        <p class="leading-relaxed">비긍정 연결망의 중심이 '로그인'이었던 만큼, 업데이트 후 로그인 유지와 소셜 계정(카카오·네이버) 연동 오류를 우선 점검.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1.5">
+                        <span class="text-emerald-400 font-bold">3. 생일 입력과 광고 보상 오류 줄이기</span>
+                        <p class="leading-relaxed">'생년-월일', '음력-양력', '잘못-입력', '광고-룰렛' 쌍이 반복된 만큼, 생년월일 입력 확인 단계와 광고 시청 보상 지급 오류를 개선.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 다음 단계 -->
+            <div class="p-6 rounded-2xl glass-panel space-y-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-route text-sky-400"></i>
+                    다음에 보완할 점
+                </h3>
+                <ul class="text-sm text-slate-300 leading-relaxed space-y-1.5 list-disc list-inside">
+                    <li>실업률·물가·소비자심리지수 같은 월별 지표를 결합해, 시차를 두고 검색량과의 관계를 분석 (H1 검증)</li>
+                    <li>네이버·구글 데이터를 각각 표준화한 뒤 더하지 않고 변화율·상관관계로 비교</li>
+                    <li>별점과 별개로 한국어 감성 분석 모델이나 직접 라벨링한 표본으로 리뷰 감정을 판별</li>
+                    <li>'심심풀이'처럼 쪼개지는 단어를 막기 위해 사용자 사전을 지원하는 형태소 분석기(Kiwi 등) 적용</li>
+                    <li>수집·정제·분석 노트북을 나눠 셀 실행 순서에 의존하지 않는 구조로 정리</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ================= 8. 시행착오 ================= -->
+        <section id="trials" class="space-y-8">
+            <div class="border-l-4 border-amber-500 pl-4">
+                <span class="text-xs uppercase tracking-wider text-amber-400 font-bold font-mono">08. Trial &amp; Error</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">시행착오와 해결 과정</h2>
+                <p class="text-xs text-slate-400 mt-1">실제 노트북 코드에 흔적이 남아 있는 문제와, 그 과정에서 배운 점입니다.</p>
+            </div>
+
+            <div class="space-y-6">
+                <!-- 시행착오 01 -->
+                <div class="p-6 sm:p-8 rounded-3xl glass-panel border border-amber-500/20 space-y-5 avoid-break">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-mono font-bold">시행착오 01</span>
+                            <h3 class="text-lg font-bold text-white">[웹 크롤링] 1페이지는 되는데 2페이지부터 글을 못 찾은 문제</h3>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">Selenium · CSS Selector</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                            <div class="text-rose-400 font-bold text-sm"><i class="fa-solid fa-circle-xmark mr-1.5"></i>처음 시도</div>
+                            <p class="text-slate-300 text-xs leading-relaxed">1페이지에서 찾은 게시글 목록 셀렉터(<code>tbody:nth-child(5) &gt; tr</code>)를 그대로 55페이지 반복문에 사용.</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                            <div class="text-amber-400 font-bold text-sm"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>문제</div>
+                            <p class="text-slate-300 text-xs leading-relaxed">1페이지는 정상 수집됐지만 <strong>2페이지부터는 게시글 행을 찾지 못함</strong>.</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                            <div class="text-sky-400 font-bold text-sm"><i class="fa-solid fa-magnifying-glass mr-1.5"></i>원인</div>
+                            <p class="text-slate-300 text-xs leading-relaxed">개발자 도구로 확인해 보니 1페이지에만 <strong>공지사항 영역</strong>이 있어서 게시글 목록 위치가 달랐고, 2페이지부터는 일반 <code>tbody &gt; tr</code> 구조였음.</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-800/40 space-y-1.5">
+                            <div class="text-emerald-400 font-bold text-sm"><i class="fa-solid fa-circle-check mr-1.5"></i>해결</div>
+                            <p class="text-slate-300 text-xs leading-relaxed">페이지 번호에 따라 셀렉터를 나누는 분기(<code>if page == 1: ... else: ...</code>)를 넣어 55페이지, 816건을 수집.</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed"><strong class="text-slate-300">남은 개선점:</strong> 페이지를 열 때마다 <code>time.sleep(2)</code>로 무조건 2초를 기다립니다.
+                        네트워크가 느리면 요소를 놓칠 수 있으므로 <code>WebDriverWait</code>로 "요소가 나타날 때까지 기다리기"와 실패 시 재시도를 넣는 것이 다음 과제입니다.</p>
+                </div>
+
+                <!-- 시행착오 02 -->
+                <div class="p-6 sm:p-8 rounded-3xl glass-panel border border-amber-500/20 space-y-5 avoid-break">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-mono font-bold">시행착오 02</span>
+                            <h3 class="text-lg font-bold text-white">[수집 도구] 리뷰를 브라우저 스크롤로 모으던 방식에서 전용 라이브러리로</h3>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">Selenium → google-play-scraper</span>
+                    </div>
+                    <div class="text-xs sm:text-sm text-slate-300 leading-relaxed space-y-2">
+                        <p>
+                            수집 노트북에는 플레이스토어에서 리뷰 창을 열고 <code>Keys.END</code>로 스크롤을 반복해 리뷰를 불러오는 Selenium 코드가 주석으로 남아 있습니다.
+                            이 방식은 스크롤할 때마다 기다려야 해서 수천 건을 모으기에는 느리고, 화면 구조가 바뀌면 셀렉터가 쉽게 깨집니다.
+                        </p>
+                        <p class="text-emerald-400 font-medium">
+                            👉 <strong>해결:</strong> 플레이스토어 리뷰는 <code>google-play-scraper</code>의 <code>reviews_all()</code>로 바꿔 6,925건을 한 번에 가져오고,
+                            Selenium은 전용 도구가 없는 네이버 카페 수집에만 사용했습니다.
+                            <span class="text-slate-300 font-normal">"익숙한 도구"보다 "대상에 맞는 도구"를 고르는 것이 수집 시간과 안정성을 좌우한다는 점을 배웠습니다.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 시행착오 03 -->
+                <div class="p-6 sm:p-8 rounded-3xl glass-panel border border-amber-500/20 space-y-5 avoid-break">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-mono font-bold">시행착오 03</span>
+                            <h3 class="text-lg font-bold text-white">[연관 규칙] 자주 나오는 단어만 상위에 올라오는 문제</h3>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">mlxtend Apriori · lift</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                            <div class="text-rose-400 font-bold text-sm"><i class="fa-solid fa-circle-xmark mr-1.5"></i>처음 생각</div>
+                            <p class="text-slate-300 text-xs leading-relaxed">"A가 나오면 B도 나올 확률"인 <strong>신뢰도(confidence)</strong>가 높은 규칙을 의미 있는 규칙으로 보려 함.</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                            <div class="text-amber-400 font-bold text-sm"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>문제</div>
+                            <p class="text-slate-300 text-xs leading-relaxed">'운세'·'사주'처럼 <strong>원래 자주 나오는 단어</strong>가 결론(B)인 규칙이 신뢰도만으로는 높게 나와, 새로운 정보가 없는 규칙이 섞임.</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                            <div class="text-sky-400 font-bold text-sm"><i class="fa-solid fa-magnifying-glass mr-1.5"></i>원인</div>
+                            <p class="text-slate-300 text-xs leading-relaxed">신뢰도는 B 자체가 얼마나 흔한지를 고려하지 않음. 예: '기분→운세'는 신뢰도 17%지만 lift는 1.49로, 거의 우연 수준.</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-800/40 space-y-1.5">
+                            <div class="text-emerald-400 font-bold text-sm"><i class="fa-solid fa-circle-check mr-1.5"></i>해결</div>
+                            <p class="text-slate-300 text-xs leading-relaxed">B의 흔한 정도를 보정한 <strong>lift를 기준</strong>으로 규칙을 고르고 정렬(<code>metric="lift"</code>). 그 결과 '가격-프리미엄'(17.34), '로그인-계정'(10.65) 같은 불만 포인트가 드러남.</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed"><strong class="text-slate-300">배운 점:</strong> lift가 높아도 '심심-풀이'처럼 형태소 분석이 단어를 쪼갠 결과일 수 있어, 숫자만 믿지 않고 원문 리뷰를 함께 확인해야 했습니다.
+                        또 결과는 min_support 같은 기준값에 따라 달라지므로, 기준값을 함께 밝혀야 다른 사람이 재현할 수 있습니다.</p>
+                </div>
+
+                <!-- 시행착오 04 -->
+                <div class="p-6 sm:p-8 rounded-3xl glass-panel border border-amber-500/20 space-y-5 avoid-break">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-mono font-bold">시행착오 04</span>
+                            <h3 class="text-lg font-bold text-white">[검색 트렌드] 네이버와 구글 값을 그냥 더해 버린 문제</h3>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">pandas · 상대지수</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                            <div class="text-rose-400 font-bold text-sm"><i class="fa-solid fa-circle-xmark mr-1.5"></i>처음 시도</div>
+                            <p class="text-slate-300 text-xs leading-relaxed">두 플랫폼의 관심도를 합쳐 보려고 날짜를 기준으로 네이버 표와 구글 표를 그대로 더함(<code>naver + google</code>).</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                            <div class="text-amber-400 font-bold text-sm"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>문제</div>
+                            <p class="text-slate-300 text-xs leading-relaxed">합산 그래프는 그럴듯해 보였지만, 키워드마다 어느 플랫폼 값이 더 크냐에 따라 모양이 좌우됨. 구글 시작월(2022.12)은 네이버에 없어 빈 값이 됨.</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5">
+                            <div class="text-sky-400 font-bold text-sm"><i class="fa-solid fa-magnifying-glass mr-1.5"></i>원인</div>
+                            <p class="text-slate-300 text-xs leading-relaxed">두 값 모두 0~100이지만 <strong>각자 자기 최댓값을 100으로 맞춘 상대 수치</strong>라 단위가 다름. 더하거나 크기를 비교할 수 없는 값이었음.</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-800/40 space-y-1.5">
+                            <div class="text-emerald-400 font-bold text-sm"><i class="fa-solid fa-circle-check mr-1.5"></i>해결</div>
+                            <p class="text-slate-300 text-xs leading-relaxed">공통 36개월로 맞춘 뒤 값의 크기 대신 <strong>흐름이 비슷한지</strong>를 상관계수로 다시 확인. 결과적으로 "두 플랫폼 흐름이 같다"는 가설은 기각.</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed"><strong class="text-slate-300">배운 점:</strong> 숫자의 범위가 같아 보여도 "이 숫자가 어떻게 만들어졌는지"를 먼저 확인해야 합니다. 상관계수 확인은 포트폴리오를 정리하면서 추가로 진행했습니다.</p>
+                </div>
+
+                <!-- 시행착오 05 -->
+                <div class="p-6 sm:p-8 rounded-3xl glass-panel border border-slate-800 space-y-5 avoid-break">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-mono font-bold">시행착오 05</span>
+                            <h3 class="text-lg font-bold text-white">[감성 분류] 라벨이 없어 별점을 대신 쓴 선택과 그 한계</h3>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">np.where(score &gt; 3)</span>
+                    </div>
+                    <div class="text-xs sm:text-sm text-slate-300 leading-relaxed space-y-2">
+                        <p>
+                            감성 분석 모델을 학습시킬 정답 라벨이 없어서, 별점 4~5점을 '긍정', 1~3점을 '비긍정'으로 나눠 단어를 비교했습니다.
+                            빠르게 탐색을 시작하기에는 충분했지만, 실제로 리뷰를 읽어 보니 <strong>별점은 4점인데 본문은 유료 결제나 광고 오류에 대한 불만</strong>인
+                            리뷰도 있었습니다. 별점과 글의 감정이 항상 일치하지는 않았습니다.
+                        </p>
+                        <p class="text-emerald-400 font-medium">
+                            👉 <strong>대응:</strong> 결과를 설명할 때 "별점 기반 분류는 감정 판별 결과가 아니다"라는 단서를 항상 붙였고,
+                            3점을 비긍정에 넣은 기준도 함께 밝혔습니다. 다음 단계로 감성 분석 모델이나 직접 라벨링한 표본으로 검증할 계획입니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 9. 기술 스택 ================= -->
+        <section id="techstack" class="space-y-8">
+            <div class="border-l-4 border-slate-500 pl-4">
+                <span class="text-xs uppercase tracking-wider text-slate-400 font-bold font-mono">09. Tech Stack</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white mt-1">사용한 기술</h2>
+                <p class="text-xs text-slate-400 mt-1">uv(<code>pyproject.toml</code> + <code>uv.lock</code>)로 팀원 모두 같은 패키지 버전을 쓰도록 고정했습니다.</p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div class="p-4 rounded-xl glass-panel text-center space-y-2">
+                    <div class="text-3xl text-amber-400"><i class="fa-brands fa-python"></i></div>
+                    <div class="text-xs font-bold text-white">Python 3.11 · uv</div>
+                    <div class="text-[10px] text-slate-400">언어 · 환경 관리</div>
+                </div>
+                <div class="p-4 rounded-xl glass-panel text-center space-y-2">
+                    <div class="text-3xl text-sky-400"><i class="fa-solid fa-spider"></i></div>
+                    <div class="text-xs font-bold text-white">Selenium · google-play-scraper</div>
+                    <div class="text-[10px] text-slate-400">카페 · 앱 리뷰 수집</div>
+                </div>
+                <div class="p-4 rounded-xl glass-panel text-center space-y-2">
+                    <div class="text-3xl text-indigo-400"><i class="fa-solid fa-table"></i></div>
+                    <div class="text-xs font-bold text-white">pandas · NumPy</div>
+                    <div class="text-[10px] text-slate-400">데이터 정제 · 집계</div>
+                </div>
+                <div class="p-4 rounded-xl glass-panel text-center space-y-2">
+                    <div class="text-3xl text-brand-400"><i class="fa-solid fa-language"></i></div>
+                    <div class="text-xs font-bold text-white">KoNLPy (Okt)</div>
+                    <div class="text-[10px] text-slate-400">한국어 명사 추출</div>
+                </div>
+                <div class="p-4 rounded-xl glass-panel text-center space-y-2">
+                    <div class="text-3xl text-emerald-400"><i class="fa-solid fa-circle-nodes"></i></div>
+                    <div class="text-xs font-bold text-white">mlxtend · NetworkX</div>
+                    <div class="text-[10px] text-slate-400">연관 규칙 · 연결망</div>
+                </div>
+                <div class="p-4 rounded-xl glass-panel text-center space-y-2">
+                    <div class="text-3xl text-rose-400"><i class="fa-solid fa-chart-pie"></i></div>
+                    <div class="text-xs font-bold text-white">Matplotlib · WordCloud</div>
+                    <div class="text-[10px] text-slate-400">그래프 · 워드클라우드</div>
+                </div>
+            </div>
+
+            <div class="p-5 rounded-2xl glass-panel text-center">
+                <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+                    <i class="fa-solid fa-quote-left text-brand-400 mr-2"></i>
+                    좋은 분석은 가설을 멋지게 증명하는 일이 아니라, <strong class="text-white">데이터가 말할 수 있는 범위를 정확히 구분하는 일</strong>이라는 것을 배웠습니다.
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="border-t border-slate-800 glass-panel py-10 mt-20 text-center text-xs text-slate-400 space-y-2 px-4">
+        <div class="flex items-center justify-center space-x-2 text-sm font-bold text-slate-300">
+            <i class="fa-solid fa-wand-magic-sparkles text-brand-400"></i>
+            <span>디지털 샤머니즘 데이터 분석 프로젝트</span>
+        </div>
+        <p>기획 및 분석: 포텐업 1조 (박시형, 박재혁, 임경빈, 김금비)</p>
+        <p>모든 수치와 그래프는 실제 프로젝트 노트북의 코드와 출력 결과를 기준으로 작성했습니다.</p>
+    </footer>
+
+    <!-- 이미지 확대 모달 -->
+    <div id="lightbox" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex flex-col items-center justify-center p-4" onclick="closeLightbox()">
+        <button class="absolute top-6 right-6 text-white text-3xl hover:text-rose-400 transition-colors" onclick="closeLightbox()" aria-label="닫기">&times;</button>
+        <div class="max-w-5xl max-h-[85vh] p-2 bg-slate-900/80 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl flex flex-col items-center" onclick="event.stopPropagation()">
+            <img id="lightbox-img" src="" alt="확대 이미지" class="max-w-full max-h-[75vh] object-contain rounded-xl bg-white">
+            <div id="lightbox-caption" class="text-center text-sm font-medium text-slate-200 mt-3 px-4 py-1"></div>
+        </div>
+    </div>
+
+    <script>
+        // 1. 스크롤 진행률 바
+        window.addEventListener('scroll', () => {
+            const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            document.getElementById('progress-bar').style.width = (height > 0 ? (winScroll / height) * 100 : 0) + '%';
+        });
+
+        // 2. 차트 (Chart.js)
+        const charts = {};
+        const DATALAB = {
+            labels: ['2021-02','2021-03','2021-04','2021-05','2021-06','2021-07','2021-08','2021-09','2021-10','2021-11','2021-12',
+                     '2022-01','2022-02','2022-03','2022-04','2022-05','2022-06','2022-07','2022-08','2022-09','2022-10','2022-11','2022-12',
+                     '2023-01','2023-02','2023-03','2023-04','2023-05','2023-06','2023-07','2023-08','2023-09','2023-10','2023-11','2023-12',
+                     '2024-01','2024-02','2024-03','2024-04','2024-05','2024-06','2024-07','2024-08','2024-09','2024-10','2024-11','2024-12',
+                     '2025-01','2025-02','2025-03','2025-04','2025-05','2025-06','2025-07','2025-08','2025-09','2025-10','2025-11','2025-12',
+                     '2026-01'],
+            values: [58.88, 67.06, 67.37, 64.11, 66.74, 66.47, 66.04, 63.19, 67.85, 67.96, 73.90,
+                     79.36, 64.31, 69.04, 70.31, 71.63, 72.42, 72.94, 71.34, 69.41, 76.03, 76.40, 83.20,
+                     85.26, 72.49, 76.97, 84.04, 81.06, 80.47, 80.40, 74.41, 73.81, 79.74, 80.79, 87.60,
+                     90.05, 80.08, 87.17, 91.17, 88.40, 93.59, 100.00, 86.43, 82.77, 91.04, 86.10, 94.90,
+                     87.08, 80.12, 85.94, 88.75, 82.30, 81.52, 84.76, 77.02, 82.42, 82.42, 78.96, 87.38,
+                     82.02]
+        };
+
+        function themeColors() {
+            const light = document.documentElement.classList.contains('light');
+            return {
+                text: light ? '#334155' : '#cbd5e1',
+                tick: light ? '#64748b' : '#94a3b8',
+                grid: light ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.06)',
+                border: light ? '#ffffff' : '#0f172a'
+            };
+        }
+
+        function buildCharts() {
+            const c = themeColors();
+            Object.values(charts).forEach(ch => ch.destroy());
+
+            // 별점 도넛
+            const scoreData = [5071, 855, 342, 141, 516];
+            const scoreTotal = scoreData.reduce((a, b) => a + b, 0);
+            charts.score = new Chart(document.getElementById('scoreChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['5점', '4점', '3점', '2점', '1점'],
+                    datasets: [{
+                        data: scoreData,
+                        backgroundColor: ['#8b5cf6', '#38bdf8', '#94a3b8', '#fb923c', '#f43f5e'],
+                        borderWidth: 2,
+                        borderColor: c.border
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: c.text,
+                                font: { size: 11, family: 'Pretendard' },
+                                generateLabels: (chart) => {
+                                    const ds = chart.data.datasets[0];
+                                    return chart.data.labels.map((label, i) => ({
+                                        text: `${label}  ${(ds.data[i] / scoreTotal * 100).toFixed(1)}%`,
+                                        fillStyle: ds.backgroundColor[i],
+                                        strokeStyle: ds.backgroundColor[i],
+                                        fontColor: c.text,
+                                        hidden: !chart.getDataVisibility(i),
+                                        index: i
+                                    }));
+                                }
+                            },
+                            onClick: (e, item, legend) => { legend.chart.toggleDataVisibility(item.index); legend.chart.update(); }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => ` ${ctx.label}: ${ctx.raw.toLocaleString()}건 (${(ctx.raw / scoreTotal * 100).toFixed(1)}%)`
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 60개월 검색 추이 (실제 네이버 데이터랩 값)
+            const isJan = DATALAB.labels.map(l => l.endsWith('-01'));
+            const isMax = DATALAB.values.map(v => v === 100);
+            charts.trend = new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: DATALAB.labels,
+                    datasets: [{
+                        label: '사주·운세·타로 (네이버 상대지수)',
+                        data: DATALAB.values,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.12)',
+                        fill: true,
+                        tension: 0.25,
+                        borderWidth: 2,
+                        pointRadius: DATALAB.values.map((v, i) => (isJan[i] || isMax[i]) ? 5 : 2),
+                        pointBackgroundColor: DATALAB.values.map((v, i) => isMax[i] ? '#f43f5e' : (isJan[i] ? '#f59e0b' : '#8b5cf6')),
+                        pointBorderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { ticks: { color: c.tick, font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }, grid: { color: c.grid } },
+                        y: { min: 50, max: 105, ticks: { color: c.tick, font: { size: 10 } }, grid: { color: c.grid } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const tag = isMax[ctx.dataIndex] ? ' (최고치)' : (isJan[ctx.dataIndex] ? ' (1월)' : '');
+                                    return ` 상대지수 ${ctx.raw.toFixed(1)}${tag}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 3. 화면 모드 전환
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        function setTheme(light) {
+            document.documentElement.classList.toggle('light', light);
+            themeToggleBtn.innerHTML = light ? '<i class="fa-solid fa-sun text-sm"></i>' : '<i class="fa-solid fa-moon text-sm"></i>';
+            if (window.Chart) buildCharts();
+        }
+        themeToggleBtn.addEventListener('click', () => {
+            const light = !document.documentElement.classList.contains('light');
+            setTheme(light);
+            try { localStorage.setItem('portfolio-theme', light ? 'light' : 'dark'); } catch (e) {}
+        });
+
+        // 인쇄할 때는 밝은 화면으로 바꿨다가 끝나면 되돌림
+        let themeBeforePrint = false;
+        window.addEventListener('beforeprint', () => {
+            themeBeforePrint = document.documentElement.classList.contains('light');
+            setTheme(true);
+        });
+        window.addEventListener('afterprint', () => setTheme(themeBeforePrint));
+
+        // 4. 이미지 확대
+        function openLightbox(src, caption) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox-caption').innerText = caption || '';
+            document.getElementById('lightbox').classList.remove('hidden');
+        }
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+        }
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+
+        // 5. 워드클라우드 탭 전환
+        const WC_TABS = ['pos', 'star5', 'neg', 'star1', 'cafe'];
+        function switchWcTab(tabName) {
+            WC_TABS.forEach(name => {
+                document.getElementById('wc-tab-' + name).classList.toggle('hidden', name !== tabName);
+                const btn = document.getElementById('tab-btn-' + name);
+                const active = name === tabName;
+                btn.classList.toggle('bg-brand-600', active);
+                btn.classList.toggle('text-white', active);
+                btn.classList.toggle('tab-active', active);
+                btn.classList.toggle('text-slate-400', !active);
+            });
+        }
+
+        // 6. 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            let saved = null;
+            try { saved = localStorage.getItem('portfolio-theme'); } catch (e) {}
+            setTheme(saved === 'light');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>의정이슈레이더 (Council Issue Radar) | AI 프로젝트 포트폴리오</title>
+    <meta name="description" content="광역의회 회의록 205만 발언을 분석해 정책 이슈의 최초 관측 시점·의회 간 확산 흐름을 보여주고 다음 달 논의량을 예측하는 로컬 AI 시스템">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#090d16',
+                        darkCard: '#131b2e'
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Pretendard 폰트 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+    <!-- Chart.js (버전 고정) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #090d16;
+            color: #e2e8f0;
+        }
+        section[id] { scroll-margin-top: 5rem; }
+        .glass-nav {
+            background: rgba(13, 21, 38, 0.88);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .card-glow {
+            background: #131b2e;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+        }
+        .card-glow:hover {
+            border-color: rgba(59, 130, 246, 0.45);
+            box-shadow: 0 12px 32px -10px rgba(59, 130, 246, 0.25);
+            transform: translateY(-2px);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .image-preview-container {
+            cursor: zoom-in;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+        .image-preview-container img { transition: transform 0.3s ease; }
+        .image-preview-container:hover img { transform: scale(1.02); }
+        .image-preview-container:focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
+        .image-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .image-preview-container:hover .image-overlay,
+        .image-preview-container:focus-visible .image-overlay { opacity: 1; }
+        .term { border-bottom: 1px dotted #64748b; cursor: help; }
+    </style>
+</head>
+<body class="selection:bg-blue-600 selection:text-white">
+
+    <!-- 상단 내비게이션 바 -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass-nav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <a href="#top" class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 shrink-0 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-satellite-dish text-lg"></i>
+                </div>
+                <div class="min-w-0">
+                    <span class="font-bold text-lg tracking-tight text-white block truncate">Council Issue Radar</span>
+                    <span class="text-xs text-blue-400 block -mt-1 font-mono font-medium">의정이슈레이더 포트폴리오</span>
+                </div>
+            </a>
+            <nav class="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-300">
+                <a href="#overview" class="hover:text-blue-400 transition-colors">프로젝트 개요</a>
+                <a href="#architecture" class="hover:text-blue-400 transition-colors">시스템 구조</a>
+                <a href="#engineering" class="hover:text-blue-400 transition-colors">데이터 처리</a>
+                <a href="#showcase" class="hover:text-blue-400 transition-colors">대시보드</a>
+                <a href="#troubleshooting" class="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1 font-semibold">
+                    <i class="fa-solid fa-wrench text-xs"></i> 시행착오 3가지
+                </a>
+                <a href="#evaluation" class="hover:text-blue-400 transition-colors">성능 평가</a>
+                <a href="#codes" class="hover:text-blue-400 transition-colors">핵심 코드</a>
+            </nav>
+            <span class="hidden sm:inline-flex badge-pill bg-blue-950 text-blue-300 border border-blue-800 shrink-0">
+                <i class="fa-solid fa-landmark text-amber-400"></i> 2026 DATA·AI 분석 경진대회 출품작
+            </span>
+        </div>
+    </header>
+
+    <!-- 히어로 섹션 -->
+    <section id="top" class="pt-32 pb-20 relative overflow-hidden bg-gradient-to-b from-slate-900 via-darkCard to-darkBg">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(59,130,246,0.18),rgba(255,255,255,0))]"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-4xl mx-auto">
+                <div class="inline-flex flex-wrap justify-center items-center gap-2 px-3 py-1 rounded-full bg-blue-950 border border-blue-800 text-blue-400 text-xs font-semibold mb-6">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    국회도서관 주관 2026 DATA·AI 분석 경진대회 | 팀 「그 정책, 국민도 알고싶다」(꺼드럭)
+                </div>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight">
+                    광역의회 회의록으로 찾는<br>
+                    <span class="gradient-text">정책 이슈 확산 추적 · 예측 AI</span>
+                </h1>
+                <p class="mt-6 text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
+                    2024~2025년 전국 17개 광역의회 회의록(<strong>발언 205만 건</strong>, 검색용 조각 <strong>90만 개</strong>)을 분석해
+                    어떤 정책 이슈가 <strong>어느 의회에서 처음 나왔고 다른 의회로 어떻게 이어졌는지</strong> 시간순으로 보여주고,
+                    <strong>다음 달 논의량을 예측</strong>하는 시스템입니다.
+                    회의록 원문은 외부 AI 서비스로 보내지 않고, 모든 AI 모델을 로컬 PC에서 실행합니다.
+                </p>
+
+                <!-- 핵심 성과 지표 4개 -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 text-left">
+                    <div class="card-glow rounded-xl p-5 border-t-2 border-t-blue-500">
+                        <div class="text-xs font-semibold text-slate-400 tracking-wider">조건 검색 속도</div>
+                        <div class="text-3xl font-black text-blue-400 mt-2 font-mono">3.97 ms</div>
+                        <div class="text-xs text-slate-500 mt-1">'의회+연도' 조건 벡터 검색 중앙값<br>(ChromaDB 586ms → 약 148배 빨라짐)</div>
+                    </div>
+                    <div class="card-glow rounded-xl p-5 border-t-2 border-t-purple-500">
+                        <div class="text-xs font-semibold text-slate-400 tracking-wider">논의 지속 예측 F1</div>
+                        <div class="text-3xl font-black text-purple-400 mt-2 font-mono">0.881</div>
+                        <div class="text-xs text-slate-500 mt-1">다음 달에도 논의될지 예측<br>(전월 기준 0.819 대비 +0.062)</div>
+                    </div>
+                    <div class="card-glow rounded-xl p-5 border-t-2 border-t-emerald-500">
+                        <div class="text-xs font-semibold text-slate-400 tracking-wider">언급량 예측 오차 (MAE)</div>
+                        <div class="text-3xl font-black text-emerald-400 mt-2 font-mono">7.12 건</div>
+                        <div class="text-xs text-slate-500 mt-1">포아송 회귀 평균 오차<br>(전월 값 그대로 쓸 때보다 29.8% 감소)</div>
+                    </div>
+                    <div class="card-glow rounded-xl p-5 border-t-2 border-t-rose-500">
+                        <div class="text-xs font-semibold text-slate-400 tracking-wider">외부 AI API 사용</div>
+                        <div class="text-3xl font-black text-rose-400 mt-2 font-mono">0 건</div>
+                        <div class="text-xs text-slate-500 mt-1">LLM·임베딩 모두 로컬 실행<br>(GPU · Ollama)</div>
+                    </div>
+                </div>
+
+                <!-- 퀵 액션 버튼 -->
+                <div class="mt-10 flex flex-wrap justify-center gap-4 text-sm font-semibold">
+                    <a href="#showcase" class="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-2 shadow-lg shadow-blue-600/30 transition-all">
+                        <i class="fa-solid fa-desktop"></i> 대시보드 구성 보기
+                    </a>
+                    <a href="#troubleshooting" class="px-6 py-3 rounded-lg bg-amber-600/90 hover:bg-amber-500 text-white flex items-center gap-2 shadow-lg shadow-amber-600/30 transition-all">
+                        <i class="fa-solid fa-wrench"></i> 시행착오 3가지
+                    </a>
+                    <a href="#evaluation" class="px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center gap-2 border border-slate-700 transition-all">
+                        <i class="fa-solid fa-chart-simple"></i> 성능 평가 결과
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-24">
+
+        <!-- 1. 프로젝트 개요 -->
+        <section id="overview" class="space-y-8">
+            <div class="border-l-4 border-blue-500 pl-4">
+                <span class="text-xs font-mono font-bold text-blue-400 uppercase tracking-wider">Section 01</span>
+                <h2 class="text-3xl font-bold text-white tracking-tight">프로젝트 개요</h2>
+                <p class="text-slate-400 text-sm mt-1">한 의회에서 시작된 정책 논의가 다른 의회로 어떻게 번지는지를 데이터로 확인</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+                <!-- 문제 정의 카드 -->
+                <div class="card-glow rounded-xl p-6 flex flex-col">
+                    <div class="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-landmark text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">왜 만들었나: 회의록 속에 묻힌 정책 흐름</h3>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        전세사기 피해 지원, 저출생 대응, 집중호우 침수 대책처럼 한 지역에서 논의된 정책은 다른 지역 의회로 이어지는 경우가 많습니다.
+                        하지만 의회마다 회의록 형식(HTML)과 정책 이름이 달라서, 단순 키워드 검색만으로는
+                        <strong>어디서 먼저 논의됐고 어떤 순서로 퍼졌는지</strong> 알기 어려웠습니다.
+                    </p>
+                    <div class="mt-4 p-4 rounded-lg bg-slate-900/80 border border-slate-700/60 text-xs text-slate-400 space-y-2">
+                        <div class="flex items-center gap-2 text-blue-300 font-semibold">
+                            <i class="fa-solid fa-bullseye"></i> 경진대회 과제 (국회도서관 주관)
+                        </div>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>지역별 핵심 정책 이슈와 키워드 찾기</li>
+                            <li>제공 데이터 안에서 이슈가 <strong>처음 나타난 시점</strong>과 다른 의회의 <strong>후속 논의 흐름</strong> 추적</li>
+                            <li>근거와 함께 <strong>앞으로의 확산 가능성 · 다음 달 언급량</strong> 예측</li>
+                        </ul>
+                    </div>
+                    <div class="mt-4 p-4 rounded-lg bg-emerald-950/20 border border-emerald-900/40 text-xs text-slate-300 leading-relaxed">
+                        <div class="font-semibold text-emerald-400 mb-1"><i class="fa-solid fa-scale-balanced mr-1"></i> 설계 원칙: 계산은 통계 모델, 설명은 LLM</div>
+                        날짜·순서·예측 수치는 데이터와 통계 모델이 계산하고, LLM은 검색된 회의록 근거를 문장으로 풀어 설명하는 역할만 맡습니다.
+                        LLM에게 숫자를 맡기면 실행할 때마다 값이 달라지고 근거 없는 수치가 나올 수 있기 때문입니다.
+                    </div>
+                </div>
+
+                <!-- 발표 자료: 문제 배경 -->
+                <div class="card-glow rounded-xl p-6 flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-mono text-purple-400 font-bold">발표 자료 · 문제 배경과 목표</span>
+                        <span class="text-xs text-slate-500">클릭하면 크게 보기</span>
+                    </div>
+                    <div class="image-preview-container rounded-lg border border-slate-700 bg-slate-900" role="button" tabindex="0" data-src="assets/slides/slide_02.png" data-caption="발표 자료 · 문제 배경과 목표">
+                        <img src="assets/slides/slide_02.png" alt="문제 배경과 5가지 목표를 정리한 발표 슬라이드" class="w-full h-auto" loading="lazy">
+                        <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-3">
+                        ▲ 공공 회의록을 다루므로 OpenAI 같은 외부 유료 AI API는 쓰지 않고, 오픈소스 모델을 로컬 GPU·Ollama에서 실행했습니다.
+                        (법제처·열린국회정보·KOSIS 공공데이터 API는 참고 정보 조회용으로만 선택적으로 사용)
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. 전체 시스템 구조 -->
+        <section id="architecture" class="space-y-8">
+            <div class="border-l-4 border-indigo-500 pl-4">
+                <span class="text-xs font-mono font-bold text-indigo-400 uppercase tracking-wider">Section 02</span>
+                <h2 class="text-3xl font-bold text-white tracking-tight">전체 시스템 구조</h2>
+                <p class="text-slate-400 text-sm mt-1">회의록 정리 → 검색 → 이슈 묶기 → 예측 → 근거 기반 설명까지 6단계</p>
+            </div>
+
+            <div class="card-glow rounded-xl p-6 space-y-4">
+                <div class="flex items-center justify-between flex-wrap gap-4 border-b border-slate-700/60 pb-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-diagram-project text-indigo-400"></i>
+                        <span class="font-bold text-white text-base">그림 1. 의정이슈레이더 전체 구조</span>
+                    </div>
+                    <span class="text-xs font-mono text-indigo-400">클릭하면 크게 보기</span>
+                </div>
+                <div class="image-preview-container rounded-lg border border-slate-700 bg-slate-900 p-2" role="button" tabindex="0" data-src="figure/01_전체_아키텍처.png" data-caption="그림 1. 의정이슈레이더 전체 구조">
+                    <img src="figure/01_전체_아키텍처.png" alt="회의록 정제부터 대시보드까지 전체 시스템 구조도" class="w-full h-auto rounded" loading="lazy">
+                    <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                </div>
+
+                <!-- 6단계 요약 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 text-xs">
+                    <div class="p-4 rounded-lg bg-slate-900/80 border border-slate-800">
+                        <div class="font-bold text-blue-400 mb-1">1. 회의록 정리 & 나누기(청킹)</div>
+                        <p class="text-slate-400 leading-relaxed">의회마다 다른 HTML 구조를 로컬 LLM(Qwen2.5-Coder)이 분석해 <strong>의회별 추출 규칙</strong>을 만들고, 발언 단위 표(TSV)로 정리. 이후 검색용 작은 조각(약 750자)과 답변용 큰 조각(약 2,400자)으로 나눔.</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-slate-900/80 border border-slate-800">
+                        <div class="font-bold text-indigo-400 mb-1">2. 벡터 변환 & 저장</div>
+                        <p class="text-slate-400 leading-relaxed">한국어 임베딩 모델(Snowflake Arctic, 1,024차원)로 문장을 숫자 벡터로 바꾸고, PostgreSQL 17 + pgvector(HNSW 인덱스)에 <strong>901,358개</strong> 저장. GPU로 약 4.1시간 소요.</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-slate-900/80 border border-slate-800">
+                        <div class="font-bold text-purple-400 mb-1">3. 하이브리드 검색</div>
+                        <p class="text-slate-400 leading-relaxed">뜻이 비슷한 문장을 찾는 <strong>의미 검색</strong>과 단어가 정확히 일치하는 <strong>키워드 검색(BM25)</strong> 결과를 순위 기준(RRF)으로 합친 뒤, BGE 재순위 모델로 한 번 더 정렬.</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-slate-900/80 border border-slate-800">
+                        <div class="font-bold text-pink-400 mb-1">4. 이슈 묶기 & 타임라인</div>
+                        <p class="text-slate-400 leading-relaxed">유사도 0.72 이상인 발언끼리 연결하고 Union-Find로 묶어 하나의 정책 이슈로 정리. 묶인 발언의 날짜로 <strong>의회별 최초 관측 시점과 순서</strong>를 계산.</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-slate-900/80 border border-slate-800">
+                        <div class="font-bold text-amber-400 mb-1">5. 다음 달 예측</div>
+                        <p class="text-slate-400 leading-relaxed">① 논의가 이어질지: 최근 3개월 활동 비율 기반 모델(F1 0.881)<br>② 몇 건 언급될지: 포아송 회귀(평균 오차 7.12건)<br>과거로만 학습하는 시간순 검증 10회로 평가.</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-slate-900/80 border border-slate-800">
+                        <div class="font-bold text-emerald-400 mb-1">6. 근거 기반 설명 (로컬 LLM)</div>
+                        <p class="text-slate-400 leading-relaxed">A.X-4.0-Light가 검색된 회의록만 근거로 답하고 문장에 <code class="text-emerald-300">[근거 N]</code>을 붙임. 답변 속 숫자·날짜·의회명은 근거와 자동 대조하고, 근거가 없으면 "근거 부족"으로 답함.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 데이터 처리 & 부모-자식 청킹 -->
+        <section id="engineering" class="space-y-8">
+            <div class="border-l-4 border-cyan-500 pl-4">
+                <span class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">Section 03</span>
+                <h2 class="text-3xl font-bold text-white tracking-tight">데이터 처리 & 검색 구조</h2>
+                <p class="text-slate-400 text-sm mt-1">205만 발언을 정리하고, "검색은 작게, 답변은 크게" 나눠 쓰는 구조</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- 전처리 -->
+                <div class="card-glow rounded-xl p-6 space-y-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-code-compare text-cyan-400"></i>
+                            데이터 전처리 과정
+                        </h3>
+                        <span class="text-xs font-mono text-cyan-400 shrink-0">클릭하면 크게 보기</span>
+                    </div>
+                    <div class="image-preview-container rounded-lg border border-slate-700 bg-slate-900" role="button" tabindex="0" data-src="assets/slides/slide_04.png" data-caption="발표 자료 · 데이터 전처리 과정">
+                        <img src="assets/slides/slide_04.png" alt="데이터 전처리 과정 발표 슬라이드" class="w-full h-auto" loading="lazy">
+                        <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        17개 의회의 HTML 구조가 제각각이라 정규식 하나로는 처리할 수 없었습니다.
+                        로컬 LLM(<code class="text-cyan-300">Qwen2.5-Coder</code>)으로 의회별 추출 규칙을 만들어 안건명·발언자·발언 본문만 뽑아 <strong>2,057,214행</strong>의 표준 데이터를 만들었고,
+                        각 발언에 고유 ID를 붙여 검색·DB·화면이 같은 원본을 가리키도록 했습니다.
+                        정책 분야·키워드 같은 메타데이터는 Kiwi 형태소 분석기와 로컬 LLM(Gemma)으로 추출했습니다.
+                    </p>
+                </div>
+
+                <!-- 부모-자식 청킹 -->
+                <div class="card-glow rounded-xl p-6 space-y-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-indigo-400"></i>
+                            부모-자식 청킹 (그림 2)
+                        </h3>
+                        <span class="text-xs font-mono text-indigo-400 shrink-0">클릭하면 크게 보기</span>
+                    </div>
+                    <div class="image-preview-container rounded-lg border border-slate-700 bg-slate-900 p-2" role="button" tabindex="0" data-src="figure/02_부모_자식_청킹.png" data-caption="그림 2. 부모-자식 청킹 구조">
+                        <img src="figure/02_부모_자식_청킹.png" alt="부모 청크와 자식 청크의 연결 구조도" class="w-full h-auto rounded" loading="lazy">
+                        <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        회의록을 길게 자르면 여러 주제가 섞여 검색이 부정확해지고, 짧게 자르면 앞뒤 맥락이 끊깁니다.
+                        그래서 <strong>자식 청크(약 750자)</strong>로 검색하고, 찾은 조각이 속한 <strong>부모 청크(약 2,400자)</strong>를 LLM에 넘겨 답변하게 했습니다.
+                        자식 청크마다 <code class="text-indigo-300">parent_chunk_id</code>를 저장해 두어 부모 청크를 바로 찾아옵니다.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 검색·군집화 그림 -->
+            <div class="card-glow rounded-xl p-6 space-y-4">
+                <div class="flex items-center justify-between gap-2">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-magnifying-glass-chart text-purple-400"></i>
+                        검색 → 재정렬 → 이슈 묶기 (그림 3)
+                    </h3>
+                    <span class="text-xs font-mono text-purple-400 shrink-0">클릭하면 크게 보기</span>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 items-center">
+                    <div class="lg:col-span-3 image-preview-container rounded-lg border border-slate-700 bg-slate-900 p-2" role="button" tabindex="0" data-src="figure/03_검색_군집화.png" data-caption="그림 3. 하이브리드 검색과 이슈 군집화">
+                        <img src="figure/03_검색_군집화.png" alt="하이브리드 검색과 이슈 군집화 흐름도" class="w-full h-auto rounded" loading="lazy">
+                        <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                    </div>
+                    <ol class="lg:col-span-2 text-xs text-slate-300 leading-relaxed space-y-3 list-decimal list-inside">
+                        <li><strong>의미 검색</strong>(pgvector)은 표현이 달라도 뜻이 비슷한 발언을 찾아내지만, 조례명·고유명사처럼 글자가 정확히 맞아야 하는 검색에는 약합니다.</li>
+                        <li>그래서 <strong>키워드 검색</strong>(BM25, SQLite FTS5)을 함께 돌리고, 두 결과의 점수 대신 <strong>순위</strong>로 합칩니다(RRF, k=60).</li>
+                        <li>상위 후보는 <strong>BGE 재순위 모델</strong>이 질문과 문장을 함께 읽고 다시 정렬합니다.</li>
+                        <li>상위 발언을 출발점으로 비슷한 발언을 넓혀 찾은 뒤, 유사도 기준 이상끼리 묶어 <strong>하나의 정책 이슈</strong>로 만듭니다.</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 대시보드 구성 -->
+        <section id="showcase" class="space-y-8">
+            <div class="border-l-4 border-pink-500 pl-4">
+                <span class="text-xs font-mono font-bold text-pink-400 uppercase tracking-wider">Section 04</span>
+                <h2 class="text-3xl font-bold text-white tracking-tight">웹 대시보드 구성</h2>
+                <p class="text-slate-400 text-sm mt-1">
+                    FastAPI 서버(<code>python src/main.py</code>) 실행 시 <code>http://127.0.0.1:8000</code>에서 열리는 대시보드
+                </p>
+            </div>
+
+            <div class="card-glow rounded-xl p-6 space-y-4">
+                <div class="flex items-center justify-between flex-wrap gap-4 border-b border-slate-700/60 pb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center">
+                            <i class="fa-solid fa-desktop"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">정책 선택 → 흐름 확인 → 원문 근거 → 전망·질문</h3>
+                            <p class="text-xs text-slate-400">전국 지도 · 의회별 관측 순서 · 월별 추이와 예측 · 근거 인용 로컬 LLM 채팅</p>
+                        </div>
+                    </div>
+                    <span class="badge-pill bg-pink-950 text-pink-300 border border-pink-800">
+                        실제 실행 화면 · 2026년 11월 캡처 (클릭하면 크게 보기)
+                    </span>
+                </div>
+
+                <!-- ② 이슈 레이더 (대표 화면) -->
+                <figure class="space-y-2">
+                    <div class="image-preview-container rounded-lg border border-slate-700 bg-slate-900" role="button" tabindex="0" data-src="assets/dashboard/dash_02_radar.png" data-caption="실행 화면 · 이슈 레이더 (전세사기 피해 예방과 지원)">
+                        <img src="assets/dashboard/dash_02_radar.png" alt="전세사기 이슈의 의회별 최초 관측 지도와 근거 발언 목록이 보이는 이슈 레이더 화면" class="w-full h-auto" loading="lazy">
+                        <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                    </div>
+                    <figcaption class="text-xs text-slate-400 leading-relaxed">
+                        <strong class="text-blue-400">이슈 레이더</strong> · '전세사기 피해 예방과 지원'을 선택한 화면입니다.
+                        17개 광역의회 모두에서 관련 논의가 확인됐고, 가장 먼저 관측된 곳은 서울특별시의회(2024-01-08)입니다.
+                        지도의 <strong>주황색 점</strong>이 최초 관측 의회이고, 점선은 관측 날짜 순서일 뿐 의회 간 영향 관계를 뜻하지 않습니다.
+                        오른쪽에는 의회별 첫 관측 날짜, 문서 수, 질문과 가장 가까운 실제 발언이 나옵니다.
+                    </figcaption>
+                </figure>
+
+                <!-- ① 대표 키워드 · ④ 원문 검색 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <figure class="space-y-2">
+                        <div class="image-preview-container rounded-lg border border-slate-700 bg-slate-900" role="button" tabindex="0" data-src="assets/dashboard/dash_01_catalog.png" data-caption="실행 화면 · 대표 키워드 목록">
+                            <img src="assets/dashboard/dash_01_catalog.png" alt="10개 대표 정책 이슈와 분류, 대표 검색어가 표로 나열된 첫 화면" class="w-full h-auto" loading="lazy">
+                            <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                        </div>
+                        <figcaption class="text-xs text-slate-400 leading-relaxed">
+                            <strong class="text-amber-400">대표 키워드</strong> · 첫 화면. 10개 대표 이슈 중 하나를 골라 '레이더 보기'를 누르면 분석이 시작됩니다.
+                            위쪽 검색창에 직접 이슈를 입력할 수도 있습니다.
+                        </figcaption>
+                    </figure>
+                    <figure class="space-y-2">
+                        <div class="image-preview-container rounded-lg border border-slate-700 bg-slate-900" role="button" tabindex="0" data-src="assets/dashboard/dash_05_search.png" data-caption="실행 화면 · 회의록 원문 검색">
+                            <img src="assets/dashboard/dash_05_search.png" alt="검색어와 연도 조건을 넣고 회의록 원문 검색 결과를 표시한 화면" class="w-full h-auto" loading="lazy">
+                            <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                        </div>
+                        <figcaption class="text-xs text-slate-400 leading-relaxed">
+                            <strong class="text-purple-400">회의록 원문 검색</strong> · 의회·연도·위원회·기간 조건을 걸고 원문을 찾습니다.
+                            화면의 응답 시간(약 14초)은 질문 임베딩, 벡터 검색, 전문검색, 결과 합치기를 <strong>모두 더한 시간</strong>입니다.
+                            앞에서 소개한 3.97 ms는 벡터 검색 단계만 잰 값이라 서로 다릅니다.
+                        </figcaption>
+                    </figure>
+                </div>
+
+                <!-- ③ 월별 추이 -->
+                <figure class="space-y-2">
+                    <div class="image-preview-container rounded-lg border border-slate-700 bg-white" role="button" tabindex="0" data-src="assets/dashboard/dash_03_monthly.png" data-caption="실행 화면 · 월별 매칭 문서 수 (2024-01 ~ 2025-12)">
+                        <img src="assets/dashboard/dash_03_monthly.png" alt="2024년 1월부터 2025년 12월까지 월별 매칭 문서 수 꺾은선 그래프" class="w-full h-auto" loading="lazy">
+                        <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                    </div>
+                    <figcaption class="text-xs text-slate-400 leading-relaxed">
+                        <strong class="text-sky-400">월별 추이</strong> · 24개월 동안 관련 회의록이 몇 건씩 나왔는지 보여줍니다. 전세사기 이슈는 2024년 11월(755건)에 가장 많았습니다.
+                    </figcaption>
+                </figure>
+
+                <!-- ⑤ 후속 흐름 보고서 · ⑥ 로컬 LLM 채팅 -->
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <figure class="md:col-span-3 space-y-2">
+                        <div class="image-preview-container rounded-lg border border-slate-700 bg-white" role="button" tabindex="0" data-src="assets/dashboard/dash_04_followup.png" data-caption="실행 화면 · 타 지방의회 후속 논의 흐름 및 다음 달 전망">
+                            <img src="assets/dashboard/dash_04_followup.png" alt="의회별 관측 순서, 조례화 단계, 후속 후보 순위, 다음 달 전망을 항목별로 정리한 보고서 화면" class="w-full h-auto" loading="lazy">
+                            <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                        </div>
+                        <figcaption class="text-xs text-slate-400 leading-relaxed">
+                            <strong class="text-rose-400">후속 논의 흐름 · 다음 달 전망</strong> · 계산 결과를 정해진 문장 규칙으로 정리한 보고서입니다(LLM이 쓴 글이 아님).
+                            어느 의회가 조례까지 만들었는지, 다음 단계로 갈 만한 후보 의회, 다음 달 논의 지속 확률(최근 3개월 활동 비율)과 예상 언급량(포아송 회귀)을 보여줍니다.
+                            후보 점수는 미리 정한 규칙의 참고값이며 확률이 아니라는 점도 화면에 적혀 있습니다.
+                        </figcaption>
+                    </figure>
+                    <figure class="md:col-span-2 space-y-2">
+                        <div class="image-preview-container rounded-lg border border-slate-700 bg-white" role="button" tabindex="0" data-src="assets/dashboard/dash_06b_chat_panel.png" data-caption="실행 화면 · 로컬 LLM 의정 에이전트 답변">
+                            <img src="assets/dashboard/dash_06b_chat_panel.png" alt="전세사기 피해 지원 질문에 근거 번호를 붙여 답한 로컬 LLM 채팅 창" class="w-full h-auto" loading="lazy">
+                            <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                        </div>
+                        <figcaption class="text-xs text-slate-400 leading-relaxed">
+                            <strong class="text-emerald-400">로컬 LLM 채팅</strong> · 오른쪽 아래 버튼으로 엽니다.
+                            <code class="text-emerald-300">A.X-4.0-Light</code>가 검색된 회의록만 근거로 답하고, 주요 내용마다 <code class="text-emerald-300">[근거 N]</code>을 붙입니다.
+                            답변 아래 근거 버튼을 누르면 원문을 바로 볼 수 있습니다. 이 답변은 약 50초 걸렸습니다.
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 시행착오 -->
+        <section id="troubleshooting" class="space-y-8">
+            <div class="border-l-4 border-amber-500 pl-4">
+                <span class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">Section 05</span>
+                <h2 class="text-3xl font-bold text-white tracking-tight">프로젝트 시행착오 3가지</h2>
+                <p class="text-slate-400 text-sm mt-1">
+                    팀 회의록과 비교 실험 기록에 남은 실제 문제와 해결 과정
+                </p>
+            </div>
+
+            <div class="space-y-8">
+
+                <!-- 시행착오 1: 검색 지연 → pgvector -->
+                <div class="card-glow rounded-xl p-6 border-l-4 border-l-rose-500 space-y-4">
+                    <div class="flex items-start justify-between flex-wrap gap-4">
+                        <div>
+                            <span class="badge-pill bg-rose-950 text-rose-300 border border-rose-800 mb-2">
+                                <i class="fa-solid fa-triangle-exclamation"></i> 시행착오 01
+                            </span>
+                            <h3 class="text-xl font-bold text-white">
+                                새 검색어로 찾으면 최대 3분 → 벡터 DB를 직접 비교해 교체
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">관련 팀 회의: 2026-10-20(DB 비교 계획), 2026-10-26(지연 문제 공유·PostgreSQL 채택)</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-2xl font-black text-emerald-400 font-mono">약 148배 빨라짐</span>
+                            <span class="text-xs text-slate-500 block">조건 검색 중앙값 586.29ms → 3.97ms</span>
+                        </div>
+                    </div>
+
+                    <div class="image-preview-container rounded-lg border border-slate-700 bg-slate-900" role="button" tabindex="0" data-src="assets/slides/slide_06.png" data-caption="발표 자료 · 임베딩 모델과 벡터 DB 비교 결과">
+                        <img src="assets/slides/slide_06.png" alt="임베딩 모델과 벡터 DB 비교 결과 발표 슬라이드" class="w-full h-auto" loading="lazy">
+                        <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 측정 결과 크게 보기</div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 text-xs">
+                        <div class="p-4 rounded-lg bg-rose-950/20 border border-rose-900/40">
+                            <h4 class="font-bold text-rose-400 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-bug"></i> 문제
+                            </h4>
+                            <p class="text-slate-300 leading-relaxed">
+                                미리 계산해 둔 대표 키워드는 바로 조회됐지만, <strong>새 검색어</strong>로 90만 개 조각 전체를 찾으면
+                                검색과 LLM 처리에 <strong>150초~3분</strong>이 걸리고 가끔 타임아웃이 났습니다.
+                                당시 팀원마다 ChromaDB와 PostgreSQL을 각각 쓰고 있어 어느 쪽으로 갈지도 정해지지 않은 상태였습니다.
+                            </p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-amber-950/20 border border-amber-900/40">
+                            <h4 class="font-bold text-amber-400 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-magnifying-glass"></i> 확인 방법
+                            </h4>
+                            <p class="text-slate-300 leading-relaxed">
+                                같은 Arctic 벡터 901,358개를 두 DB에 똑같이 넣고 같은 질의로 측정했습니다.
+                                조건 없는 검색은 둘 다 1~3ms로 빨랐고 오히려 ChromaDB(1.42ms)가 조금 더 빨랐습니다.
+                                그러나 서비스에 꼭 필요한 <strong>'의회+연도' 조건을 붙이면 ChromaDB가 586ms로 크게 느려졌습니다.</strong>
+                            </p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-emerald-950/20 border border-emerald-900/40">
+                            <h4 class="font-bold text-emerald-400 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle-check"></i> 해결 & 결과
+                            </h4>
+                            <p class="text-slate-300 leading-relaxed">
+                                <strong>PostgreSQL 17 + pgvector 0.8.7</strong>로 통일했습니다.
+                                조건 검색 중앙값 <strong>3.97ms</strong>(약 148배), 정확도(Recall@10 1.00)는 그대로였고,
+                                원문·메타데이터·월별 집계를 SQL 하나로 다룰 수 있게 됐습니다.
+                                완성된 DB는 덤프 파일로 만들어 새 환경에서도 약 29분 만에 복원되도록 했습니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 시행착오 2: 메타데이터 추출 병목 & Raw vs Enriched -->
+                <div class="card-glow rounded-xl p-6 border-l-4 border-l-blue-500 space-y-4">
+                    <div class="flex items-start justify-between flex-wrap gap-4">
+                        <div>
+                            <span class="badge-pill bg-blue-950 text-blue-300 border border-blue-800 mb-2">
+                                <i class="fa-solid fa-triangle-exclamation"></i> 시행착오 02
+                            </span>
+                            <h3 class="text-xl font-bold text-white">
+                                LLM 메타데이터 추출이 너무 느렸고, 넣어도 검색이 좋아지지 않았다
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">관련 팀 회의: 2026-10-19(추출 속도 병목), 2026-10-21(작업 우선순위 조정) · 노트북 05 비교 실험</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-2xl font-black text-blue-400 font-mono">원문(Raw) 채택</span>
+                            <span class="text-xs text-slate-500 block">nDCG@10 Raw 0.8928 vs 메타데이터 결합 0.8871</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 text-xs">
+                        <div class="p-4 rounded-lg bg-rose-950/20 border border-rose-900/40">
+                            <h4 class="font-bold text-rose-400 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-bug"></i> 문제
+                            </h4>
+                            <p class="text-slate-300 leading-relaxed">
+                                발언마다 정책 분야·키워드·요약을 로컬 LLM으로 뽑았더니 <strong>한 줄에 약 6.5초</strong>,
+                                16MB 파일 하나에 <strong>8~10시간</strong>이 걸렸습니다. 전체를 처리하려면 며칠이 필요했고,
+                                전처리에 묶여 전체 파이프라인 연결이 늦어질 위험이 있었습니다.
+                            </p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-amber-950/20 border border-amber-900/40">
+                            <h4 class="font-bold text-amber-400 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-route"></i> 대응
+                            </h4>
+                            <p class="text-slate-300 leading-relaxed">
+                                파일을 팀원 PC에 나눠 <strong>퇴근 후 야간 배치</strong>로 돌리고 멀티스레드를 적용했습니다.
+                                또 LLM 추출은 샘플(50~100줄)로 먼저 검증하고, 늦어지면 기존 정형 메타데이터로
+                                <strong>파이프라인 연결을 먼저</strong> 하기로 기준을 정했습니다.
+                            </p>
+                        </div>
+                        <div class="p-4 rounded-lg bg-emerald-950/20 border border-emerald-900/40">
+                            <h4 class="font-bold text-emerald-400 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle-check"></i> 검증 & 결론
+                            </h4>
+                            <p class="text-slate-300 leading-relaxed">
+                                "메타데이터를 본문에 붙여 벡터로 만들면 검색이 좋아질 것"이라는 가정을 같은 평가셋으로 확인했더니,
+                                결합 버전(0.8871)이 원문만 쓴 버전(0.8928)보다 오히려 조금 낮았습니다(통계적으로 의미 있는 차이는 아님).
+                                그래서 <strong>벡터에는 원문만 쓰고, 메타데이터는 필터·집계용</strong>으로 나눠 쓰기로 했습니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 시행착오 3: 로컬 LLM 선택 -->
+                <div class="card-glow rounded-xl p-6 border-l-4 border-l-purple-500 space-y-4">
+                    <div class="flex items-start justify-between flex-wrap gap-4">
+                        <div>
+                            <span class="badge-pill bg-purple-950 text-purple-300 border border-purple-800 mb-2">
+                                <i class="fa-solid fa-triangle-exclamation"></i> 시행착오 03
+                            </span>
+                            <h3 class="text-xl font-bold text-white">
+                                설명용 LLM 고르기: 빠른 소형 모델은 "모른다"고 하지 못했다
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">관련: 2026-10-30 팀 회의(LLM 교체 검토) · 노트북 06 한국어 로컬 LLM 6종 비교</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-2xl font-black text-purple-400 font-mono">A.X-4.0-Light</span>
+                            <span class="text-xs text-slate-500 block">8/8 문항 인용 · 미끼 질문에 '근거 부족' 응답</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                        <div class="lg:col-span-2 space-y-2">
+                            <div class="image-preview-container rounded-lg border border-slate-700 bg-slate-900" role="button" tabindex="0" data-src="assets/slides/slide_09.png" data-caption="발표 자료 · 로컬 LLM 설명 구조 (발표 당시 모델: Qwen3 8B)">
+                                <img src="assets/slides/slide_09.png" alt="로컬 LLM 설명 에이전트 구조 발표 슬라이드" class="w-full h-auto" loading="lazy">
+                                <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                            </div>
+                            <p class="text-xs text-slate-500">▲ 발표 당시 슬라이드(Qwen3 8B 기준). 이후 비교 실험을 거쳐 최종 모델을 A.X-4.0-Light로 바꿨습니다.</p>
+                        </div>
+                        <div class="lg:col-span-3 grid grid-cols-1 gap-3 text-xs">
+                            <div class="p-4 rounded-lg bg-rose-950/20 border border-rose-900/40">
+                                <h4 class="font-bold text-rose-400 mb-1.5 flex items-center gap-1.5"><i class="fa-solid fa-bug"></i> 문제</h4>
+                                <p class="text-slate-300 leading-relaxed">
+                                    초기에는 Qwen3 8B를 쓰다가 EXAONE 등 국내 모델로 교체를 검토했습니다.
+                                    단순히 빠르거나 유명한 모델을 고르면 회의록에 없는 내용을 지어낼 위험이 있어, 기준을 정하고 직접 비교하기로 했습니다.
+                                </p>
+                            </div>
+                            <div class="p-4 rounded-lg bg-amber-950/20 border border-amber-900/40">
+                                <h4 class="font-bold text-amber-400 mb-1.5 flex items-center gap-1.5"><i class="fa-solid fa-magnifying-glass"></i> 비교 방법 & 발견</h4>
+                                <p class="text-slate-300 leading-relaxed">
+                                    6개 모델에 같은 8개 질문을 던졌습니다. 그중 하나는 회의록에 근거가 없는 <strong>미끼 질문</strong>입니다.
+                                    1~1.5B 소형 모델(HyperCLOVAX-SEED, EXAONE-4.0 1.2B)은 4초대로 가장 빨랐지만 <strong>미끼 질문에도 그럴듯한 답</strong>을 냈고,
+                                    EXAONE-4.0 1.2B는 인용 0/8에 생각 과정이 답변에 섞여 나왔습니다.
+                                </p>
+                            </div>
+                            <div class="p-4 rounded-lg bg-emerald-950/20 border border-emerald-900/40">
+                                <h4 class="font-bold text-emerald-400 mb-1.5 flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> 결정</h4>
+                                <p class="text-slate-300 leading-relaxed">
+                                    미끼 질문을 막아낸 모델 중 가장 빠른 <strong>A.X-4.0-Light</strong>(평균 7.7초, 8/8 문항 인용)를 골랐습니다.
+                                    자동 검증 통과는 7/8로 EXAONE-3.5(8/8)보다 한 문항 적었지만, 인용률과 속도를 함께 고려했습니다.
+                                    또 숫자는 LLM에 맡기지 않고 통계 모델이 계산한 값만 설명하게 했습니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 6. 성능 평가 -->
+        <section id="evaluation" class="space-y-8">
+            <div class="border-l-4 border-emerald-500 pl-4">
+                <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">Section 06</span>
+                <h2 class="text-3xl font-bold text-white tracking-tight">비교 실험으로 확인한 성능</h2>
+                <p class="text-slate-400 text-sm mt-1">모델·DB를 고를 때마다 같은 조건에서 직접 측정해 결정했습니다</p>
+            </div>
+
+            <!-- 예측 평가 -->
+            <div class="card-glow rounded-xl p-6 space-y-4">
+                <div class="flex items-center justify-between gap-2">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                        다음 달 예측: 시간순 검증(Rolling Backtest) 결과
+                    </h3>
+                    <span class="text-xs font-mono text-emerald-400 shrink-0">클릭하면 크게 보기</span>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="image-preview-container rounded-lg border border-slate-700 bg-slate-900" role="button" tabindex="0" data-src="assets/slides/slide_08.png" data-caption="발표 자료 · 정책 논의 예측">
+                        <img src="assets/slides/slide_08.png" alt="정책 논의 예측 발표 슬라이드" class="w-full h-auto" loading="lazy">
+                        <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                    </div>
+                    <div class="image-preview-container rounded-lg border border-slate-700 bg-slate-900 p-2" role="button" tabindex="0" data-src="figure/04_예측_평가.png" data-caption="그림 4. 예측 모델 평가">
+                        <img src="figure/04_예측_평가.png" alt="예측 모델 평가 그림" class="w-full h-auto rounded" loading="lazy">
+                        <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i> 크게 보기</div>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    데이터를 무작위로 섞어 검증하면 미래 정보로 과거를 맞히는 셈이 됩니다. 그래서 <strong>매번 그 달 이전 데이터로만 학습하고 다음 한 달을 맞히는 방식</strong>으로
+                    2025년 3월~12월에 걸쳐 10번 검증했습니다(대표 이슈 10개, 예측 100건).
+                    '언급량'은 해당 이슈로 묶인 검색 조각(청크) 수입니다. 대표 이슈 10개 기준의 시제품 평가이므로, 모든 검색어에 같은 성능을 보장하는 수치는 아닙니다.
+                </p>
+            </div>
+
+            <!-- 차트 그리드 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- 차트 1: DB 지연시간 -->
+                <div class="card-glow rounded-xl p-6 space-y-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-bolt text-amber-400"></i>
+                            벡터 DB 검색 시간 (ms, 낮을수록 좋음)
+                        </h3>
+                        <span class="text-xs text-slate-500 font-mono shrink-0">중앙값(p50)</span>
+                    </div>
+                    <div class="h-60">
+                        <canvas id="chartDbLatency" aria-label="벡터 DB 검색 시간 비교 차트" role="img"></canvas>
+                    </div>
+                    <p class="text-xs text-slate-400">
+                        조건 없는 검색은 둘 다 빨랐지만, '의회+연도' 조건 검색에서 ChromaDB 586.29ms, pgvector <strong>3.97ms</strong>로 차이가 크게 벌어졌습니다. (세로축은 로그 눈금)
+                    </p>
+                </div>
+
+                <!-- 차트 2: 예측 오차 -->
+                <div class="card-glow rounded-xl p-6 space-y-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-column text-emerald-400"></i>
+                            다음 달 언급량 예측 오차 (건, 낮을수록 좋음)
+                        </h3>
+                        <span class="text-xs text-slate-500 font-mono shrink-0">10회 시간순 검증</span>
+                    </div>
+                    <div class="h-60">
+                        <canvas id="chartForecastError" aria-label="언급량 예측 오차 비교 차트" role="img"></canvas>
+                    </div>
+                    <p class="text-xs text-slate-400">
+                        지난달 값을 그대로 쓰는 방법보다 <strong>포아송 회귀</strong>가 평균 오차(MAE)를 10.15 → 7.12건(29.8%↓), 큰 오차에 민감한 RMSE를 13.27 → 10.04건(24.3%↓)으로 줄였습니다.
+                        증가·유지·감소 방향은 76% 맞혔습니다.
+                    </p>
+                </div>
+
+                <!-- 차트 3: 임베딩 모델 -->
+                <div class="card-glow rounded-xl p-6 space-y-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-ranking-star text-purple-400"></i>
+                            임베딩 모델별 검색 정확도 (높을수록 좋음)
+                        </h3>
+                        <span class="text-xs text-slate-500 font-mono shrink-0">6만 청크 · 질의 12개</span>
+                    </div>
+                    <div class="h-60">
+                        <canvas id="chartEmbedding" aria-label="임베딩 모델 검색 정확도 비교 차트" role="img"></canvas>
+                    </div>
+                    <p class="text-xs text-slate-400">
+                        같은 원문·질의·정답으로 비교했을 때 <strong>Snowflake Arctic</strong>(nDCG@10 0.8969)이 KURE-v1(0.8657)보다 정확했고, 처리 속도도 초당 58.95행으로 더 빨라 최종 선택했습니다.
+                    </p>
+                </div>
+
+                <!-- 표 4: 로컬 LLM 비교 -->
+                <div class="card-glow rounded-xl p-6 space-y-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-microchip text-blue-400"></i>
+                            한국어 로컬 LLM 6종 비교
+                        </h3>
+                        <span class="text-xs text-slate-500 font-mono shrink-0">질문 8개(미끼 1개 포함)</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="text-slate-400 border-b border-slate-700">
+                                <tr>
+                                    <th class="py-2 pr-2 font-semibold">모델</th>
+                                    <th class="py-2 px-2 font-semibold text-right">평균 응답</th>
+                                    <th class="py-2 px-2 font-semibold text-right">인용 문항</th>
+                                    <th class="py-2 px-2 font-semibold text-right">자동 검증</th>
+                                    <th class="py-2 pl-2 font-semibold text-center">미끼 방어</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-slate-300 divide-y divide-slate-800 font-mono">
+                                <tr class="bg-blue-950/40 text-white">
+                                    <td class="py-2 pr-2 font-sans font-semibold">A.X-4.0-Light (선택)</td>
+                                    <td class="py-2 px-2 text-right">7.7초</td>
+                                    <td class="py-2 px-2 text-right">8/8</td>
+                                    <td class="py-2 px-2 text-right">7/8</td>
+                                    <td class="py-2 pl-2 text-center text-emerald-400">O</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 pr-2 font-sans">EXAONE-3.5 7.8B</td>
+                                    <td class="py-2 px-2 text-right">8.6초</td>
+                                    <td class="py-2 px-2 text-right">7/8</td>
+                                    <td class="py-2 px-2 text-right">8/8</td>
+                                    <td class="py-2 pl-2 text-center text-emerald-400">O</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 pr-2 font-sans">Kanana-1.5 8B</td>
+                                    <td class="py-2 px-2 text-right">16.0초</td>
+                                    <td class="py-2 px-2 text-right">3/8</td>
+                                    <td class="py-2 px-2 text-right">7/8</td>
+                                    <td class="py-2 pl-2 text-center text-emerald-400">O</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 pr-2 font-sans">Tri-7B</td>
+                                    <td class="py-2 px-2 text-right">40.2초</td>
+                                    <td class="py-2 px-2 text-right">4/8</td>
+                                    <td class="py-2 px-2 text-right">6/8</td>
+                                    <td class="py-2 pl-2 text-center text-emerald-400">O</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 pr-2 font-sans">HyperCLOVAX-SEED 1.5B</td>
+                                    <td class="py-2 px-2 text-right">4.2초</td>
+                                    <td class="py-2 px-2 text-right">7/8</td>
+                                    <td class="py-2 px-2 text-right">8/8</td>
+                                    <td class="py-2 pl-2 text-center text-rose-400">X</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 pr-2 font-sans">EXAONE-4.0 1.2B</td>
+                                    <td class="py-2 px-2 text-right">4.1초</td>
+                                    <td class="py-2 px-2 text-right">0/8</td>
+                                    <td class="py-2 px-2 text-right">3/8</td>
+                                    <td class="py-2 pl-2 text-center text-rose-400">X</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-xs text-slate-400">
+                        미끼 방어 = 회의록에 근거가 없는 질문에 "근거 부족"이라고 답했는지. 자동 검증 = 답변 속 숫자·날짜·의회명이 근거와 일치했는지. (출처: <code>data/llm_compare/report.md</code>)
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. 핵심 코드 -->
+        <section id="codes" class="space-y-8">
+            <div class="border-l-4 border-teal-500 pl-4">
+                <span class="text-xs font-mono font-bold text-teal-400 uppercase tracking-wider">Section 07</span>
+                <h2 class="text-3xl font-bold text-white tracking-tight">핵심 코드</h2>
+                <p class="text-slate-400 text-sm mt-1">발표 자료에 실은 핵심 구현 3가지 (이미지를 클릭하면 크게 볼 수 있습니다)</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card-glow rounded-xl p-5 space-y-3">
+                    <span class="font-bold text-white text-xs flex items-center gap-1.5">
+                        <i class="fa-solid fa-code text-teal-400"></i> ① 하이브리드 검색 (RRF)
+                    </span>
+                    <div class="image-preview-container rounded border border-slate-700 bg-slate-900" role="button" tabindex="0" data-src="assets/slides/slide_10.png" data-caption="핵심 코드 ① 하이브리드 검색">
+                        <img src="assets/slides/slide_10.png" alt="하이브리드 검색 핵심 코드 슬라이드" class="w-full h-auto" loading="lazy">
+                        <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i> 크게 보기</div>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">pgvector 의미 검색과 SQLite FTS5 키워드(BM25) 검색 결과를 점수가 아닌 순위로 합칩니다(<code>1 / (60 + 순위)</code>를 더함).<br><span class="text-slate-500 font-mono">src/council_vector_runtime.py · bm25_runtime.py</span></p>
+                </div>
+
+                <div class="card-glow rounded-xl p-5 space-y-3">
+                    <span class="font-bold text-white text-xs flex items-center gap-1.5">
+                        <i class="fa-solid fa-code text-purple-400"></i> ② 유사도 기반 이슈 묶기
+                    </span>
+                    <div class="image-preview-container rounded border border-slate-700 bg-slate-900" role="button" tabindex="0" data-src="assets/slides/slide_11.png" data-caption="핵심 코드 ② 유사도 기반 이슈 묶기">
+                        <img src="assets/slides/slide_11.png" alt="코사인 유사도 기반 이슈 군집 핵심 코드 슬라이드" class="w-full h-auto" loading="lazy">
+                        <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i> 크게 보기</div>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">메모리를 아끼려고 벡터를 블록 단위로 곱해 유사도를 구하고, 기준값(기본 0.72) 이상인 발언 쌍을 Union-Find로 하나의 이슈로 묶습니다.<br><span class="text-slate-500 font-mono">src/20_expand_cluster_issue.py</span></p>
+                </div>
+
+                <div class="card-glow rounded-xl p-5 space-y-3">
+                    <span class="font-bold text-white text-xs flex items-center gap-1.5">
+                        <i class="fa-solid fa-code text-blue-400"></i> ③ 공공데이터 API 안전 호출
+                    </span>
+                    <div class="image-preview-container rounded border border-slate-700 bg-slate-900" role="button" tabindex="0" data-src="assets/slides/slide_12.png" data-caption="핵심 코드 ③ 공공데이터 API 안전 호출">
+                        <img src="assets/slides/slide_12.png" alt="외부 공공데이터 API 호출 핵심 코드 슬라이드" class="w-full h-auto" loading="lazy">
+                        <div class="image-overlay"><i class="fa-solid fa-magnifying-glass-plus mr-1"></i> 크게 보기</div>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">법제처·열린국회정보·KOSIS 3개 주소만 허용하고, 호출 기록(시각·출처·검색어·응답 크기)을 로그로 남깁니다. 회의록 원문과 인증값은 보내거나 기록하지 않습니다.<br><span class="text-slate-500 font-mono">src/external_policy_sources.py</span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 맺음말 -->
+        <section class="card-glow rounded-xl p-8 text-center space-y-4 bg-gradient-to-t from-slate-900 to-slate-800/40 border border-slate-700">
+            <h3 class="text-2xl font-bold text-white tracking-tight">회의록 속 정책 흐름을, 근거와 함께 보여주는 AI</h3>
+            <p class="text-slate-300 text-sm max-w-2xl mx-auto leading-relaxed">
+                「의정이슈레이더」는 광역의회 회의록에서 정책 이슈가 처음 나타난 시점과 의회 간 후속 논의 흐름을 찾아내고,
+                계산은 통계 모델에, 설명은 로컬 LLM에 맡겨 원문 근거가 붙은 예측과 답변을 제공합니다.
+                모든 AI 모델은 로컬에서 실행되며, 사전 구축 DB와 노트북으로 누구나 같은 결과를 재현할 수 있습니다.
+            </p>
+            <div class="pt-2 text-xs text-slate-500 font-mono">
+                팀: 그 정책, 국민도 알고싶다 (꺼드럭) • 국회도서관 주관 2026 DATA·AI 분석 경진대회
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="border-t border-slate-800 py-8 bg-slate-950 text-slate-500 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>© 2026 Council Issue Radar (의정이슈레이더) Portfolio.</div>
+            <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
+                <a href="#overview" class="hover:text-slate-400">개요</a>
+                <a href="#architecture" class="hover:text-slate-400">구조</a>
+                <a href="#showcase" class="hover:text-slate-400">대시보드</a>
+                <a href="#troubleshooting" class="hover:text-slate-400">시행착오</a>
+                <a href="#evaluation" class="hover:text-slate-400">성능 평가</a>
+                <a href="#codes" class="hover:text-slate-400">핵심 코드</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 이미지 확대 모달 -->
+    <div id="imageModal" class="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modalCaption">
+        <div class="max-w-6xl w-full max-h-[92vh] flex flex-col items-center justify-center relative" id="modalInner">
+            <div class="w-full flex justify-between items-center text-white mb-2 px-2 gap-4">
+                <span id="modalCaption" class="text-sm font-bold text-slate-200"></span>
+                <button type="button" id="modalClose" aria-label="닫기" class="text-slate-400 hover:text-white text-2xl font-bold px-2 py-1 rounded bg-slate-800/60 hover:bg-slate-700 transition-colors">
+                    &times;
+                </button>
+            </div>
+            <img id="modalImage" src="" alt="" class="max-w-full max-h-[82vh] object-contain rounded-lg border border-slate-700 shadow-2xl">
+            <span class="text-xs text-slate-500 mt-2">바깥을 클릭하거나 X 버튼 또는 Esc 키를 누르면 닫힙니다.</span>
+        </div>
+    </div>
+
+    <script>
+        // ---------- 이미지 확대 모달 ----------
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalCaption = document.getElementById('modalCaption');
+        let lastFocused = null;
+
+        function openModal(src, caption) {
+            lastFocused = document.activeElement;
+            modalImage.src = src;
+            modalImage.alt = caption;
+            modalCaption.textContent = caption;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('modalClose').focus();
+        }
+
+        function closeModal() {
+            if (modal.classList.contains('hidden')) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+            if (lastFocused) lastFocused.focus();
+        }
+
+        document.querySelectorAll('.image-preview-container[data-src]').forEach(el => {
+            el.addEventListener('click', () => openModal(el.dataset.src, el.dataset.caption));
+            el.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openModal(el.dataset.src, el.dataset.caption);
+                }
+            });
+        });
+        modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+        document.getElementById('modalClose').addEventListener('click', closeModal);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+        // ---------- 차트 ----------
+        // 수치 출처: submission/notebooks/05_experiments_embedding_model_DB_comparison.ipynb
+        function initCharts() {
+            if (typeof Chart === 'undefined') return; // 오프라인 등으로 Chart.js를 못 불러온 경우
+            Chart.defaults.font.family = 'Pretendard, sans-serif';
+            Chart.defaults.color = '#94a3b8';
+            const grid = { color: 'rgba(255,255,255,0.05)' };
+
+            // 1. 벡터 DB 검색 시간 (p50, ms)
+            new Chart(document.getElementById('chartDbLatency'), {
+                type: 'bar',
+                data: {
+                    labels: ['조건 없음', '의회+연도 조건'],
+                    datasets: [
+                        { label: 'ChromaDB', data: [1.42, 586.29], backgroundColor: '#f43f5e', borderRadius: 6 },
+                        { label: 'PostgreSQL + pgvector', data: [2.75, 3.97], backgroundColor: '#10b981', borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12 } },
+                        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw} ms` } }
+                    },
+                    scales: {
+                        y: { type: 'logarithmic', grid, title: { display: true, text: 'ms (로그 눈금)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 2. 언급량 예측 오차 (MAE / RMSE)
+            new Chart(document.getElementById('chartForecastError'), {
+                type: 'bar',
+                data: {
+                    labels: ['MAE (평균 오차)', 'RMSE (큰 오차 강조)'],
+                    datasets: [
+                        { label: '지난달 값 그대로 (기준)', data: [10.15, 13.27], backgroundColor: '#64748b', borderRadius: 6 },
+                        { label: '포아송 회귀 (선택)', data: [7.12, 10.04], backgroundColor: '#10b981', borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12 } },
+                        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw}건` } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid, title: { display: true, text: '오차 (건)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 3. 임베딩 모델 검색 정확도
+            new Chart(document.getElementById('chartEmbedding'), {
+                type: 'bar',
+                data: {
+                    labels: ['nDCG@10', 'Precision@10', '직접 관련 P@10'],
+                    datasets: [
+                        { label: 'Snowflake Arctic (선택)', data: [0.8969, 0.9833, 0.8083], backgroundColor: '#a855f7', borderRadius: 6 },
+                        { label: 'KURE-v1', data: [0.8657, 0.9750, 0.7833], backgroundColor: '#818cf8', borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12 } },
+                        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw}` } }
+                    },
+                    scales: {
+                        y: { min: 0.7, max: 1.0, grid },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCharts);
+        } else {
+            initCharts();
+        }
+    </script>
+</body>
+</html>

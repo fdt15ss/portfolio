@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCR 뷰어 웹 전환 | 포트폴리오</title>
+  <meta name="description" content="C# 데스크톱 OCR 뷰어를 Vue.js 웹 화면으로 옮기고, Spring Boot 중계 서버를 만든 프로젝트 포트폴리오">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --primary-dark: #1d4ed8;
+      --secondary: #0ea5e9;
+      --accent: #f59e0b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --bg-main: #f8fafc;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border: #e2e8f0;
+      --code-bg: #1e293b;
+      --code-text: #f1f5f9;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+    }
+
+    section {
+      scroll-margin-top: 80px;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 3px solid var(--primary-light);
+      outline-offset: 2px;
+    }
+
+    /* 상단 네비게이션 */
+    header.navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .badge-star {
+      background: #fef3c7;
+      color: #b45309;
+      padding: 0.2rem 0.55rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: 1px solid #fde68a;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.25rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 0.93rem;
+      white-space: nowrap;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    /* 컨테이너 */
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 5rem;
+    }
+
+    /* 히어로 섹션 */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
+      color: white;
+      border-radius: 1.25rem;
+      padding: 3.5rem 2.5rem;
+      margin-bottom: 3rem;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: -20%;
+      right: -10%;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-badge {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(6px);
+      padding: 0.35rem 0.85rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .hero-badge.highlight {
+      background: #fbbf24;
+      color: #78350f;
+      border: none;
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p.lead {
+      font-size: 1.1rem;
+      color: #e0e7ff;
+      max-width: 960px;
+      font-weight: 400;
+      margin-bottom: 2rem;
+      line-height: 1.75;
+    }
+
+    .hero-info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      padding-top: 1.75rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .info-card h2 {
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      color: #93c5fd;
+      margin-bottom: 0.35rem;
+    }
+
+    .info-card p {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .info-card span {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      font-weight: 400;
+      display: block;
+      margin-top: 0.2rem;
+    }
+
+    /* 공통 섹션 */
+    .section-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      letter-spacing: -0.01em;
+    }
+
+    .section-subtitle {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* 그리드 레이아웃 */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.75rem;
+    }
+
+    /* 3단 화면 구성 다이어그램 */
+    .layout-diagram {
+      background: #0f172a;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      color: #f8fafc;
+      margin: 0 0 1.75rem;
+      border: 1px solid #334155;
+    }
+
+    .layout-preview {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr 1.25fr;
+      gap: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .panel-box {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      padding: 1.25rem 1rem;
+      position: relative;
+    }
+
+    .panel-box.left { border-top: 4px solid var(--secondary); }
+    .panel-box.center { border-top: 4px solid var(--primary-light); background: #1e3a8a40; }
+    .panel-box.right { border-top: 4px solid var(--accent); }
+
+    .panel-box h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #93c5fd;
+      margin-bottom: 0.15rem;
+    }
+
+    .panel-box .ratio {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    .panel-box ul {
+      list-style: none;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      line-height: 1.55;
+    }
+
+    .panel-box li {
+      padding-left: 0.9rem;
+      position: relative;
+      margin-bottom: 0.3rem;
+    }
+
+    .panel-box li::before {
+      content: "·";
+      position: absolute;
+      left: 0.2rem;
+      color: #94a3b8;
+    }
+
+    .flow-steps {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .flow-step {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 0.65rem;
+      padding: 1rem 1.15rem;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    .flow-step strong {
+      display: block;
+      color: var(--text-main);
+      margin-bottom: 0.3rem;
+    }
+
+    /* 프론트 / 백엔드 상세 업무 카드 */
+    .role-section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 2px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .role-section-header h3 {
+      font-size: 1.12rem;
+      font-weight: 700;
+    }
+
+    .role-badge {
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .role-badge.fe {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .role-badge.be {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+
+    .task-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .task-group-title {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .task-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .task-item {
+      position: relative;
+      padding-left: 1.5rem;
+      margin-bottom: 0.9rem;
+      font-size: 0.925rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    .task-item::before {
+      content: "";
+      position: absolute;
+      left: 0.2rem;
+      top: 0.62em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .task-item strong {
+      color: var(--text-main);
+    }
+
+    .task-tag {
+      display: inline-block;
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 0.75rem;
+      padding: 0.1rem 0.5rem;
+      border-radius: 4px;
+      margin-right: 0.35rem;
+      font-weight: 600;
+      border: 1px solid #e2e8f0;
+    }
+
+    .task-tag.ie {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+
+    /* 인라인 코드 / 키 표시 */
+    p code, li code, td code {
+      font-family: "Consolas", "D2Coding", "Courier New", monospace;
+      background: #f1f5f9;
+      color: #0f172a;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 0.05rem 0.35rem;
+      font-size: 0.85em;
+    }
+
+    kbd {
+      font-family: "Consolas", monospace;
+      font-size: 0.8em;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      padding: 0 0.35rem;
+      color: #0f172a;
+    }
+
+    /* 문제 해결 섹션 */
+    .trouble-card {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      border-radius: 0.85rem;
+      padding: 1.85rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .trouble-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .trouble-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .trouble-num {
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .badge-error {
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .trouble-step {
+      margin-bottom: 1.25rem;
+    }
+
+    .trouble-step h4 {
+      font-size: 0.98rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-problem { color: #dc2626; }
+    .step-analysis { color: #d97706; }
+    .step-solution { color: #2563eb; }
+    .step-takeaway { color: #059669; }
+
+    .trouble-step > p,
+    .trouble-step > ul,
+    .trouble-step > ol {
+      font-size: 0.925rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      padding-left: 1.6rem;
+    }
+
+    .trouble-step > ul li,
+    .trouble-step > ol li {
+      margin-bottom: 0.4rem;
+    }
+
+    .trouble-step > ul {
+      padding-left: 2.6rem;
+    }
+
+    .trouble-step > ol {
+      padding-left: 2.6rem;
+    }
+
+    .trouble-step .indent {
+      padding-left: 1.6rem;
+    }
+
+    /* 코드 블록 */
+    pre.code-block {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1.25rem;
+      border-radius: 0.5rem;
+      font-family: "Consolas", "D2Coding", "Courier New", monospace;
+      font-size: 0.84rem;
+      line-height: 1.55;
+      overflow-x: auto;
+      margin: 0.75rem 0 1rem;
+      border: 1px solid #334155;
+      word-break: normal;
+    }
+
+    .code-comment { color: #94a3b8; font-style: italic; }
+    .code-keyword { color: #f472b6; font-weight: bold; }
+    .code-fn { color: #38bdf8; }
+    .code-str { color: #a3e635; }
+
+    /* 표 */
+    .table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      min-width: 640px;
+    }
+
+    .spec-table th, .spec-table td {
+      border: 1px solid var(--border);
+      padding: 0.8rem 1rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .spec-table th {
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    .spec-table td {
+      background: #ffffff;
+      color: #475569;
+    }
+
+    .spec-table td:first-child {
+      font-weight: 600;
+      color: #334155;
+      white-space: nowrap;
+    }
+
+    .formula-table {
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin: 0.5rem 0 0.75rem 1.6rem;
+    }
+
+    .formula-table th, .formula-table td {
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.9rem;
+      text-align: left;
+      font-family: "Consolas", "D2Coding", monospace;
+    }
+
+    .formula-table th {
+      background: #f1f5f9;
+      font-family: inherit;
+    }
+
+    .note {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-top: 0.85rem;
+    }
+
+    /* 스크린샷 */
+    .browser-mockup {
+      border: 1px solid #cbd5e1;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      background: #ffffff;
+      margin-bottom: 1.75rem;
+      transition: box-shadow 0.2s ease;
+    }
+
+    .browser-mockup:hover {
+      box-shadow: var(--shadow-lg);
+    }
+
+    .browser-header {
+      background: #f1f5f9;
+      padding: 0.65rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .browser-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .browser-url {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 0.2rem 0.75rem;
+      font-size: 0.8rem;
+      color: #64748b;
+      flex: 1;
+      max-width: 480px;
+      margin-left: 0.5rem;
+      font-family: monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    .screenshot-container {
+      position: relative;
+      background: #0f172a;
+      overflow: hidden;
+    }
+
+    .screenshot-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: zoom-in;
+      transition: opacity 0.2s ease;
+    }
+
+    .screenshot-img:hover {
+      opacity: 0.95;
+    }
+
+    .screenshot-zoom-hint {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(15, 23, 42, 0.75);
+      color: #ffffff;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.785rem;
+      backdrop-filter: blur(4px);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .screenshot-caption {
+      padding: 1.15rem 1.5rem;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      font-size: 0.9rem;
+      color: #334155;
+      line-height: 1.6;
+    }
+
+    .screenshot-caption strong {
+      color: var(--primary-dark);
+      font-size: 0.95rem;
+    }
+
+    .screenshot-caption p {
+      margin-top: 0.35rem;
+      color: var(--text-muted);
+    }
+
+    .screenshot-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.65rem;
+    }
+
+    .screen-tag {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      font-size: 0.775rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .screenshot-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .feature-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+    }
+
+    .feature-box h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .feature-box ul {
+      list-style: none;
+      padding: 0;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .feature-box li {
+      margin-bottom: 0.65rem;
+    }
+
+    .feature-box li strong {
+      color: var(--primary);
+    }
+
+    /* 라이트박스 */
+    .lightbox-modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(8px);
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    .lightbox-modal.active {
+      display: flex;
+    }
+
+    .lightbox-content {
+      max-width: 96%;
+      max-height: 92vh;
+      object-fit: contain;
+      border-radius: 0.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: #fff;
+      animation: zoomIn 0.2s ease-out;
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 1rem;
+      right: 1.25rem;
+      color: #f8fafc;
+      background: transparent;
+      border: none;
+      font-size: 2.25rem;
+      font-weight: 300;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0.25rem 0.5rem;
+      transition: color 0.2s ease;
+    }
+
+    .lightbox-close:hover {
+      color: #ef4444;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      background: #ffffff;
+    }
+
+    /* 반응형 */
+    @media (max-width: 1100px) {
+      header.navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.75rem 1rem;
+        gap: 0.5rem;
+      }
+      .nav-links {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+        gap: 1rem;
+      }
+      section {
+        scroll-margin-top: 110px;
+      }
+    }
+
+    @media (max-width: 992px) {
+      .screenshot-grid,
+      .layout-preview {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .grid-2,
+      .flow-steps {
+        grid-template-columns: 1fr;
+      }
+      .hero h1 {
+        font-size: 1.9rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .layout-preview {
+        grid-template-columns: 1fr;
+      }
+      .container {
+        padding: 1.5rem 1rem 3.5rem;
+      }
+      .hero {
+        padding: 2.25rem 1.25rem;
+      }
+      .card,
+      .trouble-card {
+        padding: 1.25rem;
+      }
+      .section-title {
+        font-size: 1.45rem;
+      }
+      .badge-star {
+        display: none;
+      }
+      .trouble-step > p,
+      .trouble-step .indent {
+        padding-left: 0;
+      }
+      .trouble-step > ul,
+      .trouble-step > ol {
+        padding-left: 1.2rem;
+      }
+      .formula-table {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 네비게이션 바 -->
+  <header class="navbar">
+    <a href="#overview" class="nav-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+      </svg>
+      OCR 뷰어 웹 전환 프로젝트
+      <span class="badge-star">실무 프로젝트</span>
+    </a>
+    <nav aria-label="목차">
+      <ul class="nav-links">
+        <li><a href="#overview">개요</a></li>
+        <li><a href="#screenshots">실제 화면</a></li>
+        <li><a href="#architecture">화면 구성</a></li>
+        <li><a href="#frontend-tasks">프론트엔드</a></li>
+        <li><a href="#backend-tasks">백엔드</a></li>
+        <li><a href="#troubleshooting">문제 해결</a></li>
+        <li><a href="#techstack">기술 스택</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- 히어로 섹션 -->
+    <section class="hero" id="overview">
+      <div class="hero-meta">
+        <span class="hero-badge highlight">웹 파트 단독 담당 (프론트엔드 + 중계 서버)</span>
+        <span class="hero-badge">C# 데스크톱 뷰어 → 웹 전환</span>
+        <span class="hero-badge">Vue.js 2</span>
+        <span class="hero-badge">Spring Boot</span>
+        <span class="hero-badge">IE11 지원</span>
+      </div>
+      <h1>OCR 뷰어 웹 전환 및<br>인식 결과 검수·편집 화면 개발</h1>
+      <p class="lead">
+        C# 데스크톱 프로그램으로만 쓸 수 있던 OCR 뷰어를 브라우저에서 쓸 수 있도록 Vue.js로 옮긴 프로젝트입니다.
+        화면을 <strong>이미지 목록 · 문서 뷰어 · 결과 편집</strong> 세 영역으로 나누고, 이미지 위의 인식 영역과 오른쪽 결과값을 서로 클릭해 바로 찾아갈 수 있게 만들었습니다.
+        브라우저에서 OCR 서버로 직접 요청할 수 없는 문제(CORS)는 Spring Boot 중계 서버를 만들어 해결했고, 운영 환경 요구에 맞춰 IE11에서도 같은 기능이 동작하도록 대응했습니다.
+      </p>
+      <div class="hero-info-grid">
+        <div class="info-card">
+          <h2>기간</h2>
+          <p>2021.12 ~ 2022.03</p>
+          <span>약 4개월</span>
+        </div>
+        <div class="info-card">
+          <h2>인원</h2>
+          <p>2명</p>
+          <span>본인(웹 전체) + C# 뷰어 개발자 1명</span>
+        </div>
+        <div class="info-card">
+          <h2>담당</h2>
+          <p>웹 화면 + 중계 서버</p>
+          <span>Vue.js 화면 개발, Spring Boot 중계 서버, 빌드·배포 설정</span>
+        </div>
+        <div class="info-card">
+          <h2>배포</h2>
+          <p>WAS 배포 (WAR)</p>
+          <span>프론트 빌드 결과를 백엔드와 함께 배포</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 실제 화면 -->
+    <section id="screenshots">
+      <h2 class="section-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        실제 화면
+      </h2>
+      <p class="section-subtitle">실제로 개발한 웹 뷰어 화면입니다. 이미지를 누르면 크게 볼 수 있습니다.</p>
+
+      <div class="card" style="padding: 1.75rem;">
+        <!-- 초기 화면 -->
+        <div class="browser-mockup">
+          <div class="browser-header">
+            <span class="browser-dot dot-red"></span>
+            <span class="browser-dot dot-yellow"></span>
+            <span class="browser-dot dot-green"></span>
+            <span class="browser-url">http://localhost:8021/</span>
+          </div>
+          <div class="screenshot-container">
+            <img
+              src="screenshots/WEB_ODRVIEWER__main-screen-1600x1000-masked.png"
+              alt="웹 OCR 뷰어 초기 화면: 상단 메뉴와 OCR/ODR 전환, 툴바, 파일 드래그 앤 드롭 영역"
+              class="screenshot-img js-zoomable"
+              tabindex="0"
+              role="button"
+              title="클릭하면 크게 볼 수 있습니다"
+            />
+            <div class="screenshot-zoom-hint">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+              클릭해서 크게 보기
+            </div>
+          </div>
+          <div class="screenshot-caption">
+            <strong>[초기 화면] 파일을 올리기 전 기본 화면</strong>
+            <p>
+              가운데 영역에 파일을 끌어다 놓거나 <b>파일추가</b> 버튼으로 이미지·PDF·TIFF를 올립니다.
+              툴바에서는 확대·축소, 폭 맞춤, 높이 맞춤, 원본 비율 맞춤, 좌·우 90° 회전을 할 수 있고,
+              상단에서 OCR/ODR 모드와 인식 영역 표시 단위(문자별·줄별)를 바꿀 수 있습니다.
+            </p>
+            <div class="screenshot-tags">
+              <span class="screen-tag">드래그 앤 드롭 업로드</span>
+              <span class="screen-tag">OCR / ODR 모드 전환</span>
+              <span class="screen-tag">문자별 · 줄별 영역 표시</span>
+              <span class="screen-tag">확대·축소·맞춤·회전 툴바</span>
+              <span class="screen-tag">JSON / Excel 저장</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 작업 화면 -->
+        <div class="screenshot-grid" style="margin-top: 1rem;">
+          <div class="browser-mockup" style="margin-bottom: 0;">
+            <div class="browser-header">
+              <span class="browser-dot dot-red"></span>
+              <span class="browser-dot dot-yellow"></span>
+              <span class="browser-dot dot-green"></span>
+              <span class="browser-url">http://localhost:8021/</span>
+            </div>
+            <div class="screenshot-container">
+              <img
+                src="screenshots/WEB_ODRVIEWER-2.png"
+                alt="웹 OCR 뷰어 작업 화면: 왼쪽 파일 목록, 가운데 문서와 페이지 썸네일, 오른쪽 항목별 결과값"
+                class="screenshot-img js-zoomable"
+                tabindex="0"
+                role="button"
+                title="클릭하면 크게 볼 수 있습니다"
+              />
+              <div class="screenshot-zoom-hint">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                클릭해서 크게 보기
+              </div>
+            </div>
+            <div class="screenshot-caption">
+              <strong>[작업 화면] ODR 결과 검수</strong>
+              <p style="font-size: 0.87rem;">
+                왼쪽은 올린 파일 목록, 가운데는 문서와 아래쪽 페이지 썸네일, 오른쪽은 서식 항목별 인식 결과입니다.
+                결과 칸의 배경색은 인식률 등급을 나타내며, 값을 바로 고칠 수 있습니다.
+              </p>
+            </div>
+          </div>
+
+          <div class="feature-box">
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              화면에서 볼 수 있는 기능
+            </h3>
+            <ul>
+              <li><strong>① 파일 목록:</strong> 올린 파일을 썸네일로 보여주고, 여러 페이지 문서는 페이지 썸네일을 따로 보여줍니다.</li>
+              <li><strong>② 문서 뷰어:</strong> 확대·축소, 폭/높이 맞춤, 90° 회전을 지원하고 인식 영역을 이미지 위에 그립니다.</li>
+              <li><strong>③ 인식률 색상:</strong> 결과값마다 인식률 등급(A~E)에 따라 배경색을 다르게 칠해 확인이 필요한 값을 바로 알 수 있습니다.</li>
+              <li><strong>④ 결과 저장:</strong> 검수한 결과를 Excel 또는 JSON 파일로 내려받습니다.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 화면 구성 -->
+    <section id="architecture">
+      <h2 class="section-title">화면 구성과 핵심 사용 흐름</h2>
+      <p class="section-subtitle">데스크톱 뷰어의 사용 방식을 유지하면서, 웹에서 쓰기 편하도록 세 영역으로 나눈 화면입니다.</p>
+
+      <div class="card">
+        <div class="layout-diagram">
+          <h3 style="color: #cbd5e1; font-size: 1.05rem; margin-bottom: 0.4rem;">3단 화면 구성</h3>
+          <p style="font-size: 0.85rem; color: #94a3b8;">
+            영역 사이 경계를 마우스로 끌어 폭을 조절할 수 있습니다(vue-resizable). 처음에는 15 : 50 : 35 비율로 시작하고, 브라우저 창 크기가 바뀌면 비율을 유지한 채 다시 계산합니다.
+          </p>
+
+          <div class="layout-preview">
+            <div class="panel-box left">
+              <h3>① 이미지 목록</h3>
+              <span class="ratio">약 15%</span>
+              <ul>
+                <li>올린 파일 썸네일</li>
+                <li>PDF·TIFF 페이지별 썸네일</li>
+                <li><kbd>↑</kbd><kbd>↓</kbd> 파일 이동, <kbd>←</kbd><kbd>→</kbd> 페이지 이동</li>
+                <li>삭제 전 확인 창</li>
+              </ul>
+            </div>
+            <div class="panel-box center">
+              <h3>② 문서 뷰어</h3>
+              <span class="ratio">약 50%</span>
+              <ul>
+                <li>Canvas에 이미지와 인식 영역(다각형) 표시</li>
+                <li>확대·축소(<kbd>+</kbd> <kbd>-</kbd> 키 지원), 드래그 이동</li>
+                <li>폭 / 높이 / 원본 비율 맞춤</li>
+                <li>90° 단위 회전 — 인식 영역도 함께 회전</li>
+                <li>인식 영역 클릭 → 오른쪽 결과값으로 이동</li>
+              </ul>
+            </div>
+            <div class="panel-box right">
+              <h3>③ 결과 확인·편집</h3>
+              <span class="ratio">약 35%</span>
+              <ul>
+                <li>인식률 A~E 등급별 색상</li>
+                <li>결과값 클릭 → 해당 영역 확대 미리보기</li>
+                <li>후보값 선택 또는 직접 입력</li>
+                <li><kbd>Tab</kbd> 키로 E등급 값만 차례로 이동</li>
+                <li>Excel · JSON 저장</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-steps">
+          <div class="flow-step">
+            <strong>이미지 → 결과값</strong>
+            문서 위의 인식 영역을 클릭하면, 클릭한 점이 어느 영역 안에 있는지 계산해 오른쪽 결과 목록에서 해당 값을 찾아 강조합니다.
+          </div>
+          <div class="flow-step">
+            <strong>결과값 → 이미지</strong>
+            오른쪽에서 값을 클릭하면 문서 위의 해당 영역을 강조하고, 그 부분만 잘라낸 확대 이미지를 입력칸 바로 위에 띄워 원본 글자와 바로 비교할 수 있습니다.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 프론트엔드 상세 업무 -->
+    <section id="frontend-tasks">
+      <h2 class="section-title">맡은 일 — 프론트엔드 (Vue.js)</h2>
+      <p class="section-subtitle">데스크톱 뷰어의 기능을 웹으로 옮기고, 결과 검수를 빠르게 할 수 있도록 만든 기능들입니다.</p>
+
+      <div class="grid-2">
+        <div class="card" style="margin-bottom: 0;">
+          <div class="role-section-header">
+            <span class="role-badge fe">Frontend</span>
+            <h3>파일 불러오기 & 문서 표시</h3>
+          </div>
+
+          <ul class="task-list">
+            <li class="task-item">
+              <span class="task-tag">썸네일</span> <strong>이미지 썸네일 목록:</strong>
+              JPG·PNG·BMP·GIF는 blueimp-load-image로 캔버스로 읽어 왼쪽 목록에 썸네일로 보여줍니다. 드래그 앤 드롭과 파일 선택 둘 다 지원합니다.
+            </li>
+            <li class="task-item">
+              <span class="task-tag">PDF · TIFF</span> <strong>여러 페이지 문서 표시:</strong>
+              PDF는 PDF.js로, TIFF는 tiff.js로 페이지마다 이미지로 바꿔 페이지 썸네일을 만들고, 각 페이지를 OCR 서버에 요청합니다.
+            </li>
+            <li class="task-item">
+              <span class="task-tag">TIFF 비율</span> <strong>TIFF 가로·세로 비율 보정:</strong>
+              가로와 세로 해상도(DPI)가 다른 TIFF는 그대로 그리면 찌그러져 보였습니다. ExifReader로 <code>XResolution</code>·<code>YResolution</code> 값을 읽어 그 비율만큼 캔버스 크기를 늘려 원래 모양대로 보이게 했습니다.
+            </li>
+            <li class="task-item">
+              <span class="task-tag">영역 표시</span> <strong>인식 영역 그리기:</strong>
+              OCR 서버가 돌려준 꼭짓점 좌표로 Canvas(<code>Path2D</code>)에 다각형을 그립니다. 문자 단위·줄 단위 표시를 스위치로 바꿀 수 있고, 선택한 값은 다음 접속 때도 유지되도록 localStorage에 저장합니다.
+            </li>
+            <li class="task-item">
+              <span class="task-tag">회전</span> <strong>이미지와 인식 영역 함께 회전:</strong>
+              이미지는 캔버스에서 90° 단위로 돌리고, 인식 영역 좌표도 같은 각도의 공식으로 다시 계산해 회전 후에도 위치가 어긋나지 않게 했습니다. (<a href="#trouble-2">문제 해결 ②</a>)
+            </li>
+            <li class="task-item">
+              <span class="task-tag">확대·이동</span> <strong>확대·축소·이동:</strong>
+              panzoom 라이브러리로 드래그 이동과 확대·축소를 붙이고, <kbd>+</kbd> <kbd>-</kbd> 단축키와 폭/높이/원본 비율 맞춤 버튼을 만들었습니다.
+            </li>
+          </ul>
+        </div>
+
+        <div class="card" style="margin-bottom: 0;">
+          <div class="role-section-header">
+            <span class="role-badge fe">Frontend</span>
+            <h3>결과 확인·편집</h3>
+          </div>
+
+          <ul class="task-list">
+            <li class="task-item">
+              <span class="task-tag">양방향 선택</span> <strong>이미지 ↔ 결과값 서로 찾아가기:</strong>
+              이미지를 클릭하면 클릭한 점이 어느 다각형 안에 있는지 판별해(점에서 선을 그어 경계와 몇 번 만나는지 세는 Ray casting 방식) 해당 결과값으로 이동합니다. 반대로 결과값을 클릭하면 이미지의 해당 영역을 강조합니다.
+            </li>
+            <li class="task-item">
+              <span class="task-tag">확대 미리보기</span> <strong>선택한 영역만 잘라 보여주기:</strong>
+              결과값을 클릭하면 원본에서 그 영역만 잘라낸 이미지를 입력칸 바로 위에 띄웁니다. 마우스로 끌어 옮길 수 있고, 휠로 0.2~5배까지 확대할 수 있으며, 높이 40px 미만의 작은 글자는 처음부터 2배로 보여줍니다.
+            </li>
+            <li class="task-item">
+              <span class="task-tag">인식률 등급</span> <strong>등급별 색상 표시:</strong>
+              인식 점수 0.9 / 0.8 / 0.7 / 0.6 기준으로 A~E 등급을 나눠 색을 칠하고, 색상은 옵션 창에서 바꿀 수 있게 했습니다. 사용자가 고친 값은 '수정됨' 색으로 따로 표시합니다.
+            </li>
+            <li class="task-item">
+              <span class="task-tag">Tab 이동</span> <strong>확인이 필요한 값만 Tab으로 이동:</strong>
+              인식률이 가장 낮은 E등급 값만 <kbd>Tab</kbd> 키로 이동되도록 <code>tabindex</code>를 조정해, 검수자가 의심스러운 값만 차례로 확인할 수 있게 했습니다.
+            </li>
+            <li class="task-item">
+              <span class="task-tag">값 편집</span> <strong>후보값 선택 + 직접 입력:</strong>
+              셀렉트박스와 입력칸을 겹쳐 OCR이 제시한 후보값 중 고르거나 직접 입력할 수 있게 했습니다. 표 형태 결과는 열 단위로 좌·우로 옮기는 기능(모달 창)도 만들었습니다.
+            </li>
+            <li class="task-item">
+              <span class="task-tag">결과 저장</span> <strong>Excel · JSON 내보내기:</strong>
+              SheetJS로 Excel 파일을 만듭니다. OCR 모드는 처리 시간·파일명·줄별 텍스트를, ODR 모드는 서식(문서)마다 별도의 Excel 파일을 만듭니다. JSON은 FileSaver로 저장합니다.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.75rem;">
+        <div class="role-section-header">
+          <span class="role-badge fe">Frontend</span>
+          <h3>설정 화면 · 공통 처리 · 브라우저 호환</h3>
+        </div>
+        <div class="grid-2">
+          <ul class="task-list">
+            <li class="task-item">
+              <span class="task-tag">설정 화면</span> <strong>OCR 서버 관리 화면:</strong>
+              OCR 서버 목록 추가·삭제·초기화, 파일에서 목록 가져오기, 사용할 서버 선택, Agent 업데이트 파일 업로드 기능을 만들었습니다. 설정값은 백엔드 API(<code>/get-config</code>, <code>/save-config</code>)로 저장하고 불러옵니다.
+            </li>
+            <li class="task-item">
+              <span class="task-tag">동시 요청 제한</span> <strong>한 번에 보내는 요청 수 제한:</strong>
+              여러 페이지 문서를 올려도 OCR 서버에 요청이 한꺼번에 몰리지 않도록 axios 인터셉터에서 동시에 처리 중인 요청 수를 제한했습니다. 한도는 설정 화면에서 1~12 단계로 조절합니다. (<a href="#trouble-3">문제 해결 ③</a>)
+            </li>
+          </ul>
+          <ul class="task-list">
+            <li class="task-item">
+              <span class="task-tag">화면 설정 저장</span> <strong>사용자 선택 유지:</strong>
+              OCR/ODR 모드, 문자별·줄별 표시 선택을 localStorage에 저장해 새로고침 후에도 그대로 유지됩니다.
+            </li>
+            <li class="task-item">
+              <span class="task-tag ie">IE11 지원</span> <strong>IE11 호환:</strong>
+              위 기능들이 IE11에서도 동작하도록 Babel(core-js 3) 빌드 설정, 폴리필(Path2D, IntersectionObserver, CSS 변수 등), PDF.js ES5 빌드를 적용했습니다. (<a href="#trouble-1">문제 해결 ①</a>)
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 백엔드 상세 업무 -->
+    <section id="backend-tasks" style="margin-top: 2.5rem;">
+      <h2 class="section-title">맡은 일 — 백엔드 (Spring Boot)</h2>
+      <p class="section-subtitle">브라우저가 OCR 서버에 직접 요청하지 못하는 문제(CORS)를 풀기 위해 만든 중계 서버입니다.</p>
+
+      <div class="card">
+        <div class="role-section-header">
+          <span class="role-badge be">Backend</span>
+          <h3>Spring Boot 중계 서버 & 배포</h3>
+        </div>
+
+        <div class="grid-2">
+          <div class="task-group">
+            <div class="task-group-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              OCR 서버 요청 중계
+            </div>
+            <ul class="task-list">
+              <li class="task-item">
+                <span class="task-tag">CORS 해결</span> <strong>요청을 대신 전달하는 서버:</strong>
+                브라우저와 OCR 서버(Agent)는 주소가 달라 브라우저 보안 정책(CORS)에 막혔습니다. 그래서 브라우저는 같은 주소의 Spring Boot 서버로 요청하고, 서버가 Agent에 대신 요청해 결과를 돌려주도록 만들었습니다.
+              </li>
+              <li class="task-item">
+                <span class="task-tag">REST API</span> <strong>RestController + WebClient:</strong>
+                프론트에서 보낸 파일(multipart)을 RestController로 받고, WebClient로 설정 화면에서 선택한 Agent 서버에 전달합니다. 프론트에서 쓰는 주요 경로는 <code>/ocr</code>, <code>/odr</code>, <code>/info</code>입니다.
+              </li>
+            </ul>
+          </div>
+
+          <div class="task-group">
+            <div class="task-group-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+              설정 저장 & 배포
+            </div>
+            <ul class="task-list">
+              <li class="task-item">
+                <span class="task-tag">설정 저장</span> <strong>DB 없이 CSV 파일로 설정 관리:</strong>
+                서버 목록, 선택한 서버, 동시 요청 수 같은 설정을 CSV 파일로 저장하고 불러오게 했습니다(<code>/get-config</code>, <code>/save-config</code>, <code>/get-concurrency</code>).
+              </li>
+              <li class="task-item">
+                <span class="task-tag">WAR 배포</span> <strong>WAS 배포용 빌드:</strong>
+                프론트 빌드 결과(<code>dist/static</code>)를 백엔드에 포함해 WAR로 빌드하고 WAS에 배포할 수 있게 구성했습니다. 개발 중에는 <code>.env</code>의 주소로 Vue 개발 서버 프록시를 연결해 사용했습니다.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 문제 해결 -->
+    <section id="troubleshooting">
+      <h2 class="section-title">문제 해결 경험</h2>
+      <p class="section-subtitle">처음 고른 방법이 통하지 않아 방향을 바꿨던 세 가지 사례입니다. 코드는 실제 저장소에서 가져왔습니다.</p>
+
+      <!-- 문제 해결 1 -->
+      <div class="trouble-card" id="trouble-1">
+        <div class="trouble-header">
+          <h3 class="trouble-title">
+            <span class="trouble-num">① </span>
+            <span>IE11에서 PDF가 열리지 않고 화면이 깨지던 문제</span>
+          </h3>
+          <span class="badge-error">IE11 호환</span>
+        </div>
+
+        <div class="trouble-step">
+          <h4 class="step-problem">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            문제
+          </h4>
+          <p>
+            크롬에서는 잘 되던 뷰어가 IE11에서는 동작하지 않았습니다. 처음에는 Babel 설정에 IE11만 추가하면 될 거라 생각했지만,
+            문법 오류를 없앤 뒤에도 <code>Path2D</code>, <code>IntersectionObserver</code>, CSS 변수처럼 IE11에 아예 없는 기능에서 다시 막혔습니다.
+            특히 PDF를 읽는 PDF.js는 별도 Worker 파일을 불러오는 방식이라, 최신 버전으로는 IE11에서 PDF가 열리지 않았습니다.
+          </p>
+        </div>
+
+        <div class="trouble-step">
+          <h4 class="step-analysis">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            시도한 방법
+          </h4>
+          <ul>
+            <li><strong>최신 PDF.js(legacy 빌드) + worker-loader/babel-loader:</strong> Worker 파일까지 Babel로 변환하도록 webpack 설정을 바꿨지만 크롬에서만 성공했습니다.</li>
+            <li><strong>file-loader로 Worker 파일 경로 지정:</strong> 빌드 설정 조건에 따라 될 때와 안 될 때가 갈려 안정적이지 않았습니다.</li>
+            <li><strong>CDN(cdnjs)의 Worker 주소 지정:</strong> 동작은 했지만 외부 서버에 의존하게 되어 채택하지 않았습니다.</li>
+          </ul>
+        </div>
+
+        <div class="trouble-step">
+          <h4 class="step-solution">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            해결
+          </h4>
+          <p>
+            <strong>문법 변환</strong>과 <strong>없는 기능 채우기(폴리필)</strong>를 나눠서 처리했습니다.
+            PDF.js는 구형 브라우저용 ES5 빌드가 들어 있는 2.5.207 버전으로 고정하고, Worker도 번들에 포함해 외부 파일 없이 동작하게 했습니다.
+          </p>
+          <div class="indent">
+<pre class="code-block"><span class="code-comment">// src/views/Home.vue — ES5 빌드와 Worker 엔트리를 번들에 포함 (pdfjs-dist 2.5.207)</span>
+<span class="code-keyword">import</span> * <span class="code-keyword">as</span> pdfjsLib <span class="code-keyword">from</span> <span class="code-str">"pdfjs-dist/es5/build/pdf"</span>;
+<span class="code-keyword">import</span> PDFJSWorker <span class="code-keyword">from</span> <span class="code-str">"pdfjs-dist/es5/build/pdf.worker.entry"</span>;
+pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJSWorker;
+
+<span class="code-comment">// src/main.js — IE11에 없는 기능 채우기</span>
+<span class="code-keyword">import</span> <span class="code-str">'core-js/stable'</span>
+<span class="code-keyword">import</span> <span class="code-str">'regenerator-runtime/runtime'</span>
+<span class="code-keyword">import</span> <span class="code-str">'intersection-observer'</span>
+<span class="code-keyword">import</span> <span class="code-str">'node-remove-polyfill'</span>
+<span class="code-keyword">import</span> <span class="code-str">"path2d-polyfill"</span>
+<span class="code-keyword">import</span> <span class="code-str">'blueimp-canvas-to-blob'</span>
+<span class="code-keyword">import</span> cssVars <span class="code-keyword">from</span> <span class="code-str">'css-vars-ponyfill'</span>
+cssVars()
+
+<span class="code-comment">// babel.config.js — 대상 브라우저(browserslist: "ie &gt; 10")에 맞춰 core-js 3 적용</span>
+presets: [[<span class="code-str">"@vue/cli-plugin-babel/preset"</span>, { useBuiltIns: <span class="code-str">'entry'</span>, corejs: { version: 3, proposals: <span class="code-keyword">true</span> } }]]
+
+<span class="code-comment">// vue.config.js — ES6 문법이 남아 있는 라이브러리도 변환 대상에 포함</span>
+transpileDependencies: [<span class="code-str">'exifreader'</span>, <span class="code-str">'vue-zoomer'</span>, <span class="code-str">'vue-resizable'</span>]</pre>
+          </div>
+        </div>
+
+        <div class="trouble-step">
+          <h4 class="step-takeaway">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            결과 및 배운 점
+          </h4>
+          <p>
+            PDF 열람을 포함한 뷰어 기능이 IE11과 최신 브라우저에서 같은 방식으로 동작하게 되었습니다.
+            Babel 변환은 문법만 바꿔줄 뿐 브라우저에 없는 기능까지 만들어주지는 않는다는 것을 알게 되었고,
+            이후로는 라이브러리를 고를 때 구형 브라우저용 빌드가 있는지부터 확인하게 되었습니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- 문제 해결 2 -->
+      <div class="trouble-card" id="trouble-2">
+        <div class="trouble-header">
+          <h3 class="trouble-title">
+            <span class="trouble-num">② </span>
+            <span>이미지를 회전하면 인식 영역이 엉뚱한 곳에 그려지던 문제</span>
+          </h3>
+          <span class="badge-error">좌표 변환</span>
+        </div>
+
+        <div class="trouble-step">
+          <h4 class="step-problem">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            문제
+          </h4>
+          <p>
+            OCR 서버가 돌려주는 좌표는 <strong>회전하기 전 원본 이미지 기준</strong>입니다.
+            그런데 화면에서는 사용자가 문서를 90°씩 돌려 보기 때문에, 회전한 뒤에도 인식 영역이 같은 글자를 정확히 가리켜야 했습니다.
+          </p>
+        </div>
+
+        <div class="trouble-step">
+          <h4 class="step-analysis">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            시도한 방법
+          </h4>
+          <ul>
+            <li><strong>CSS <code>transform: rotate()</code>로 이미지만 회전:</strong> 이미지는 돌아갔지만 인식 영역은 제자리에 남았습니다. CSS는 보이는 모양만 바꿀 뿐 좌표 데이터는 바꾸지 않기 때문입니다.</li>
+            <li><strong>회전할 때마다 원본 좌표를 덮어쓰기:</strong> 회전을 여러 번 하면 변환이 겹겹이 쌓여 오차가 생겼고, 지금 좌표가 어느 상태 기준인지 알기 어려워 디버깅도 힘들었습니다.</li>
+          </ul>
+        </div>
+
+        <div class="trouble-step">
+          <h4 class="step-solution">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            해결
+          </h4>
+          <p>
+            <strong>원본 좌표는 절대 바꾸지 않고</strong>, 화면을 그릴 때마다 현재 각도에 맞는 좌표를 새로 계산하도록 바꿨습니다.
+            이미지도 CSS가 아닌 캔버스에서 회전시켜 이미지와 영역이 같은 기준으로 그려지게 했습니다. (W, H = 회전 전 원본 너비·높이)
+          </p>
+          <div class="indent">
+            <div class="table-wrap">
+              <table class="formula-table">
+                <thead>
+                  <tr><th>회전 각도</th><th>원본 좌표 (x, y) →</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>90°</td><td>(y, W − x)</td></tr>
+                  <tr><td>180°</td><td>(W − x, H − y)</td></tr>
+                  <tr><td>270°</td><td>(H − y, x)</td></tr>
+                </tbody>
+              </table>
+            </div>
+<pre class="code-block"><span class="code-comment">// src/ocr/rotate.js — 원본 좌표(polys)는 그대로 두고, 회전된 좌표를 새 배열로 만든다 (핵심만 요약)</span>
+<span class="code-keyword">function</span> <span class="code-fn">rotatePoly</span>(polys, angle, width, height) {
+  <span class="code-comment">// 실제 코드는 모든 다각형의 모든 꼭짓점 p를 반복하며 아래 식을 적용한다</span>
+  <span class="code-keyword">switch</span> (angle % 360) {
+    <span class="code-keyword">case</span> 90:  poly.push({ x: p.y,          y: width - p.x  }); <span class="code-keyword">break</span>;
+    <span class="code-keyword">case</span> 180: poly.push({ x: width - p.x,  y: height - p.y }); <span class="code-keyword">break</span>;
+    <span class="code-keyword">case</span> 270: poly.push({ x: height - p.y, y: p.x          }); <span class="code-keyword">break</span>;
+    <span class="code-keyword">default</span>:  <span class="code-keyword">return</span> polys;  <span class="code-comment">// 0°는 원본 그대로</span>
+  }
+}
+
+<span class="code-comment">// 이미지도 캔버스에서 같은 방향으로 회전 (90°: 가로·세로를 바꾸고 기준점을 옮긴 뒤 회전)</span>
+<span class="code-keyword">function</span> <span class="code-fn">rotate90</span>(canvas, width, height) {
+  canvas.width = height;
+  canvas.height = width;
+  <span class="code-keyword">var</span> ctx = canvas.getContext(<span class="code-str">"2d"</span>);
+  ctx.translate(0, width);
+  ctx.rotate(-90 * Math.PI / 180);
+  <span class="code-keyword">return</span> ctx;
+}
+
+<span class="code-comment">// src/views/Home.vue makeGlassView() — 확대 미리보기도 회전된 좌표로 회전된 캔버스에서 잘라낸다</span>
+<span class="code-keyword">let</span> rotatedPoly = OdrRotatePoly(poly, <span class="code-keyword">this</span>.rotate_angle, <span class="code-keyword">this</span>.img_width, <span class="code-keyword">this</span>.img_height);
+<span class="code-keyword">var</span> standardX = getWidth(rotatedPoly);   <span class="code-comment">// 영역의 왼쪽·오른쪽 끝</span>
+<span class="code-keyword">var</span> standardY = getHeight(rotatedPoly);  <span class="code-comment">// 영역의 위·아래 끝</span>
+cropCanvas.width  = standardX.standardMaxX - standardX.standardMinX;
+cropCanvas.height = standardY.standardMaxY - standardY.standardMinY;
+ctx.drawImage(<span class="code-keyword">this</span>.rotatedCanvas,
+  standardX.standardMinX, standardY.standardMinY, cropCanvas.width, cropCanvas.height,
+  0, 0, cropCanvas.width, cropCanvas.height);</pre>
+          </div>
+        </div>
+
+        <div class="trouble-step">
+          <h4 class="step-takeaway">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            결과 및 배운 점
+          </h4>
+          <p>
+            몇 번을 회전해도 인식 영역과 확대 미리보기가 같은 글자를 가리키게 되었고, 각도별 계산이 한 함수에 모여 있어 문제가 생겨도 원인을 찾기 쉬워졌습니다.
+            화면과 데이터가 정확히 맞아야 하는 기능에서는 <strong>보이는 모양만 바꾸는 방법(CSS)에 기대면 안 되고</strong>,
+            <strong>원본 데이터와 계산 결과를 섞지 말아야 한다</strong>는 것을 배웠습니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- 문제 해결 3 -->
+      <div class="trouble-card" id="trouble-3">
+        <div class="trouble-header">
+          <h3 class="trouble-title">
+            <span class="trouble-num">③ </span>
+            <span>여러 페이지 문서를 올리면 OCR 요청이 한꺼번에 몰리던 문제</span>
+          </h3>
+          <span class="badge-error">요청 수 제어</span>
+        </div>
+
+        <div class="trouble-step">
+          <h4 class="step-problem">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            문제
+          </h4>
+          <p>
+            처음에는 페이지마다 OCR 요청을 바로 보냈습니다. 이미지 몇 장으로 테스트할 때는 문제가 없었지만,
+            수십 페이지짜리 PDF·TIFF를 올리자 페이지 수만큼의 요청이 한꺼번에 OCR 서버로 몰려 응답이 늦어지고 일부는 실패했습니다.
+          </p>
+        </div>
+
+        <div class="trouble-step">
+          <h4 class="step-analysis">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            시도한 방법
+          </h4>
+          <ul>
+            <li><strong>요청을 보내는 곳마다 순서대로 보내도록 처리:</strong> 요청을 보내는 곳이 늘어날수록 제어 코드가 여기저기 흩어져 관리하기 어려웠습니다.</li>
+          </ul>
+        </div>
+
+        <div class="trouble-step">
+          <h4 class="step-solution">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            해결
+          </h4>
+          <p>
+            제어하는 곳을 <strong>axios 인터셉터 한 곳</strong>으로 모았습니다. 요청을 보내기 전, 처리 중인 요청 수가 한도보다 적어질 때까지 기다렸다가 보내고,
+            응답이 오면 <strong>성공이든 실패든</strong> 숫자를 하나 줄입니다. 한도는 백엔드에서 받아오고(설정 화면에서 1~12 단계로 조절), 백엔드가 응답하지 않으면 기본값 3을 씁니다.
+          </p>
+          <div class="indent">
+<pre class="code-block"><span class="code-comment">// src/axios/api.js</span>
+<span class="code-keyword">let</span> MAX_REQUESTS_COUNT = 3
+<span class="code-keyword">const</span> INTERVAL_MS = 100
+<span class="code-keyword">let</span> PENDING_REQUESTS = 0
+<span class="code-keyword">const</span> api = axios.create({})
+
+api.interceptors.request.use(<span class="code-keyword">function</span> (config) {
+  <span class="code-keyword">return new</span> Promise((resolve) =&gt; {
+    <span class="code-keyword">let</span> interval = setInterval(() =&gt; {
+      <span class="code-keyword">if</span> (PENDING_REQUESTS &lt; MAX_REQUESTS_COUNT) {  <span class="code-comment">// 자리가 날 때까지 대기</span>
+        PENDING_REQUESTS++
+        clearInterval(interval)
+        resolve(config)
+      }
+    }, INTERVAL_MS)
+  })
+})
+
+api.interceptors.response.use(<span class="code-keyword">function</span> (response) {
+  PENDING_REQUESTS = Math.max(0, PENDING_REQUESTS - 1)
+  <span class="code-keyword">return</span> Promise.resolve(response)
+}, <span class="code-keyword">function</span> (error) {
+  PENDING_REQUESTS = Math.max(0, PENDING_REQUESTS - 1)  <span class="code-comment">// 실패해도 꼭 줄여야 한도가 막히지 않음</span>
+  <span class="code-keyword">return</span> Promise.reject(error)
+})</pre>
+          </div>
+        </div>
+
+        <div class="trouble-step">
+          <h4 class="step-takeaway">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            결과 및 배운 점
+          </h4>
+          <p>
+            페이지 수와 관계없이 OCR 서버에 들어가는 요청 수가 일정하게 유지되었고, 서버 사양에 맞춰 배포 없이 설정 화면에서 한도를 바꿀 수 있게 되었습니다.
+            요청 수 제어는 기능 코드가 아니라 통신 계층에서 한 번에 처리해야 한다는 것, 그리고 실패했을 때도 숫자를 되돌리지 않으면 한도가 점점 막혀 뷰어 전체가 멈춘다는 것을 배웠습니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 기술 스택 -->
+    <section id="techstack">
+      <h2 class="section-title">기술 스택</h2>
+      <p class="section-subtitle">버전은 프로젝트 <code style="font-size: 0.9em;">package.json</code>에 적힌 기준입니다.</p>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table class="spec-table">
+            <thead>
+              <tr>
+                <th>구분</th>
+                <th>기술</th>
+                <th>버전</th>
+                <th>어디에 썼나</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Frontend</td>
+                <td>Vue.js, Vue Router</td>
+                <td>2.6.14 / 3.5.3</td>
+                <td>뷰어·설정·사용자 관리 화면 구성과 페이지 이동</td>
+              </tr>
+              <tr>
+                <td>UI</td>
+                <td>Bootstrap, BootstrapVue, Font Awesome, vue-resizable</td>
+                <td>4.6.1 / 2.21.2 / 6.1.1 / 1.3.2</td>
+                <td>모달·폼·아이콘, 3단 영역 폭 조절</td>
+              </tr>
+              <tr>
+                <td>문서 표시</td>
+                <td>pdfjs-dist (ES5 빌드), tiff.js, Canvas API</td>
+                <td>2.5.207 / 1.0.0</td>
+                <td>PDF·TIFF 페이지를 이미지로 변환, 인식 영역 그리기</td>
+              </tr>
+              <tr>
+                <td>이미지 처리</td>
+                <td>blueimp-load-image, ExifReader, panzoom</td>
+                <td>5.16.0 / 4.2.0 / 9.4.2</td>
+                <td>썸네일 생성, TIFF 해상도 비율 보정, 확대·축소·이동</td>
+              </tr>
+              <tr>
+                <td>통신</td>
+                <td>axios (인터셉터)</td>
+                <td>0.24.0</td>
+                <td>API 호출, 동시 요청 수 제한</td>
+              </tr>
+              <tr>
+                <td>파일 저장</td>
+                <td>SheetJS (xlsx), FileSaver</td>
+                <td>0.18.0 / 2.0.5</td>
+                <td>결과 Excel · JSON 내보내기</td>
+              </tr>
+              <tr>
+                <td>IE11 호환</td>
+                <td>core-js, regenerator-runtime, path2d-polyfill, intersection-observer, css-vars-ponyfill</td>
+                <td>3.20.2 / 0.13.9 / 1.2.0 / 0.12.0 / 2.4.7</td>
+                <td>IE11에 없는 기능 보완</td>
+              </tr>
+              <tr>
+                <td>빌드</td>
+                <td>Vue CLI, Babel, ESLint</td>
+                <td>4.5</td>
+                <td>빌드(<code>dist/static</code>), IE11 대상 변환</td>
+              </tr>
+              <tr>
+                <td>Backend</td>
+                <td>Spring Boot, RestController, WebClient</td>
+                <td>—</td>
+                <td>OCR 서버 요청 중계(CORS 해결), CSV 설정 저장, WAR 배포</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>OCR 뷰어 웹 전환 프로젝트 · 2021.12 – 2022.03</p>
+    <p style="font-size: 0.8rem; margin-top: 0.35rem; color: #94a3b8;">회사명·고객사명 등 식별 가능한 정보는 제외했습니다.</p>
+  </footer>
+
+  <!-- 이미지 확대 라이트박스 -->
+  <div id="lightboxModal" class="lightbox-modal" role="dialog" aria-modal="true" aria-label="이미지 크게 보기">
+    <button type="button" class="lightbox-close" aria-label="닫기">&times;</button>
+    <img id="lightboxImg" class="lightbox-content" alt="" />
+  </div>
+
+  <script>
+    (function () {
+      var modal = document.getElementById('lightboxModal');
+      var modalImg = document.getElementById('lightboxImg');
+      var closeBtn = modal.querySelector('.lightbox-close');
+      var lastFocused = null;
+
+      function openLightbox(img) {
+        lastFocused = img;
+        modalImg.src = img.src;
+        modalImg.alt = img.alt;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        closeBtn.focus();
+      }
+
+      function closeLightbox() {
+        if (!modal.classList.contains('active')) return;
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        if (lastFocused) lastFocused.focus();
+      }
+
+      var images = document.querySelectorAll('.js-zoomable');
+      for (var i = 0; i < images.length; i++) {
+        images[i].addEventListener('click', function () { openLightbox(this); });
+        images[i].addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openLightbox(this);
+          }
+        });
+      }
+
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeLightbox();
+      });
+      closeBtn.addEventListener('click', closeLightbox);
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeLightbox();
+      });
+    })();
+  </script>
+
+</body>
+</html>
