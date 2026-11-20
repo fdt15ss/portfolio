@@ -28,3 +28,6 @@ _backup/
 **/포트폴리오_수정전_백업.html
 QuestForge_Agent_포트폴리오/screenshots/_이전_목업/
 .claude/
+prompts
+# 발표용 PPT (개인 연락처 포함 · 배포 제외)
+_PPT/
