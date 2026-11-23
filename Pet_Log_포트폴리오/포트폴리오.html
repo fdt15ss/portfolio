@@ -998,6 +998,135 @@
     }
 
     /* ==========================================================================
+       NPU Benchmark Charts
+       ========================================================================== */
+    :root {
+      --series-home: #f59e0b;
+      --series-home-q8: #0d9488;
+      --series-npu: #2563eb;
+    }
+
+    [data-theme="dark"] {
+      --series-home: #d97706;
+      --series-home-q8: #0d9488;
+      --series-npu: #3b82f6;
+    }
+
+    .bench-chart-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin-bottom: 0.25rem;
+    }
+
+    .bench-chart-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .bench-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1.25rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .bench-swatch {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      margin-right: 0.4rem;
+      vertical-align: -1px;
+    }
+
+    .bench-group {
+      margin-top: 1rem;
+    }
+
+    .bench-group-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.35rem;
+    }
+
+    #npu-benchmark .metric-num {
+      font-size: 2rem;
+      white-space: nowrap;
+    }
+
+    .bench-row {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 6px;
+    }
+
+    .bench-row-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .bench-track {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      height: 22px;
+    }
+
+    .bench-bar {
+      height: 100%;
+      min-width: 3px;
+      border-radius: 0 4px 4px 0;
+      cursor: default;
+      outline-offset: 2px;
+    }
+
+    .bench-bar.home { background: var(--series-home); }
+    .bench-bar.home-q8 { background: var(--series-home-q8); }
+    .bench-bar.npu { background: var(--series-npu); }
+
+    .bench-bar:hover, .bench-bar:focus-visible {
+      filter: brightness(1.12);
+    }
+
+    .bench-value {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .bench-tooltip {
+      position: fixed;
+      z-index: 200;
+      pointer-events: none;
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-lg);
+      padding: 0.5rem 0.7rem;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      opacity: 0;
+      transition: opacity 0.12s ease;
+    }
+
+    .bench-tooltip.visible { opacity: 1; }
+
+    .bench-note {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.75rem;
+    }
+
+    /* ==========================================================================
        Responsive Media Queries
        ========================================================================== */
     @media (max-width: 1180px) {
@@ -1047,6 +1176,7 @@
         <li><a href="#ai-deepdive">AI 에이전트</a></li>
         <li><a href="#troubleshooting">시행착오</a></li>
         <li><a href="#verification">테스트</a></li>
+        <li><a href="#npu-benchmark">NPU 성능</a></li>
         <li><a href="#results">성과 & 회고</a></li>
       </ul>
       <div class="nav-actions">
@@ -1065,6 +1195,7 @@
         <span class="badge badge-accent">⚡ LangGraph 파이프라인</span>
         <span class="badge badge-success">🤖 GPT + 로컬 Gemma(Ollama) 하이브리드</span>
         <span class="badge badge-purple">📱 Next.js 16 + FastAPI</span>
+        <span class="badge badge-primary">⚙️ NPU(RNGD) 추론 벤치마크</span>
       </div>
 
       <h1 class="hero-title">
@@ -1908,6 +2039,259 @@
     </div>
   </section>
 
+  <!-- Section 6.5: NPU Inference Benchmark -->
+  <section id="npu-benchmark">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-subtitle">Inference Benchmark</div>
+        <h2 class="section-title">LLM 백엔드를 NPU(RNGD)로 바꿨을 때의 추론 성능</h2>
+        <p class="section-desc">
+          같은 Qwen3 8B 모델을 집 PC의 GPU와 FuriosaAI RNGD(NPU)에서 돌리고, Pet Log가 실제로 보내는 프롬프트로 첫 토큰 시간(TTFT)과 초당 토큰 수를 쟀습니다.
+          앱 코드는 바꾸지 않고 OpenAI 호환 서버 주소만 바꿔 같은 측정 스크립트로 비교했습니다.
+          집 PC는 가정에서 흔히 쓰는 4bit와, RNGD의 FP8과 비트 수를 맞춘 8bit 두 가지로 쟀고, Windows와 WSL(리눅스) 두 OS에서 모두 측정했습니다.
+        </p>
+      </div>
+
+      <!-- Headline numbers -->
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-num">6.0~9.3배</div>
+          <div class="metric-label">처리량 (동시 요청 4개)</div>
+          <div class="metric-sub">집 PC 4bit 대비 6.0배 · 8bit 대비 9.3배</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">56~120배</div>
+          <div class="metric-label">빠른 첫 토큰 (동시 요청 4개)</div>
+          <div class="metric-sub">4.1초·8.8초 → 0.073초</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">1.8~2.8배</div>
+          <div class="metric-label">생성 속도 (요청 1개)</div>
+          <div class="metric-sub">58.3·37.4 → 104.4 tok/s</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-num">0건</div>
+          <div class="metric-label">오류 (전체 650건 요청)</div>
+          <div class="metric-sub">추론 토큰 혼입도 0건</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="grid-2">
+        <div class="card">
+          <h3 class="bench-chart-title">처리량 (tok/s, 높을수록 좋음)</h3>
+          <p class="bench-chart-sub">5개 시나리오 평균. 동시 요청이 늘 때 얼마나 더 처리하는지 보여줍니다.</p>
+          <div class="bench-legend" aria-hidden="true">
+            <span><span class="bench-swatch" style="background: var(--series-home);"></span>집 PC 4bit (Q4_K_M)</span>
+            <span><span class="bench-swatch" style="background: var(--series-home-q8);"></span>집 PC 8bit (Q8_0)</span>
+            <span><span class="bench-swatch" style="background: var(--series-npu);"></span>RNGD FP8</span>
+          </div>
+          <div class="bench-group">
+            <div class="bench-group-label">동시 요청 1개</div>
+            <div class="bench-row">
+              <span class="bench-row-label">집 PC 4bit</span>
+              <div class="bench-track"><div class="bench-bar home" style="width: 13.1%;" tabindex="0" data-tip="동시 요청 1개 · 집 PC 4bit|처리량 56.9 tok/s"></div><span class="bench-value">56.9</span></div>
+            </div>
+            <div class="bench-row">
+              <span class="bench-row-label">집 PC 8bit</span>
+              <div class="bench-track"><div class="bench-bar home-q8" style="width: 8.5%;" tabindex="0" data-tip="동시 요청 1개 · 집 PC 8bit|처리량 36.9 tok/s"></div><span class="bench-value">36.9</span></div>
+            </div>
+            <div class="bench-row">
+              <span class="bench-row-label">RNGD</span>
+              <div class="bench-track"><div class="bench-bar npu" style="width: 23.6%;" tabindex="0" data-tip="동시 요청 1개 · RNGD|처리량 102.3 tok/s (4bit 대비 1.8배 · 8bit 대비 2.8배)"></div><span class="bench-value">102.3</span></div>
+            </div>
+          </div>
+          <div class="bench-group">
+            <div class="bench-group-label">동시 요청 4개</div>
+            <div class="bench-row">
+              <span class="bench-row-label">집 PC 4bit</span>
+              <div class="bench-track"><div class="bench-bar home" style="width: 13.4%;" tabindex="0" data-tip="동시 요청 4개 · 집 PC 4bit|처리량 58.2 tok/s (요청 1개와 거의 같음)"></div><span class="bench-value">58.2</span></div>
+            </div>
+            <div class="bench-row">
+              <span class="bench-row-label">집 PC 8bit</span>
+              <div class="bench-track"><div class="bench-bar home-q8" style="width: 8.6%;" tabindex="0" data-tip="동시 요청 4개 · 집 PC 8bit|처리량 37.4 tok/s (요청 1개와 거의 같음)"></div><span class="bench-value">37.4</span></div>
+            </div>
+            <div class="bench-row">
+              <span class="bench-row-label">RNGD</span>
+              <div class="bench-track"><div class="bench-bar npu" style="width: 80.0%;" tabindex="0" data-tip="동시 요청 4개 · RNGD|처리량 346.4 tok/s (4bit 대비 6.0배 · 8bit 대비 9.3배)"></div><span class="bench-value">346.4</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="bench-chart-title">첫 토큰까지 걸린 시간 (초, 낮을수록 좋음)</h3>
+          <p class="bench-chart-sub">5개 시나리오 평균 TTFT p50. 사용자가 답을 기다리는 시간입니다.</p>
+          <div class="bench-legend" aria-hidden="true">
+            <span><span class="bench-swatch" style="background: var(--series-home);"></span>집 PC 4bit (Q4_K_M)</span>
+            <span><span class="bench-swatch" style="background: var(--series-home-q8);"></span>집 PC 8bit (Q8_0)</span>
+            <span><span class="bench-swatch" style="background: var(--series-npu);"></span>RNGD FP8</span>
+          </div>
+          <div class="bench-group">
+            <div class="bench-group-label">동시 요청 1개</div>
+            <div class="bench-row">
+              <span class="bench-row-label">집 PC 4bit</span>
+              <div class="bench-track"><div class="bench-bar home" style="width: 0.4%;" tabindex="0" data-tip="동시 요청 1개 · 집 PC 4bit|TTFT 0.042초"></div><span class="bench-value">0.042초</span></div>
+            </div>
+            <div class="bench-row">
+              <span class="bench-row-label">집 PC 8bit</span>
+              <div class="bench-track"><div class="bench-bar home-q8" style="width: 0.5%;" tabindex="0" data-tip="동시 요청 1개 · 집 PC 8bit|TTFT 0.052초"></div><span class="bench-value">0.052초</span></div>
+            </div>
+            <div class="bench-row">
+              <span class="bench-row-label">RNGD</span>
+              <div class="bench-track"><div class="bench-bar npu" style="width: 0.2%;" tabindex="0" data-tip="동시 요청 1개 · RNGD|TTFT 0.027초 (4bit 대비 1.6배 · 8bit 대비 1.9배 빠름)"></div><span class="bench-value">0.027초</span></div>
+            </div>
+          </div>
+          <div class="bench-group">
+            <div class="bench-group-label">동시 요청 4개</div>
+            <div class="bench-row">
+              <span class="bench-row-label">집 PC 4bit</span>
+              <div class="bench-track"><div class="bench-bar home" style="width: 37.5%;" tabindex="0" data-tip="동시 요청 4개 · 집 PC 4bit|TTFT 4.121초 (앞 요청이 끝날 때까지 대기)"></div><span class="bench-value">4.121초</span></div>
+            </div>
+            <div class="bench-row">
+              <span class="bench-row-label">집 PC 8bit</span>
+              <div class="bench-track"><div class="bench-bar home-q8" style="width: 80.0%;" tabindex="0" data-tip="동시 요청 4개 · 집 PC 8bit|TTFT 8.797초 (앞 요청이 끝날 때까지 대기)"></div><span class="bench-value">8.797초</span></div>
+            </div>
+            <div class="bench-row">
+              <span class="bench-row-label">RNGD</span>
+              <div class="bench-track"><div class="bench-bar npu" style="width: 0.7%;" tabindex="0" data-tip="동시 요청 4개 · RNGD|TTFT 0.073초 (4bit 대비 56배 · 8bit 대비 120배 빠름)"></div><span class="bench-value">0.073초</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary table -->
+      <div class="table-scroll">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>동시 요청</th>
+              <th>구성</th>
+              <th>TTFT p50</th>
+              <th>요청당 생성 속도</th>
+              <th>전체 처리량</th>
+              <th>오류</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1개</td><td>집 PC · Ollama · Q4_K_M (4bit)</td><td>0.042초</td><td>58.3 tok/s</td><td>56.9 tok/s</td><td>0 / 50</td></tr>
+            <tr><td>1개</td><td>집 PC · Ollama · Q8_0 (8bit)</td><td>0.052초</td><td>37.4 tok/s</td><td>36.9 tok/s</td><td>0 / 50</td></tr>
+            <tr><td>1개</td><td>RNGD · furiosa-llm · FP8</td><td>0.027초</td><td>104.4 tok/s</td><td>102.3 tok/s</td><td>0 / 50</td></tr>
+            <tr><td>4개</td><td>집 PC · Ollama · Q4_K_M (4bit)</td><td>4.121초</td><td>58.5 tok/s</td><td>58.2 tok/s</td><td>0 / 80</td></tr>
+            <tr><td>4개</td><td>집 PC · Ollama · Q8_0 (8bit)</td><td>8.797초</td><td>37.5 tok/s</td><td>37.4 tok/s</td><td>0 / 80</td></tr>
+            <tr><td>4개</td><td>RNGD · furiosa-llm · FP8</td><td>0.073초</td><td>94.9 tok/s</td><td>346.4 tok/s</td><td>0 / 80</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="bench-note">
+        측정 환경 — 집 PC: NVIDIA RTX 3060 12GB, Ollama 0.40.17, <code>qwen3:8b</code>(Q4_K_M 4bit)와 <code>qwen3:8b-q8_0</code>(Q8_0 8bit, 전부 GPU에 적재). RNGD: FuriosaAI RNGD 1장, furiosa-llm 2026.4.0, <code>furiosa-ai/Qwen3-8B-FP8</code>.
+        두 쪽 모두 같은 머신 안에서 localhost로 호출했고, thinking을 끄고 최대 출력 256토큰, 워밍업 1회로 맞췄습니다.
+      </p>
+
+      <!-- How it was measured -->
+      <div class="grid-3" style="margin-top: 2.5rem;">
+        <div class="card">
+          <div class="card-icon">🧩</div>
+          <h3 class="card-title">앱의 실제 프롬프트로 측정</h3>
+          <p class="card-text">
+            기록 구조화, 케어 질문, 반려동물 대화, 쇼핑 에이전트 2단계까지 앱의 프롬프트 빌더를 그대로 불러 5개 시나리오를 만들었습니다. 같은 seed 데이터로 만들어 두 머신이 글자 수까지 똑같은 입력을 받습니다.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-icon">⏱️</div>
+          <h3 class="card-title">스트리밍으로 첫 토큰 시간 측정</h3>
+          <p class="card-text">
+            앱은 응답을 한 번에 받는 방식이라 첫 토큰 시점을 알 수 없습니다. 그래서 측정용 스크립트는 OpenAI 호환 스트리밍으로 호출해 첫 토큰 시간, 요청당 생성 속도, 동시 요청 처리량을 따로 기록합니다.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-icon">📊</div>
+          <h3 class="card-title">결과를 파일로 남기고 비교표 자동 생성</h3>
+          <p class="card-text">
+            측정마다 JSON·CSV·마크다운 표를 남기고 하드웨어 정보를 함께 기록합니다. 비교 스크립트가 여러 머신의 결과를 합쳐 기준 대비 배수를 계산하고, 측정 조건이 다르면 경고합니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- Trial & error -->
+      <div class="trouble-card" style="margin-top: 2.5rem;">
+        <div class="trouble-badge-wrap">
+          <span class="badge badge-accent">측정 설계</span>
+        </div>
+        <h3 class="trouble-title">thinking 모델이 출력 토큰을 추론에 다 써서 답이 비던 문제</h3>
+        <div class="trouble-grid">
+          <div class="trouble-sub-box problem">
+            <h4>문제</h4>
+            <p>처음 로컬 Gemma로 측정했을 때 기록 구조화와 쇼핑 시나리오는 답변이 하나도 나오지 않았고, 첫 토큰 시간도 잡히지 않았습니다.</p>
+          </div>
+          <div class="trouble-sub-box cause">
+            <h4>원인</h4>
+            <p>thinking 모델은 답 앞에 추론 토큰을 먼저 냅니다. 최대 출력 토큰을 모두 추론에 써 버렸고, 스트림에서는 추론이 답변과 다른 필드로 와서 "토큰이 없음"으로 보였습니다.</p>
+          </div>
+          <div class="trouble-sub-box solution">
+            <h4>해결</h4>
+            <p>첫 생성 토큰(TTFT)과 첫 답변 토큰을 나눠 기록하고, 추론만 나온 요청은 표에 따로 표시했습니다. 비교 측정에서는 양쪽 모두 thinking을 끄고, 결과에 추론 태그가 섞였는지 확인했습니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interpretation -->
+      <div class="grid-2" style="margin-top: 0.5rem;">
+        <div class="card">
+          <h3 class="card-title">🔍 결과 해석</h3>
+          <p class="card-text">
+            요청 하나만 보면 RNGD가 4bit 대비 1.8배, 비트 수를 맞춘 8bit 대비 2.8배 빠릅니다. 집 PC는 8bit로 올리면 읽어야 할 가중치가 두 배가 되어 오히려 36% 느려졌습니다.
+            차이가 크게 벌어지는 건 동시 요청입니다. 집 PC의 Ollama는 요청을 하나씩 처리해 처리량이 그대로이고 뒤 요청은 수 초를 기다렸습니다. RNGD는 4개를 한꺼번에 처리해 처리량이 3.4배로 늘었고, 대신 요청당 생성 속도는 약 9% 줄었습니다.
+          </p>
+        </div>
+        <div class="card">
+          <h3 class="card-title">⚠️ 비교의 한계</h3>
+          <p class="card-text">
+            하드웨어만 비교한 것은 아닙니다. 정밀도 차이를 줄이려고 집 PC를 8bit로도 쟀지만, Ollama에는 FP8 형식이 없고 RTX 3060은 FP8 연산을 지원하지 않아 정수 8bit(Q8_0)로 맞췄습니다. 서버 엔진(Ollama와 furiosa-llm)도 다르므로 "가정용 GPU + Ollama"와 "RNGD + furiosa-llm" 구성의 비교로 읽어야 합니다.
+            시간당 비용과 전력은 재지 않았고, 동시 요청 8·16개에서의 차이는 다음 측정 과제입니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- Windows vs WSL -->
+      <div class="section-header" style="margin-top: 4rem; margin-bottom: 0;">
+        <h3 style="font-size: 1.35rem; font-weight: 800;">🐧 OS를 바꾸면 격차가 줄어들까? — Windows vs WSL</h3>
+        <p class="section-desc">
+          RNGD와의 차이가 Windows 탓인지 확인하려고, 같은 PC에서 WSL2(Ubuntu 26.04.1)에 Ollama를 따로 설치해 같은 조건으로 다시 쟀습니다. Windows Ollama는 끄고 측정했습니다.
+        </p>
+      </div>
+      <div class="table-scroll">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>지표</th>
+              <th>Windows 4bit</th>
+              <th>WSL 4bit</th>
+              <th>Windows 8bit</th>
+              <th>WSL 8bit</th>
+              <th>RNGD FP8</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>요청 1개 · TTFT</td><td>0.042초</td><td>0.026초</td><td>0.052초</td><td>0.035초</td><td>0.027초</td></tr>
+            <tr><td>요청 1개 · 생성 속도</td><td>58.3 tok/s</td><td>57.0 tok/s</td><td>37.4 tok/s</td><td>36.8 tok/s</td><td>104.4 tok/s</td></tr>
+            <tr><td>동시 4개 · TTFT</td><td>4.121초</td><td>4.216초</td><td>8.797초</td><td>7.783초</td><td>0.073초</td></tr>
+            <tr><td>동시 4개 · 처리량</td><td>58.2 tok/s</td><td>56.9 tok/s</td><td>37.4 tok/s</td><td>36.7 tok/s</td><td>346.4 tok/s</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3 class="card-title">🔍 OS가 아니라 동시 처리 방식이 차이를 만든다</h3>
+        <p class="card-text">
+          생성 속도는 Windows와 WSL이 2% 안쪽으로 같았습니다. 생성 속도는 GPU가 가중치를 읽는 속도에 달려 있어 OS 영향이 거의 없습니다.
+          요청 하나의 첫 토큰은 WSL이 35~40% 빨라 RNGD와 비슷한 수준까지 내려왔지만, 동시 요청에서는 WSL도 요청을 하나씩 처리해 처리량이 그대로이고 뒤 요청은 4~8초를 기다렸습니다.
+          리눅스로 옮겨도 RNGD와의 격차는 줄지 않았고, 격차의 원인은 OS가 아니라 서버가 동시 요청을 묶어 처리하는지 여부라는 걸 확인했습니다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div id="benchTooltip" class="bench-tooltip" role="tooltip"></div>
+
   <!-- Section 7: Results & Retrospective -->
   <section id="results">
     <div class="container">
@@ -2065,6 +2449,35 @@
           link.classList.add('active');
         }
       });
+    });
+
+    // 5. Benchmark bar tooltips (hover and keyboard focus)
+    const benchTooltip = document.getElementById('benchTooltip');
+
+    function showBenchTooltip(bar, x, y) {
+      const [title, value] = bar.dataset.tip.split('|');
+      benchTooltip.innerHTML = '';
+      const strong = document.createElement('strong');
+      strong.textContent = title;
+      benchTooltip.append(strong, document.createElement('br'), value);
+      const left = Math.min(x + 12, window.innerWidth - benchTooltip.offsetWidth - 8);
+      benchTooltip.style.left = Math.max(8, left) + 'px';
+      benchTooltip.style.top = (y + 14) + 'px';
+      benchTooltip.classList.add('visible');
+    }
+
+    function hideBenchTooltip() {
+      benchTooltip.classList.remove('visible');
+    }
+
+    document.querySelectorAll('.bench-bar').forEach(bar => {
+      bar.addEventListener('mousemove', e => showBenchTooltip(bar, e.clientX, e.clientY));
+      bar.addEventListener('mouseleave', hideBenchTooltip);
+      bar.addEventListener('focus', () => {
+        const r = bar.getBoundingClientRect();
+        showBenchTooltip(bar, r.right, r.top);
+      });
+      bar.addEventListener('blur', hideBenchTooltip);
     });
   </script>
 </body>
