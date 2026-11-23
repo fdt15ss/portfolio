@@ -303,6 +303,22 @@
     footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
     footer a:hover { color: var(--text); }
     footer nav { display: flex; gap: 16px; flex-wrap: wrap; }
+    footer .ppt-links { flex-basis: 100%; margin-bottom: 18px; }
+    footer .ppt-links h2 { margin: 0 0 12px; font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.01em; }
+    footer .ppt-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    footer .ppt-card {
+      display: flex; align-items: center; gap: 16px; padding: 20px 22px; border-radius: 14px;
+      background: var(--accent-soft); border: 1px solid var(--border); color: var(--text);
+      transition: transform .15s, box-shadow .2s, border-color .15s;
+    }
+    footer .ppt-card:hover { color: var(--text); border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(47, 91, 234, .14); }
+    footer .ppt-icon { flex: none; width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; background: var(--surface); color: var(--accent-text); font-size: 26px; }
+    footer .ppt-body { flex: 1; min-width: 0; }
+    footer .ppt-tag { display: block; font-size: 12.5px; font-weight: 800; color: var(--accent-text); letter-spacing: .02em; }
+    footer .ppt-title { display: block; margin-top: 2px; font-size: 18px; font-weight: 800; line-height: 1.35; }
+    footer .ppt-desc { display: block; margin-top: 4px; font-size: 14px; color: var(--text-2); }
+    footer .ppt-arrow { flex: none; font-size: 22px; font-weight: 700; color: var(--accent-text); }
+    @media (max-width: 720px) { footer .ppt-grid { grid-template-columns: 1fr; } footer .ppt-card { padding: 16px; } }
   </style>
 </head>
 <body>
@@ -627,6 +643,29 @@
 
   <footer>
     <div class="wrap">
+      <section class="ppt-links" aria-labelledby="pptTitle">
+        <h2 id="pptTitle">📑 PPT 포트폴리오</h2>
+        <div class="ppt-grid">
+          <a class="ppt-card" href="https://docs.google.com/presentation/d/1J8Lz_sS1IFoUtsmR9NRGLWkf-y4CaSMQ/edit?usp=sharing&amp;ouid=110670168050652598032&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener noreferrer">
+            <span class="ppt-icon" aria-hidden="true">🤖</span>
+            <span class="ppt-body">
+              <span class="ppt-tag">AI Agent · RAG</span>
+              <span class="ppt-title">AI Agent · RAG 백엔드 포트폴리오</span>
+              <span class="ppt-desc">의정이슈레이더 · Pet Log · Google Slides</span>
+            </span>
+            <span class="ppt-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="ppt-card" href="https://docs.google.com/presentation/d/1evpVEr_Ompfn4nXNwSUUepG-mSVdSA_x/edit?usp=drive_link&amp;ouid=110670168050652598032&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener noreferrer">
+            <span class="ppt-icon" aria-hidden="true">👁️</span>
+            <span class="ppt-body">
+              <span class="ppt-tag">Computer Vision</span>
+              <span class="ppt-title">CV · 딥러닝 포트폴리오</span>
+              <span class="ppt-desc">지능형 민원처리 · Style.ai · Google Slides</span>
+            </span>
+            <span class="ppt-arrow" aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </section>
       <span>© 2026 임경빈 · 포트폴리오</span>
       <nav aria-label="바닥글">
         <a href="#featured">대표 프로젝트</a>
